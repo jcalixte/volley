@@ -39,10 +39,26 @@ frameset, no cron, no database. The backend re-fetches it and the page is curren
 - [x] 4. Cache actor: 15 min TTL, serve stale on upstream failure
 - [x] 5. Front: group by month, team filter, home/away, next-match highlight, played scores
 - [x] 6. README
-- [ ] 7. Gitea repo + push (apoena-gitea-repo)
+- [ ] 7. **BLOCKED** — Gitea repo + push (apoena-gitea-repo)
 - [ ] 8. Coolify app + deploy (apoena-coolify-deploy)
 - [ ] 9. Verify live
 
 ## Review
 
-_(filled at the end)_
+Built and verified locally:
+
+- 9 Gleam tests (CSV parse, home/away flip, played-vs-fixture, 4-letter poule, cp1252 incl. the 0x80-0x9F range).
+- 17 frontend tests (score orientation, aller/retour folding, competition labels, filters, stale banner, API error).
+- Smoke-mounted the app against the real 98-match payload: 98 rows, 5 competition
+  filters (22+22+18+18+18), French month headings September 2026 - April 2027.
+- `pnpm build` clean, `pnpm lint` clean, `pnpm fmt:check` clean.
+
+Not verified locally, and why: the Gleam server itself. `gleam_json` needs OTP 27, this
+box has no root and no Docker daemon, so the newest Erlang obtainable was OTP 25
+(extracted from debs into `~/.local`). The parse and decode logic runs there and passes;
+the HTTP layer does not. It gets verified by the Coolify deploy, which builds on OTP 29.
+
+Blocked at step 7: the Gitea token in this environment is public/read-only and Gitea has
+push-to-create disabled, so `git.apoena.dev/julien/volley` cannot be created from here.
+SSH push auth works, Coolify API works, DNS resolves. Everything downstream is one step
+behind that repo existing.
