@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue"
+import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import MatchRow from "@/components/MatchRow.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import {
@@ -14,12 +14,29 @@ import {
 
 type View = "upcoming" | "results" | "all"
 
+const FILTER_PARAM = "equipe"
+
 const calendar = ref<Calendar | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
-const competition = ref("all")
+const competition = ref(rememberedCompetition())
 const view = ref<View>("upcoming")
 const now = ref(Date.now())
+
+// Most people open this page for one team. `?equipe=2MB` makes that shareable,
+// and the last choice is remembered so the regulars land on their own list.
+function rememberedCompetition(): string {
+  const fromLink = new URLSearchParams(location.search).get(FILTER_PARAM)
+  return fromLink ?? localStorage.getItem(FILTER_PARAM) ?? "all"
+}
+
+watch(competition, (key) => {
+  localStorage.setItem(FILTER_PARAM, key)
+  const url = new URL(location.href)
+  if (key === "all") url.searchParams.delete(FILTER_PARAM)
+  else url.searchParams.set(FILTER_PARAM, key)
+  history.replaceState(null, "", url)
+})
 
 async function load() {
   loading.value = true
@@ -61,10 +78,14 @@ const competitions = computed(() => {
   return [...seen.values()]
 })
 
+const activeCompetition = computed(() =>
+  competitions.value.some((entry) => entry.key === competition.value) ? competition.value : "all",
+)
+
 const inCompetition = computed(() =>
-  competition.value === "all"
+  activeCompetition.value === "all"
     ? matches.value
-    : matches.value.filter((match) => competitionKey(match.poule) === competition.value),
+    : matches.value.filter((match) => competitionKey(match.poule) === activeCompetition.value),
 )
 
 const nextMatch = computed(() =>
@@ -138,7 +159,7 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
         <div class="mb-4 flex flex-wrap gap-2">
           <button
             class="btn btn-sm"
-            :class="competition === 'all' ? 'btn-primary' : 'btn-ghost'"
+            :class="activeCompetition === 'all' ? 'btn-primary' : 'btn-ghost'"
             @click="competition = 'all'"
           >
             Toutes les équipes
@@ -147,7 +168,7 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
             v-for="entry in competitions"
             :key="entry.key"
             class="btn btn-sm"
-            :class="competition === entry.key ? 'btn-primary' : 'btn-ghost'"
+            :class="activeCompetition === entry.key ? 'btn-primary' : 'btn-ghost'"
             @click="competition = entry.key"
           >
             {{ entry.label }}

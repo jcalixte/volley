@@ -53,6 +53,8 @@ function stubFetch(body: Calendar, ok = true) {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date(2026, 8, 4))
+  localStorage.clear()
+  history.replaceState(null, "", "/")
 })
 
 afterEach(() => {
@@ -124,5 +126,39 @@ describe("App", () => {
     const wrapper = mount(App)
     await flushPromises()
     expect(wrapper.text()).toContain("injoignable")
+  })
+})
+
+describe("remembering a team", () => {
+  it("keeps the picked championship for the next visit", async () => {
+    const first = await render()
+    const regional = first.findAll("button").find((b) => b.text().includes("Île-de-France"))!
+    await regional.trigger("click")
+
+    const second = await render()
+    expect(second.findAll("li")).toHaveLength(1)
+    expect(second.text()).toContain("ASV")
+  })
+
+  it("puts the championship in the URL so a link can be shared", async () => {
+    const wrapper = await render()
+    const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!
+    await regional.trigger("click")
+    expect(new URL(location.href).searchParams.get("equipe")).toBe("1MA")
+  })
+
+  it("opens on the championship named in the link", async () => {
+    history.replaceState(null, "", "/?equipe=1MA")
+    const wrapper = await render()
+    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.text()).toContain("ASV")
+  })
+
+  // Poule codes change between seasons; a remembered one that no longer exists
+  // must not leave the page looking empty.
+  it("falls back to every team when the remembered championship is gone", async () => {
+    localStorage.setItem("equipe", "9XX")
+    const wrapper = await render()
+    expect(wrapper.findAll("li")).toHaveLength(3)
   })
 })

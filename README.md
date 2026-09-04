@@ -70,6 +70,10 @@ for the phase: `1MAA` is the _aller_, `1MAR` the _retour_ of the same championsh
 page folds them into one filter. FFVB does not publish names for its regional poules, so
 those keep their code rather than an invented label.
 
+The page opens on whichever championship you last picked, and puts it in the URL as
+`?equipe=2MB`, so a link to one team's fixtures can be shared. A remembered code that no
+longer exists — poules are renumbered between seasons — falls back to showing every team.
+
 Team names are not a usable grouping key: two different squads both appear as
 "VIE AU GRAND AIR DE ST MAUR", and "… 2" plays both a men's and a women's championship.
 The poule is the identity.
