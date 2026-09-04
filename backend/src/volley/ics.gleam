@@ -2,6 +2,7 @@
 //// to rather than downloaded once: FFVB moves matches during the season, and a
 //// subscription picks that up while an imported file does not.
 
+import gleam/bit_array
 import gleam/int
 import gleam/list
 import gleam/string
@@ -144,15 +145,38 @@ fn escape(value: String) -> String {
   |> string.replace("\n", "\\n")
 }
 
-/// Content lines are limited to 75 octets; longer ones continue on a line
-/// beginning with a space. Gleam counts graphemes, so accented venue names fold
-/// early rather than risk splitting a multi-byte character.
+/// Content lines are capped at 75 **octets**, not characters. Folding on
+/// character count lets a line of accented venue names overrun — "Journée" and
+/// "À domicile" cost two bytes each — so this counts UTF-8 bytes while breaking
+/// only between whole characters. Segments are capped at 73 so a continuation,
+/// which the fold prefixes with a space, still lands under the limit.
 fn fold(line: String) -> String {
-  case string.length(line) <= 73 {
+  case byte_size(line) <= 73 {
     True -> line
-    False ->
-      string.slice(line, 0, 73)
-      <> "\r\n "
-      <> fold(string.drop_start(line, 73))
+    False -> {
+      let #(head, rest) = take_bytes(string.to_graphemes(line), 73, "")
+      head <> "\r\n " <> fold(rest)
+    }
   }
+}
+
+fn take_bytes(
+  graphemes: List(String),
+  budget: Int,
+  taken: String,
+) -> #(String, String) {
+  case graphemes {
+    [] -> #(taken, "")
+    [grapheme, ..rest] -> {
+      let size = byte_size(grapheme)
+      case size > budget {
+        True -> #(taken, string.concat(graphemes))
+        False -> take_bytes(rest, budget - size, taken <> grapheme)
+      }
+    }
+  }
+}
+
+fn byte_size(value: String) -> Int {
+  bit_array.byte_size(bit_array.from_string(value))
 }

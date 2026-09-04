@@ -1,3 +1,4 @@
+import gleam/bit_array
 import gleam/list
 import gleam/string
 import gleeunit/should
@@ -82,11 +83,19 @@ pub fn escapes_reserved_characters_test() {
   |> should.be_true
 }
 
-/// Content lines are capped at 75 octets; longer ones continue with a leading space.
-pub fn folds_long_lines_test() {
+/// Content lines are capped at 75 octets; longer ones continue with a leading
+/// space. Octets, not characters: the description carries "Journée" and "·",
+/// which cost two bytes each, so a grapheme count silently overruns.
+pub fn folds_long_lines_to_75_octets_test() {
   lines()
-  |> list.all(fn(l) { string.length(l) <= 75 })
+  |> list.all(fn(l) { bit_array.byte_size(bit_array.from_string(l)) <= 75 })
   |> should.be_true
+}
+
+/// Folding must never split a character in half.
+pub fn folding_keeps_multibyte_characters_whole_test() {
+  render() |> string.contains("Journée") |> should.be_true
+  render() |> string.contains("\u{FFFD}") |> should.be_false
 }
 
 pub fn renders_an_empty_calendar_without_events_test() {
