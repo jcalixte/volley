@@ -1,10 +1,14 @@
 services:
   web:
     build: .
-    ports:
-      - "80:80"
+    # Coolify's own proxy owns :80 on the host and routes to this container, so
+    # publishing a host port here would collide with it.
+    expose:
+      - "80"
     depends_on:
       - api
 
   api:
     build: ./backend
+    expose:
+      - "8000"
