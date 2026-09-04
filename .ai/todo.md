@@ -39,7 +39,7 @@ frameset, no cron, no database. The backend re-fetches it and the page is curren
 - [x] 4. Cache actor: 15 min TTL, serve stale on upstream failure
 - [x] 5. Front: group by month, team filter, home/away, next-match highlight, played scores
 - [x] 6. README
-- [x] 7. (on GitHub, not Gitea — see below) Gitea repo + push (apoena-gitea-repo)
+- [x] 7. Gitea repo + push Gitea repo + push (apoena-gitea-repo)
 - [x] 8. Coolify app + deploy (apoena-coolify-deploy)
 - [x] 9. Verify live
 
@@ -88,3 +88,21 @@ Two Coolify quirks cost a failed deploy each, worth remembering:
 Repo is on GitHub because `$TEA_TOKEN` in the container is scoped `public-only`, so Gitea
 repo creation 403s regardless of consent. Moving it to Gitea later is a remote swap plus a
 `git_repository` PATCH to the full `https://git.apoena.dev/julien/volley.git` URL.
+
+## Moved to Gitea
+
+Once a `write:repository` PAT arrived, the repo moved to
+https://git.apoena.dev/julien/volley (GitHub kept as a mirror remote).
+
+Coolify would not follow: an app created from a GitHub URL keeps
+`source_type: App\Models\GithubApp` forever, and that source prepends
+`https://github.com/` to whatever `git_repository` holds — so pointing it at Gitea
+produced `https://github.com/https://git.apoena.dev/julien/volley.git`. The
+`git_full_url` override is rejected by the API (`This field is not allowed`). The only
+fix is to recreate the application with the Gitea URL from the start, which leaves
+`source_type: None` and no prefix.
+
+Domain moves between apps need `force_domain_override: true` **in the request body** —
+as a query string it 500s.
+
+Live app is now `kiaocrhupwgqd3qvltxsdacl`; the GitHub-sourced one was deleted.
