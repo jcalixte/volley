@@ -106,3 +106,27 @@ Domain moves between apps need `force_domain_override: true` **in the request bo
 as a query string it 500s.
 
 Live app is now `kiaocrhupwgqd3qvltxsdacl`; the GitHub-sourced one was deleted.
+
+## Calendar subscription
+
+`GET /api/calendar.ics[?equipe=<competitionKey>]` — one feed per championship plus a
+club-wide one, verified live: 22 + 22 + 18 + 18 + 18 = 98 events.
+
+Subscription over download, because FFVB moves fixtures mid-season and an imported file
+stays wrong. Events carry `TZID=Europe/Paris` with the DST rules, a stable
+`UID:<matchCode>@volley.apoena.dev` so a moved fixture updates in place instead of
+duplicating, and `DURATION:PT2H` rather than a `DTEND` that would need date arithmetic
+for a late fixture.
+
+Competition key and label moved into the backend, which needs them for the feed's
+`X-WR-CALNAME`; they now ship in the match JSON so the rules live in one place instead of
+being repeated in TypeScript.
+
+Two RFC 5545 details worth keeping: content lines cap at 75 **octets**, not characters —
+a description carrying "Journée", "À domicile" and "·" reached 77 bytes when folded on
+grapheme count — and the fold separator must be CRLF, not LF. Segments cap at 73 so a
+continuation still fits once its leading space is added. A test asserts both against the
+rendered output.
+
+Known edge: an `?equipe=` key that matches nothing returns an empty calendar still titled
+"tous les matchs". Unreachable from the UI, where keys come from the data.
