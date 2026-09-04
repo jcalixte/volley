@@ -1,0 +1,128 @@
+import { flushPromises, mount } from "@vue/test-utils"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import App from "./App.vue"
+import type { Calendar, RawMatch } from "./lib/matches"
+
+function match(overrides: Partial<RawMatch> = {}): RawMatch {
+  return {
+    code: "2MB004",
+    poule: "2MB",
+    entity: "ABCCS",
+    round: "01",
+    date: "2026-09-27",
+    time: "16:00",
+    team: "VIE AU GRAND AIR DE ST MAUR",
+    opponent: "PARIS VOLLEY CLUB",
+    atHome: true,
+    venue: "BROSSOLETTE",
+    sets: "",
+    score: "",
+    referees: [],
+    ...overrides,
+  }
+}
+
+const calendar: Calendar = {
+  club: "VIE AU GRAND AIR DE ST MAUR",
+  season: "2026/2027",
+  fetchedAt: Math.floor(Date.now() / 1000),
+  stale: false,
+  matches: [
+    match(),
+    match({ code: "2MB009", date: "2026-10-04", opponent: "PUC VOLLEY-BALL 3", atHome: false }),
+    match({
+      code: "1MAA012",
+      poule: "1MAA",
+      entity: "LIIDF",
+      date: "2026-10-11",
+      opponent: "VOLLEY 6",
+      sets: "3-1",
+      score: "25-20,25-18,22-25,25-19",
+    }),
+    match({ code: "1MAR040", poule: "1MAR", entity: "LIIDF", date: "2027-02-06", opponent: "ASV" }),
+  ],
+}
+
+function stubFetch(body: Calendar, ok = true) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.resolve({ ok, status: ok ? 200 : 502, json: () => Promise.resolve(body) })),
+  )
+}
+
+beforeEach(() => {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date(2026, 8, 4))
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
+})
+
+async function render() {
+  stubFetch(calendar)
+  const wrapper = mount(App)
+  await flushPromises()
+  return wrapper
+}
+
+describe("App", () => {
+  it("lists the upcoming matches of every team by default", async () => {
+    const wrapper = await render()
+    // The played 1MAA match is excluded from "À venir".
+    expect(wrapper.findAll("li")).toHaveLength(3)
+    expect(wrapper.text()).toContain("PARIS VOLLEY CLUB")
+    expect(wrapper.text()).toContain("ASV")
+  })
+
+  it("announces the next match at the top", async () => {
+    const wrapper = await render()
+    expect(wrapper.text()).toContain("Prochain match")
+    expect(wrapper.text()).toContain("Réception de PARIS VOLLEY CLUB")
+  })
+
+  it("marks home and away", async () => {
+    const wrapper = await render()
+    expect(wrapper.text()).toContain("Domicile")
+    expect(wrapper.text()).toContain("Extérieur")
+  })
+
+  it("groups the aller and retour phases under one filter", async () => {
+    const wrapper = await render()
+    const filters = wrapper.findAll("button").map((b) => b.text())
+    expect(filters.filter((f) => f.includes("Île-de-France"))).toHaveLength(1)
+  })
+
+  it("narrows the list to one championship when a filter is picked", async () => {
+    const wrapper = await render()
+    const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!
+    await regional.trigger("click")
+    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.text()).toContain("ASV")
+    expect(wrapper.text()).not.toContain("PARIS VOLLEY CLUB")
+  })
+
+  it("shows played matches with their score under Résultats", async () => {
+    const wrapper = await render()
+    const results = wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
+    await results.trigger("click")
+    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.text()).toContain("3–1")
+    expect(wrapper.text()).toContain("25-20 · 25-18 · 22-25 · 25-19")
+  })
+
+  it("warns when the calendar being shown is a stale fallback", async () => {
+    stubFetch({ ...calendar, stale: true })
+    const wrapper = mount(App)
+    await flushPromises()
+    expect(wrapper.text()).toContain("La FFVB ne répond pas")
+  })
+
+  it("surfaces an error instead of an empty page when the API is down", async () => {
+    stubFetch(calendar, false)
+    const wrapper = mount(App)
+    await flushPromises()
+    expect(wrapper.text()).toContain("injoignable")
+  })
+})
