@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Match } from "@/lib/matches"
-import { ffvbUrl } from "@/lib/matches"
+import { ffvbUrl, mapsUrl } from "@/lib/matches"
 import { weekdayLabel } from "@/lib/format"
 
 defineProps<{ match: Match; season: string }>()
@@ -33,7 +33,31 @@ defineProps<{ match: Match; season: string }>()
           rel="noopener"
           >{{ match.competition }}</a
         >
-        <span v-if="match.venue" class="truncate">· {{ match.venue }}</span>
+        <a
+          v-if="match.venue"
+          class="link-hover link inline-flex items-center gap-1 truncate"
+          :href="mapsUrl(match)"
+          target="_blank"
+          rel="noopener"
+          :title="`Ouvrir ${match.venue} dans Maps`"
+        >
+          <svg
+            class="size-3 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+            <path
+              d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"
+            />
+          </svg>
+          <span class="truncate">{{ match.venue }}</span>
+        </a>
       </div>
     </div>
 

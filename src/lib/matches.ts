@@ -50,6 +50,23 @@ export function ffvbUrl(poule: string, entity: string, season: string): string {
   return `https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?${params}`
 }
 
+// FFVB gives the hall's name but not its address — that only exists inside the
+// per-match PDF. A search query carries enough to land on it: the hall name is
+// ambiguous alone ("PALAIS DES SPORTS", "GYMNASE MUNICIPAL"), but the host club
+// names its town, and every home game is played in Saint-Maur.
+export function mapsUrl(match: Pick<RawMatch, "venue" | "opponent" | "atHome">): string {
+  const host = match.atHome ? HOME_TOWN : hostTown(match.opponent)
+  const query = new URLSearchParams({ api: "1", query: `${match.venue} ${host}` })
+  return `https://www.google.com/maps/search/?${query}`
+}
+
+const HOME_TOWN = "Saint-Maur-des-Fossés"
+
+// A trailing single digit is the club's team number, not part of its name.
+function hostTown(club: string): string {
+  return club.replace(/\s\d$/, "")
+}
+
 export async function fetchCalendar(): Promise<Calendar> {
   const response = await fetch("/api/matches")
   if (!response.ok) throw new Error(`Le calendrier FFVB est injoignable (${response.status})`)

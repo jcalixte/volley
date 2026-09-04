@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { competitionKey, competitionLabel, decorate, ffvbUrl, type RawMatch } from "./matches"
+import {
+  competitionKey,
+  competitionLabel,
+  decorate,
+  ffvbUrl,
+  mapsUrl,
+  type RawMatch,
+} from "./matches"
 
 function raw(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
@@ -79,5 +86,36 @@ describe("ffvbUrl", () => {
     expect(url.searchParams.get("poule")).toBe("2MB")
     expect(url.searchParams.get("codent")).toBe("ABCCS")
     expect(url.searchParams.get("saison")).toBe("2026/2027")
+  })
+})
+
+describe("mapsUrl", () => {
+  function query(match: Parameters<typeof mapsUrl>[0]) {
+    return new URL(mapsUrl(match)).searchParams.get("query")
+  }
+
+  it("searches the hall together with the club's town for a home game", () => {
+    expect(query(raw({ venue: "BROSSOLETTE", atHome: true }))).toBe(
+      "BROSSOLETTE Saint-Maur-des-Fossés",
+    )
+  })
+
+  // "PALAIS DES SPORTS" alone is worthless; the host club names the town.
+  it("searches the hall together with the host club when away", () => {
+    expect(
+      query(raw({ venue: "PALAIS DES SPORTS", atHome: false, opponent: "BESANCON VOLLEY-BALL" })),
+    ).toBe("PALAIS DES SPORTS BESANCON VOLLEY-BALL")
+  })
+
+  it("drops the host club's team number, which is not part of its name", () => {
+    expect(query(raw({ venue: "HUNEBELLE", atHome: false, opponent: "C S M CLAMART 2" }))).toBe(
+      "HUNEBELLE C S M CLAMART",
+    )
+  })
+
+  it("keeps a number that belongs to the club's name", () => {
+    expect(query(raw({ venue: "GYMNASE ELISABETH", atHome: false, opponent: "V.B. 14" }))).toBe(
+      "GYMNASE ELISABETH V.B. 14",
+    )
   })
 })

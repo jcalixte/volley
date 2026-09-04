@@ -79,7 +79,7 @@ Two Coolify quirks cost a failed deploy each, worth remembering:
 
 - `git_repository` must stay the bare `owner/repo` for GitHub — Coolify prepends
   `https://github.com/` itself. The full-URL PATCH in the apoena-coolify-deploy skill is a
-  *Gitea-only* fix; applying it to GitHub produces
+  _Gitea-only_ fix; applying it to GitHub produces
   `https://github.com/https://github.com/jcalixte/volley.git`.
 - The compose build pack rejects `domains` and wants
   `docker_compose_domains: [{"name": "web", "domain": "https://…"}]`, and defaults

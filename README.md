@@ -74,6 +74,11 @@ The page opens on whichever championship you last picked, and puts it in the URL
 `?equipe=2MB`, so a link to one team's fixtures can be shared. A remembered code that no
 longer exists — poules are renumbered between seasons — falls back to showing every team.
 
+Each venue links to a Google Maps search. FFVB publishes the hall's street address only
+inside the per-match PDF, so the page searches for the hall name plus its town instead —
+the name alone is ambiguous ("PALAIS DES SPORTS", "GYMNASE MUNICIPAL"), but the host club
+names the town, and home games are always in Saint-Maur.
+
 Team names are not a usable grouping key: two different squads both appear as
 "VIE AU GRAND AIR DE ST MAUR", and "… 2" plays both a men's and a women's championship.
 The poule is the identity.
