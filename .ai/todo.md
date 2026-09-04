@@ -39,9 +39,9 @@ frameset, no cron, no database. The backend re-fetches it and the page is curren
 - [x] 4. Cache actor: 15 min TTL, serve stale on upstream failure
 - [x] 5. Front: group by month, team filter, home/away, next-match highlight, played scores
 - [x] 6. README
-- [ ] 7. **BLOCKED** — Gitea repo + push (apoena-gitea-repo)
-- [ ] 8. Coolify app + deploy (apoena-coolify-deploy)
-- [ ] 9. Verify live
+- [x] 7. (on GitHub, not Gitea — see below) Gitea repo + push (apoena-gitea-repo)
+- [x] 8. Coolify app + deploy (apoena-coolify-deploy)
+- [x] 9. Verify live
 
 ## Review
 
@@ -62,3 +62,29 @@ Blocked at step 7: the Gitea token in this environment is public/read-only and G
 push-to-create disabled, so `git.apoena.dev/julien/volley` cannot be created from here.
 SSH push auth works, Coolify API works, DNS resolves. Everything downstream is one step
 behind that repo existing.
+
+## Deployed
+
+Live at https://volley.apoena.dev — verified in production, which is also where the Gleam
+HTTP layer got its first real run (OTP 29):
+
+- `GET /api/matches` returns 98 matches, `stale: false`.
+- windows-1252 survives the round trip: `VANDENBEMDEN FRÉDÉRICK`, no U+FFFD anywhere.
+- Cache works: 1.05 s cold, 0.048 s warm.
+- TLS verified (`ssl_verify_result 0`).
+
+Coolify app `unkbo5kqlw9csspvqawc1val`, build pack `dockercompose`.
+
+Two Coolify quirks cost a failed deploy each, worth remembering:
+
+- `git_repository` must stay the bare `owner/repo` for GitHub — Coolify prepends
+  `https://github.com/` itself. The full-URL PATCH in the apoena-coolify-deploy skill is a
+  *Gitea-only* fix; applying it to GitHub produces
+  `https://github.com/https://github.com/jcalixte/volley.git`.
+- The compose build pack rejects `domains` and wants
+  `docker_compose_domains: [{"name": "web", "domain": "https://…"}]`, and defaults
+  `docker_compose_location` to `/docker-compose.yaml` — the `.yml` spelling needs a PATCH.
+
+Repo is on GitHub because `$TEA_TOKEN` in the container is scoped `public-only`, so Gitea
+repo creation 403s regardless of consent. Moving it to Gitea later is a remote swap plus a
+`git_repository` PATCH to the full `https://git.apoena.dev/julien/volley.git` URL.

@@ -97,6 +97,8 @@ Requires Erlang/OTP 27 or newer (`gleam_json` uses the OTP `json` module).
 
 ## Deploy
 
-Pushes to `main` are picked up by Coolify at https://platform.apoena.dev, which builds
-from `docker-compose.yml`: nginx serves the built SPA and proxies `/api` to the Gleam
-container over the compose network, so the API is never exposed directly.
+Source lives at https://github.com/jcalixte/volley. Pushes to `main` fire a webhook to
+Coolify at https://platform.apoena.dev, which builds from `docker-compose.yml`: nginx
+serves the built SPA and proxies `/api` to the Gleam container over the compose network,
+so the API is never exposed directly. Neither container publishes a host port — Coolify's
+proxy owns `:80` and routes to `web`.
