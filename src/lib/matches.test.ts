@@ -1,17 +1,13 @@
 import { describe, expect, it } from "vitest"
-import {
-  competitionKey,
-  competitionLabel,
-  decorate,
-  ffvbUrl,
-  mapsUrl,
-  type RawMatch,
-} from "./matches"
+import { calendarUrl, decorate, mapsUrl, type RawMatch } from "./matches"
 
 function raw(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
     code: "2FC004",
     poule: "2FC",
+    competitionKey: "2FC",
+    competition: "Nationale 2 Féminine · Poule C",
+    ffvbUrl: "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?poule=2FC",
     entity: "ABCCS",
     round: "01",
     date: "2026-09-27",
@@ -26,28 +22,6 @@ function raw(overrides: Partial<RawMatch> = {}): RawMatch {
     ...overrides,
   }
 }
-
-describe("competitionKey", () => {
-  it("keeps a national poule whole", () => {
-    expect(competitionKey("2MB")).toBe("2MB")
-  })
-
-  it("folds the aller and retour phases of a regional poule into one championship", () => {
-    expect(competitionKey("1MAA")).toBe("1MA")
-    expect(competitionKey("1MAR")).toBe("1MA")
-  })
-})
-
-describe("competitionLabel", () => {
-  it("spells out a national poule the way FFVB titles it", () => {
-    expect(competitionLabel("2MB", "ABCCS")).toBe("Nationale 2 Masculine · Poule B")
-    expect(competitionLabel("2FC", "ABCCS")).toBe("Nationale 2 Féminine · Poule C")
-  })
-
-  it("keeps the raw code for regional poules, which FFVB does not name", () => {
-    expect(competitionLabel("PFAR", "LIIDF")).toBe("Île-de-France Féminine · PFA")
-  })
-})
 
 describe("decorate", () => {
   it("reads the kickoff in local time, not UTC", () => {
@@ -80,15 +54,6 @@ describe("decorate", () => {
   })
 })
 
-describe("ffvbUrl", () => {
-  it("points at the official calendar for the poule", () => {
-    const url = new URL(ffvbUrl("2MB", "ABCCS", "2026/2027"))
-    expect(url.searchParams.get("poule")).toBe("2MB")
-    expect(url.searchParams.get("codent")).toBe("ABCCS")
-    expect(url.searchParams.get("saison")).toBe("2026/2027")
-  })
-})
-
 describe("mapsUrl", () => {
   function query(match: Parameters<typeof mapsUrl>[0]) {
     return new URL(mapsUrl(match)).searchParams.get("query")
@@ -117,5 +82,19 @@ describe("mapsUrl", () => {
     expect(query(raw({ venue: "GYMNASE ELISABETH", atHome: false, opponent: "V.B. 14" }))).toBe(
       "GYMNASE ELISABETH V.B. 14",
     )
+  })
+})
+
+describe("calendarUrl", () => {
+  it("subscribes over webcal so the client keeps re-reading it", () => {
+    expect(calendarUrl("2MB", true)).toBe(`webcal://${location.host}/api/calendar.ics?equipe=2MB`)
+  })
+
+  it("downloads over plain http", () => {
+    expect(calendarUrl("2MB", false)).toBe("/api/calendar.ics?equipe=2MB")
+  })
+
+  it("omits the filter for the whole club", () => {
+    expect(calendarUrl("all", false)).toBe("/api/calendar.ics")
   })
 })

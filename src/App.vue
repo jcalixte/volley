@@ -4,8 +4,7 @@ import MatchRow from "@/components/MatchRow.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import {
   byKickoff,
-  competitionKey,
-  competitionLabel,
+  calendarUrl,
   decorate,
   fetchCalendar,
   type Calendar,
@@ -70,10 +69,14 @@ const matches = computed<Match[]>(() =>
 const competitions = computed(() => {
   const seen = new Map<string, { key: string; label: string; count: number }>()
   for (const match of matches.value) {
-    const key = competitionKey(match.poule)
-    const entry = seen.get(key)
+    const entry = seen.get(match.competitionKey)
     if (entry) entry.count += 1
-    else seen.set(key, { key, label: competitionLabel(match.poule, match.entity), count: 1 })
+    else
+      seen.set(match.competitionKey, {
+        key: match.competitionKey,
+        label: match.competition,
+        count: 1,
+      })
   }
   return [...seen.values()]
 })
@@ -85,7 +88,7 @@ const activeCompetition = computed(() =>
 const inCompetition = computed(() =>
   activeCompetition.value === "all"
     ? matches.value
-    : matches.value.filter((match) => competitionKey(match.poule) === activeCompetition.value),
+    : matches.value.filter((match) => match.competitionKey === activeCompetition.value),
 )
 
 const nextMatch = computed(() =>
@@ -107,6 +110,11 @@ const months = computed(() => {
     else groups.push({ label, matches: [match] })
   }
   return groups
+})
+
+const agendaLabel = computed(() => {
+  const entry = competitions.value.find((c) => c.key === activeCompetition.value)
+  return entry ? entry.label : "Toutes les équipes"
 })
 
 const playedCount = computed(() => matches.value.filter((m) => m.played).length)
@@ -176,6 +184,55 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
           </button>
         </div>
 
+        <div class="mb-4 flex justify-end">
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-outline btn-sm">
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
+                />
+                <path d="M16 3v4M8 3v4M4 11h16M8 15h2v2h-2z" />
+              </svg>
+              Ajouter à mon agenda
+            </div>
+            <ul
+              tabindex="0"
+              class="dropdown-content menu z-10 w-80 rounded-box bg-base-100 p-2 shadow-lg ring-1 ring-base-300"
+            >
+              <li class="menu-title text-xs">{{ agendaLabel }}</li>
+              <li>
+                <a :href="calendarUrl(activeCompetition, true)">
+                  <span>
+                    S'abonner
+                    <span class="block text-xs font-normal opacity-60">
+                      Se met à jour quand la FFVB change une date ou saisit un score
+                    </span>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a :href="calendarUrl(activeCompetition, false)" download="volley-st-maur.ics">
+                  <span>
+                    Télécharger le fichier .ics
+                    <span class="block text-xs font-normal opacity-60">
+                      Copie figée, à réimporter après chaque changement
+                    </span>
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         <div role="tablist" class="tabs-box tabs mb-4">
           <button
             v-for="tab in [
@@ -202,12 +259,7 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
             {{ month.label }}
           </h2>
           <ul class="flex flex-col gap-2">
-            <MatchRow
-              v-for="match in month.matches"
-              :key="match.code"
-              :match="match"
-              :season="calendar?.season ?? ''"
-            />
+            <MatchRow v-for="match in month.matches" :key="match.code" :match="match" />
           </ul>
         </section>
       </template>

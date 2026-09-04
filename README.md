@@ -62,7 +62,17 @@ nginx.conf      serves the SPA and proxies /api to the backend
 
 `stale: true` means FFVB could not be reached and this is the last good copy.
 
+`GET /api/calendar.ics` returns the same fixtures as an iCalendar feed, narrowed to one
+championship with `?equipe=<competitionKey>`. It is meant to be **subscribed** to, not
+downloaded: FFVB moves fixtures during the season, and a subscription picks that up where
+an imported file stays wrong. Events carry `TZID=Europe/Paris` with the DST rules (a fixed
+offset would be an hour out for half the season), a stable `UID` per match code so a moved
+fixture updates in place rather than duplicating, and `DURATION:PT2H` instead of a `DTEND`.
+
 ### Reading a poule code
+
+The backend derives the competition key, label and FFVB link and ships them in the JSON,
+so the page renders what it is given rather than re-deriving the same rules in TypeScript.
 
 Codes are positional. `2MB` is level 2, **M**asculine, poule **B** — which is exactly how
 FFVB titles it, "NATIONALE 2 MASCULINE - POULE B". Regional codes carry a fourth letter

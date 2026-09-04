@@ -1,6 +1,9 @@
 export interface RawMatch {
   code: string
   poule: string
+  competitionKey: string
+  competition: string
+  ffvbUrl: string
   entity: string
   round: string
   date: string
@@ -24,30 +27,10 @@ export interface Calendar {
 
 export interface Match extends RawMatch {
   kickoff: Date
-  competition: string
   played: boolean
   ourSets: number | null
   theirSets: number | null
   won: boolean | null
-}
-
-// FFVB poule codes are positional: level, gender, group, and — in the regional
-// championships only — a phase letter, A for aller and R for retour. The two
-// phases are one championship, so they share a competition key.
-export function competitionKey(poule: string): string {
-  return poule.length > 3 ? poule.slice(0, 3) : poule
-}
-
-export function competitionLabel(poule: string, entity: string): string {
-  const gender = poule[1] === "M" ? "Masculine" : "Féminine"
-  return entity === "ABCCS"
-    ? `Nationale ${poule[0]} ${gender} · Poule ${poule[2]}`
-    : `Île-de-France ${gender} · ${competitionKey(poule)}`
-}
-
-export function ffvbUrl(poule: string, entity: string, season: string): string {
-  const params = new URLSearchParams({ saison: season, codent: entity, poule })
-  return `https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?${params}`
 }
 
 // FFVB gives the hall's name but not its address — that only exists inside the
@@ -65,6 +48,15 @@ const HOME_TOWN = "Saint-Maur-des-Fossés"
 // A trailing single digit is the club's team number, not part of its name.
 function hostTown(club: string): string {
   return club.replace(/\s\d$/, "")
+}
+
+// A subscription rather than a download: FFVB moves fixtures mid-season, and a
+// subscribed calendar picks that up where an imported file stays wrong.
+export function calendarUrl(competition: string, subscribe: boolean): string {
+  const path =
+    "/api/calendar.ics" +
+    (competition === "all" ? "" : `?equipe=${encodeURIComponent(competition)}`)
+  return subscribe ? `webcal://${location.host}${path}` : path
 }
 
 export async function fetchCalendar(): Promise<Calendar> {
@@ -86,7 +78,6 @@ export function decorate(raw: RawMatch): Match {
   return {
     ...raw,
     kickoff,
-    competition: competitionLabel(raw.poule, raw.entity),
     played,
     ourSets,
     theirSets,

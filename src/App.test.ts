@@ -7,6 +7,9 @@ function match(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
     code: "2MB004",
     poule: "2MB",
+    competitionKey: "2MB",
+    competition: "Nationale 2 Masculine · Poule B",
+    ffvbUrl: "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?poule=2MB",
     entity: "ABCCS",
     round: "01",
     date: "2026-09-27",
@@ -33,13 +36,23 @@ const calendar: Calendar = {
     match({
       code: "1MAA012",
       poule: "1MAA",
+      competitionKey: "1MA",
+      competition: "Île-de-France Masculine · 1MA",
       entity: "LIIDF",
       date: "2026-10-11",
       opponent: "VOLLEY 6",
       sets: "3-1",
       score: "25-20,25-18,22-25,25-19",
     }),
-    match({ code: "1MAR040", poule: "1MAR", entity: "LIIDF", date: "2027-02-06", opponent: "ASV" }),
+    match({
+      code: "1MAR040",
+      poule: "1MAR",
+      competitionKey: "1MA",
+      competition: "Île-de-France Masculine · 1MA",
+      entity: "LIIDF",
+      date: "2027-02-06",
+      opponent: "ASV",
+    }),
   ],
 }
 
@@ -73,7 +86,7 @@ describe("App", () => {
   it("lists the upcoming matches of every team by default", async () => {
     const wrapper = await render()
     // The played 1MAA match is excluded from "À venir".
-    expect(wrapper.findAll("li")).toHaveLength(3)
+    expect(wrapper.findAll("section li")).toHaveLength(3)
     expect(wrapper.text()).toContain("PARIS VOLLEY CLUB")
     expect(wrapper.text()).toContain("ASV")
   })
@@ -100,7 +113,7 @@ describe("App", () => {
     const wrapper = await render()
     const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!
     await regional.trigger("click")
-    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.findAll("section li")).toHaveLength(1)
     expect(wrapper.text()).toContain("ASV")
     expect(wrapper.text()).not.toContain("PARIS VOLLEY CLUB")
   })
@@ -109,7 +122,7 @@ describe("App", () => {
     const wrapper = await render()
     const results = wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
     await results.trigger("click")
-    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.findAll("section li")).toHaveLength(1)
     expect(wrapper.text()).toContain("3–1")
     expect(wrapper.text()).toContain("25-20 · 25-18 · 22-25 · 25-19")
   })
@@ -136,7 +149,7 @@ describe("remembering a team", () => {
     await regional.trigger("click")
 
     const second = await render()
-    expect(second.findAll("li")).toHaveLength(1)
+    expect(second.findAll("section li")).toHaveLength(1)
     expect(second.text()).toContain("ASV")
   })
 
@@ -150,7 +163,7 @@ describe("remembering a team", () => {
   it("opens on the championship named in the link", async () => {
     history.replaceState(null, "", "/?equipe=1MA")
     const wrapper = await render()
-    expect(wrapper.findAll("li")).toHaveLength(1)
+    expect(wrapper.findAll("section li")).toHaveLength(1)
     expect(wrapper.text()).toContain("ASV")
   })
 
@@ -159,6 +172,36 @@ describe("remembering a team", () => {
   it("falls back to every team when the remembered championship is gone", async () => {
     localStorage.setItem("equipe", "9XX")
     const wrapper = await render()
-    expect(wrapper.findAll("li")).toHaveLength(3)
+    expect(wrapper.findAll("section li")).toHaveLength(3)
+  })
+})
+
+describe("adding to a calendar", () => {
+  it("offers a subscription for the whole club by default", async () => {
+    const wrapper = await render()
+    const subscribe = wrapper.find('a[href^="webcal://"]')
+    expect(subscribe.exists()).toBe(true)
+    expect(subscribe.attributes("href")).not.toContain("equipe=")
+  })
+
+  it("scopes the subscription to the picked championship", async () => {
+    const wrapper = await render()
+    const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!
+    await regional.trigger("click")
+    expect(wrapper.find('a[href^="webcal://"]').attributes("href")).toContain("equipe=1MA")
+  })
+
+  it("names the championship being subscribed to", async () => {
+    const wrapper = await render()
+    const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!
+    await regional.trigger("click")
+    expect(wrapper.text()).toContain("Île-de-France Masculine · 1MA")
+  })
+
+  it("also offers a one-off download", async () => {
+    const wrapper = await render()
+    const download = wrapper.find("a[download]")
+    expect(download.exists()).toBe(true)
+    expect(download.attributes("href")).toContain("/api/calendar.ics")
   })
 })

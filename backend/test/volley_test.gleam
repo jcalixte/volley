@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/string
 import gleeunit
 import gleeunit/should
 import volley/cp1252
@@ -86,4 +87,37 @@ pub fn cp1252_leaves_ascii_alone_test() {
   <<"PUC VOLLEY-BALL 1":utf8>>
   |> cp1252.decode
   |> should.equal("PUC VOLLEY-BALL 1")
+}
+
+pub fn competition_key_keeps_a_national_poule_whole_test() {
+  let assert [national, ..] = ffvb.parse(sample)
+  ffvb.competition_key(national) |> should.equal("2FC")
+}
+
+/// The aller and retour halves of a regional poule are one championship.
+pub fn competition_key_folds_the_two_regional_phases_test() {
+  let assert [_, _, regional] = ffvb.parse(sample)
+  ffvb.competition_key(regional) |> should.equal("PFA")
+}
+
+pub fn competition_label_reproduces_the_ffvb_title_test() {
+  let assert [national, ..] = ffvb.parse(sample)
+  ffvb.competition_label(national)
+  |> should.equal("Nationale 2 Féminine · Poule C")
+}
+
+/// FFVB publishes no name for its regional poules, so the code stands in rather
+/// than an invented label.
+pub fn competition_label_keeps_the_code_for_a_regional_poule_test() {
+  let assert [_, _, regional] = ffvb.parse(sample)
+  ffvb.competition_label(regional)
+  |> should.equal("Île-de-France Féminine · PFA")
+}
+
+pub fn poule_url_points_at_the_official_calendar_test() {
+  let assert [national, ..] = ffvb.parse(sample)
+  let url = ffvb.poule_url(national)
+  url |> string.contains("poule=2FC") |> should.be_true
+  url |> string.contains("codent=ABCCS") |> should.be_true
+  url |> string.contains("saison=2026%2F2027") |> should.be_true
 }

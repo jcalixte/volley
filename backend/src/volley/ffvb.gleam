@@ -137,6 +137,45 @@ fn guard_ours(ours: Bool, next: fn() -> Result(Match, Nil)) -> Result(Match, Nil
   }
 }
 
+// FFVB poule codes are positional: level, gender, group, and — in the regional
+// championships only — a phase letter, A for aller and R for retour. The two
+// phases are one championship, so they share a key.
+pub fn competition_key(match: Match) -> String {
+  case string.length(match.poule) > 3 {
+    True -> string.slice(match.poule, 0, 3)
+    False -> match.poule
+  }
+}
+
+/// For a national poule this reproduces FFVB's own title, e.g. 2MB becomes
+/// "Nationale 2 Masculine · Poule B". FFVB publishes no names for its regional
+/// poules, so those keep their code rather than an invented label.
+pub fn competition_label(match: Match) -> String {
+  let gender = case string.slice(match.poule, 1, 1) {
+    "M" -> "Masculine"
+    _ -> "Féminine"
+  }
+  case match.entity {
+    "ABCCS" ->
+      "Nationale "
+      <> string.slice(match.poule, 0, 1)
+      <> " "
+      <> gender
+      <> " · Poule "
+      <> string.slice(match.poule, 2, 1)
+    _ -> "Île-de-France " <> gender <> " · " <> competition_key(match)
+  }
+}
+
+pub fn poule_url(match: Match) -> String {
+  "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?saison="
+  <> string.replace(season, "/", "%2F")
+  <> "&codent="
+  <> match.entity
+  <> "&poule="
+  <> match.poule
+}
+
 pub fn to_json(matches: List(Match), fetched_at: Int, stale: Bool) -> String {
   json.object([
     #("club", json.string(club_name)),
@@ -152,6 +191,9 @@ fn match_json(match: Match) -> Json {
   json.object([
     #("code", json.string(match.code)),
     #("poule", json.string(match.poule)),
+    #("competitionKey", json.string(competition_key(match))),
+    #("competition", json.string(competition_label(match))),
+    #("ffvbUrl", json.string(poule_url(match))),
     #("entity", json.string(match.entity)),
     #("round", json.string(match.round)),
     #("date", json.string(match.date)),

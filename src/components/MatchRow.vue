@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Match } from "@/lib/matches"
-import { ffvbUrl, mapsUrl } from "@/lib/matches"
+import { mapsUrl } from "@/lib/matches"
 import { weekdayLabel } from "@/lib/format"
 
-defineProps<{ match: Match; season: string }>()
+defineProps<{ match: Match }>()
 </script>
 
 <template>
@@ -26,13 +26,9 @@ defineProps<{ match: Match; season: string }>()
         <span class="truncate font-medium">{{ match.opponent }}</span>
       </div>
       <div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-base-content/60">
-        <a
-          class="link-hover link"
-          :href="ffvbUrl(match.poule, match.entity, season)"
-          target="_blank"
-          rel="noopener"
-          >{{ match.competition }}</a
-        >
+        <a class="link-hover link" :href="match.ffvbUrl" target="_blank" rel="noopener">{{
+          match.competition
+        }}</a>
         <a
           v-if="match.venue"
           class="link-hover link inline-flex items-center gap-1 truncate"
