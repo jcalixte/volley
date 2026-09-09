@@ -69,6 +69,11 @@ an imported file stays wrong. Events carry `TZID=Europe/Paris` with the DST rule
 offset would be an hour out for half the season), a stable `UID` per match code so a moved
 fixture updates in place rather than duplicating, and `DURATION:PT2H` instead of a `DTEND`.
 
+The page offers three ways in, because no single one reaches every phone: `webcal://` for
+Apple Calendar and Outlook, `calendar.google.com/calendar/r?cid=<https feed>` for Google
+Calendar, and the raw https address to paste by hand. Android registers no `webcal://`
+handler, so on Firefox for Android that link loads nothing at all.
+
 ### Reading a poule code
 
 The backend derives the competition key, label and FFVB link and ships them in the JSON,

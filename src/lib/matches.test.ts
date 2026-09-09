@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { calendarUrl, decorate, mapsUrl, type RawMatch } from "./matches"
+import { calendarLinks, decorate, mapsUrl, type RawMatch } from "./matches"
 
 function raw(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
@@ -85,16 +85,23 @@ describe("mapsUrl", () => {
   })
 })
 
-describe("calendarUrl", () => {
+describe("calendarLinks", () => {
   it("subscribes over webcal so the client keeps re-reading it", () => {
-    expect(calendarUrl("2MB", true)).toBe(`webcal://${location.host}/api/calendar.ics?equipe=2MB`)
+    expect(calendarLinks("2MB").webcal).toBe(
+      `webcal://${location.host}/api/calendar.ics?equipe=2MB`,
+    )
+  })
+
+  it("hands the https feed to Google, the only route Android offers", () => {
+    const feed = encodeURIComponent(`${location.origin}/api/calendar.ics?equipe=2MB`)
+    expect(calendarLinks("2MB").google).toBe(`https://calendar.google.com/calendar/r?cid=${feed}`)
   })
 
   it("downloads over plain http", () => {
-    expect(calendarUrl("2MB", false)).toBe("/api/calendar.ics?equipe=2MB")
+    expect(calendarLinks("2MB").file).toBe("/api/calendar.ics?equipe=2MB")
   })
 
   it("omits the filter for the whole club", () => {
-    expect(calendarUrl("all", false)).toBe("/api/calendar.ics")
+    expect(calendarLinks("all").file).toBe("/api/calendar.ics")
   })
 })

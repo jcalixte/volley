@@ -109,6 +109,25 @@ describe("App", () => {
     expect(filters.filter((f) => f.includes("Île-de-France"))).toHaveLength(1)
   })
 
+  it("offers a Google subscription, the only route that works on Android", async () => {
+    const wrapper = await render()
+    const feed = encodeURIComponent(`${location.origin}/api/calendar.ics`)
+    const links = wrapper.findAll("a").map((a) => a.attributes("href"))
+    expect(links).toContain(`https://calendar.google.com/calendar/r?cid=${feed}`)
+    expect(links).toContain(`webcal://${location.host}/api/calendar.ics`)
+  })
+
+  it("copies the feed address for clients that open neither scheme", async () => {
+    const writeText = vi.fn(() => Promise.resolve())
+    vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } })
+    const wrapper = await render()
+    const copy = wrapper.findAll("button").find((b) => b.text().includes("Copier le lien"))!
+    await copy.trigger("click")
+    await flushPromises()
+    expect(writeText).toHaveBeenCalledWith(`${location.origin}/api/calendar.ics`)
+    expect(wrapper.text()).toContain("Lien copié")
+  })
+
   it("narrows the list to one championship when a filter is picked", async () => {
     const wrapper = await render()
     const regional = wrapper.findAll("button").find((b) => b.text().includes("Île-de-France"))!

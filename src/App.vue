@@ -5,7 +5,7 @@ import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import { absenceOn } from "@/lib/absences"
 import {
   byKickoff,
-  calendarUrl,
+  calendarLinks,
   decorate,
   fetchCalendar,
   type Calendar,
@@ -113,6 +113,18 @@ const months = computed(() => {
   return groups
 })
 
+const agenda = computed(() => calendarLinks(activeCompetition.value))
+
+const copied = ref(false)
+
+// Firefox on Android opens neither webcal: nor Google's importer for everyone,
+// so the raw feed address stays reachable by hand.
+async function copyFeed() {
+  await navigator.clipboard.writeText(agenda.value.url)
+  copied.value = true
+  setTimeout(() => (copied.value = false), 3000)
+}
+
 const agendaLabel = computed(() => {
   const entry = competitions.value.find((c) => c.key === activeCompetition.value)
   return entry ? entry.label : "Toutes les équipes"
@@ -218,17 +230,37 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
             >
               <li class="menu-title text-xs">{{ agendaLabel }}</li>
               <li>
-                <a :href="calendarUrl(activeCompetition, true)">
+                <a :href="agenda.google" target="_blank" rel="noopener">
                   <span>
-                    S'abonner
+                    S'abonner avec Google Agenda
                     <span class="block text-xs font-normal opacity-60">
-                      Se met à jour quand la FFVB change une date ou saisit un score
+                      Android et web · se met à jour quand la FFVB change une date
                     </span>
                   </span>
                 </a>
               </li>
               <li>
-                <a :href="calendarUrl(activeCompetition, false)" download="volley-st-maur.ics">
+                <a :href="agenda.webcal">
+                  <span>
+                    S'abonner avec Apple Agenda
+                    <span class="block text-xs font-normal opacity-60">
+                      iPhone, iPad, Mac et Outlook
+                    </span>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <button type="button" @click="copyFeed">
+                  <span>
+                    {{ copied ? "Lien copié" : "Copier le lien du calendrier" }}
+                    <span class="block text-xs font-normal opacity-60">
+                      À coller dans « ajouter par URL » de n'importe quelle app
+                    </span>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <a :href="agenda.file" download="volley-st-maur.ics">
                   <span>
                     Télécharger le fichier .ics
                     <span class="block text-xs font-normal opacity-60">

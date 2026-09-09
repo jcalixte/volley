@@ -50,13 +50,30 @@ function hostTown(club: string): string {
   return club.replace(/\s\d$/, "")
 }
 
+export interface CalendarLinks {
+  /** Relative, for the download attribute. */
+  file: string
+  /** Absolute https, the address a client subscribes to. */
+  url: string
+  /** Apple Calendar, Outlook and the desktop clients register this scheme. */
+  webcal: string
+  /** Android has no webcal handler at all, so hand the feed to Google's importer. */
+  google: string
+}
+
 // A subscription rather than a download: FFVB moves fixtures mid-season, and a
 // subscribed calendar picks that up where an imported file stays wrong.
-export function calendarUrl(competition: string, subscribe: boolean): string {
-  const path =
+export function calendarLinks(competition: string): CalendarLinks {
+  const file =
     "/api/calendar.ics" +
     (competition === "all" ? "" : `?equipe=${encodeURIComponent(competition)}`)
-  return subscribe ? `webcal://${location.host}${path}` : path
+  const url = `${location.origin}${file}`
+  return {
+    file,
+    url,
+    webcal: `webcal://${location.host}${file}`,
+    google: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(url)}`,
+  }
 }
 
 export async function fetchCalendar(): Promise<Calendar> {
