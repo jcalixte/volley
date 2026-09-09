@@ -86,6 +86,13 @@ const activeCompetition = computed(() =>
   competitions.value.some((entry) => entry.key === competition.value) ? competition.value : "all",
 )
 
+// The select must show "all" when a remembered poule code has disappeared,
+// while still writing the user's pick back to the stored filter.
+const pickedCompetition = computed({
+  get: () => activeCompetition.value,
+  set: (key: string) => (competition.value = key),
+})
+
 const inCompetition = computed(() =>
   activeCompetition.value === "all"
     ? matches.value
@@ -184,25 +191,15 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
           </span>
         </div>
 
-        <div class="mb-4 flex flex-wrap gap-2">
-          <button
-            class="btn btn-sm"
-            :class="activeCompetition === 'all' ? 'btn-primary' : 'btn-ghost'"
-            @click="competition = 'all'"
-          >
-            Toutes les équipes
-          </button>
-          <button
-            v-for="entry in competitions"
-            :key="entry.key"
-            class="btn btn-sm"
-            :class="activeCompetition === entry.key ? 'btn-primary' : 'btn-ghost'"
-            @click="competition = entry.key"
-          >
-            {{ entry.label }}
-            <span class="badge badge-sm badge-neutral">{{ entry.count }}</span>
-          </button>
-        </div>
+        <label class="form-control mb-4 w-full">
+          <span class="sr-only">Équipe</span>
+          <select v-model="pickedCompetition" class="select select-bordered w-full">
+            <option value="all">Toutes les équipes</option>
+            <option v-for="entry in competitions" :key="entry.key" :value="entry.key">
+              {{ entry.label }} ({{ entry.count }})
+            </option>
+          </select>
+        </label>
 
         <div class="mb-4 flex justify-end">
           <div class="dropdown dropdown-end">
