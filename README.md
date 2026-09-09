@@ -89,6 +89,11 @@ inside the per-match PDF, so the page searches for the hall name plus its town i
 the name alone is ambiguous ("PALAIS DES SPORTS", "GYMNASE MUNICIPAL"), but the host club
 names the town, and home games are always in Saint-Maur.
 
+Fixtures played while a regular is away carry a flag: the setter is in Japan from
+17 November 2026 to 15 February 2027, so every match in that window shows 🇯🇵. The window
+lives in `src/lib/absences.ts` as two `YYYY-MM-DD` strings compared against the FFVB date
+string, which keeps the boundary days unambiguous — no timezone is involved.
+
 Team names are not a usable grouping key: two different squads both appear as
 "VIE AU GRAND AIR DE ST MAUR", and "… 2" plays both a men's and a women's championship.
 The poule is the identity.

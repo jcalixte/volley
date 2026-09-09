@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import MatchRow from "@/components/MatchRow.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
+import { absenceOn } from "@/lib/absences"
 import {
   byKickoff,
   calendarUrl,
@@ -117,6 +118,8 @@ const agendaLabel = computed(() => {
   return entry ? entry.label : "Toutes les équipes"
 })
 
+const nextAbsence = computed(() => (nextMatch.value ? absenceOn(nextMatch.value.date) : undefined))
+
 const playedCount = computed(() => matches.value.filter((m) => m.played).length)
 </script>
 
@@ -141,7 +144,12 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
             {{ fullDate(nextMatch.kickoff) }} à {{ nextMatch.time }}
             <template v-if="nextMatch.venue"> · {{ nextMatch.venue }}</template>
           </p>
-          <p class="mt-1 text-xs opacity-75">{{ nextMatch.competition }}</p>
+          <p class="mt-1 text-xs opacity-75">
+            {{ nextMatch.competition }}
+            <template v-if="nextAbsence">
+              · {{ nextAbsence.flag }} {{ nextAbsence.reason }}</template
+            >
+          </p>
         </div>
       </div>
     </header>

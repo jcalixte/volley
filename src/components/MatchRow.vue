@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from "vue"
 import type { Match } from "@/lib/matches"
 import { mapsUrl } from "@/lib/matches"
+import { absenceOn } from "@/lib/absences"
 import { weekdayLabel } from "@/lib/format"
 
-defineProps<{ match: Match }>()
+const props = defineProps<{ match: Match }>()
+
+const absence = computed(() => absenceOn(props.match.date))
 </script>
 
 <template>
@@ -24,6 +28,14 @@ defineProps<{ match: Match }>()
           {{ match.atHome ? "Domicile" : "Extérieur" }}
         </span>
         <span class="truncate font-medium">{{ match.opponent }}</span>
+        <span
+          v-if="absence"
+          class="shrink-0 text-sm leading-none"
+          :title="absence.reason"
+          :aria-label="absence.reason"
+          role="img"
+          >{{ absence.flag }}</span
+        >
       </div>
       <div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-base-content/60">
         <a class="link-hover link" :href="match.ffvbUrl" target="_blank" rel="noopener">{{
