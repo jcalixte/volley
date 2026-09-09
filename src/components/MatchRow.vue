@@ -28,14 +28,6 @@ const absence = computed(() => absenceOn(props.match.date))
           {{ match.atHome ? "Domicile" : "Extérieur" }}
         </span>
         <span class="truncate font-medium">{{ match.opponent }}</span>
-        <span
-          v-if="absence"
-          class="shrink-0 text-sm leading-none"
-          :title="absence.reason"
-          :aria-label="absence.reason"
-          role="img"
-          >{{ absence.flag }}</span
-        >
       </div>
       <div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-base-content/60">
         <a class="link-hover link" :href="match.ffvbUrl" target="_blank" rel="noopener">{{
@@ -67,6 +59,12 @@ const absence = computed(() => absenceOn(props.match.date))
           <span class="truncate">{{ match.venue }}</span>
         </a>
       </div>
+    </div>
+
+    <div class="w-5 shrink-0 text-center text-sm leading-none">
+      <span v-if="absence" role="img" :title="absence.reason" :aria-label="absence.reason">{{
+        absence.flag
+      }}</span>
     </div>
 
     <div class="shrink-0 text-right">
