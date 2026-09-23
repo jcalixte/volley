@@ -228,3 +228,56 @@ describe("adding to a calendar", () => {
     expect(download.attributes("href")).toContain("/api/calendar.ics")
   })
 })
+
+describe("the calendar view", () => {
+  async function openCalendar(wrapper: Wrapper) {
+    const tab = wrapper.findAll("button").find((b) => b.text() === "Calendrier")!
+    await tab.trigger("click")
+    return wrapper
+  }
+
+  it("opens on the current month with today highlighted", async () => {
+    const wrapper = await openCalendar(await render())
+    expect(wrapper.text()).toContain("septembre 2026")
+    const today = wrapper.findAll(".bg-primary.rounded-full")
+    expect(today).toHaveLength(1)
+    expect(today[0].text()).toBe("4")
+  })
+
+  it("gives the weekend columns more room than the weekdays", async () => {
+    const wrapper = await openCalendar(await render())
+    expect(wrapper.html()).toContain("grid-cols-[repeat(5,minmax(0,1fr))_1.6fr_1.6fr]")
+  })
+
+  it("places a match on its own day and leaves the other months out", async () => {
+    const wrapper = await openCalendar(await render())
+    expect(wrapper.text()).toContain("16:00PARIS VOLLEY CLUB")
+    expect(wrapper.text()).not.toContain("ASV")
+  })
+
+  it("walks to the month that holds the next match", async () => {
+    const wrapper = await openCalendar(await render())
+    await wrapper.find('[aria-label="Mois suivant"]').trigger("click")
+    expect(wrapper.text()).toContain("octobre 2026")
+    expect(wrapper.text()).toContain("PUC VOLLEY-BALL 3")
+    expect(wrapper.text()).toContain("3–1")
+  })
+
+  it("offers a way back once the month on show is not the current one", async () => {
+    const wrapper = await openCalendar(await render())
+    expect(wrapper.text()).not.toContain("Aujourd'hui")
+    await wrapper.find('[aria-label="Mois précédent"]').trigger("click")
+    const back = wrapper.findAll("button").find((b) => b.text() === "Aujourd'hui")!
+    await back.trigger("click")
+    expect(wrapper.text()).toContain("septembre 2026")
+  })
+
+  it("keeps the team filter", async () => {
+    const wrapper = await render()
+    await pickRegional(wrapper)
+    await openCalendar(wrapper)
+    await wrapper.find('[aria-label="Mois suivant"]').trigger("click")
+    expect(wrapper.text()).toContain("VOLLEY 6")
+    expect(wrapper.text()).not.toContain("PUC VOLLEY-BALL 3")
+  })
+})

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import MatchRow from "@/components/MatchRow.vue"
+import MatchCalendar from "@/components/MatchCalendar.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import { absenceOn } from "@/lib/absences"
 import {
@@ -12,7 +13,7 @@ import {
   type Match,
 } from "@/lib/matches"
 
-type View = "upcoming" | "results" | "all"
+type View = "upcoming" | "results" | "all" | "calendar"
 
 const FILTER_PARAM = "equipe"
 
@@ -276,6 +277,7 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
               { id: 'upcoming' as View, label: 'À venir' },
               { id: 'results' as View, label: `Résultats (${playedCount})` },
               { id: 'all' as View, label: 'Toute la saison' },
+              { id: 'calendar' as View, label: 'Calendrier' },
             ]"
             :key="tab.id"
             role="tab"
@@ -287,18 +289,22 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
           </button>
         </div>
 
-        <p v-if="!visible.length" class="py-12 text-center text-base-content/60">
-          Aucun match à afficher ici.
-        </p>
+        <MatchCalendar v-if="view === 'calendar'" :matches="inCompetition" />
 
-        <section v-for="month in months" :key="month.label" class="mb-6">
-          <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-            {{ month.label }}
-          </h2>
-          <ul class="flex flex-col gap-2">
-            <MatchRow v-for="match in month.matches" :key="match.code" :match="match" />
-          </ul>
-        </section>
+        <template v-else>
+          <p v-if="!visible.length" class="py-12 text-center text-base-content/60">
+            Aucun match à afficher ici.
+          </p>
+
+          <section v-for="month in months" :key="month.label" class="mb-6">
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
+              {{ month.label }}
+            </h2>
+            <ul class="flex flex-col gap-2">
+              <MatchRow v-for="match in month.matches" :key="match.code" :match="match" />
+            </ul>
+          </section>
+        </template>
       </template>
     </main>
 
