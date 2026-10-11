@@ -13,7 +13,7 @@ pub fn main() {
 /// prefixes every file with.
 const sample = "Entit\u{00E9};Jo;Match;Date;Heure;EQA_no;EQA_nom;EQB_no;EQB_nom;Set;Score;Total;Salle;Arb1;Arb2;
 ABCCS;01;2FC004;2026-09-27;13:30;0941410;VIE AU GRAND AIR DE ST MAUR;0929372;PLESSIS-ROBINSON VOLLEY-BALL;;;;BROSSOLETTE;;GARRAUT LORENZO;
-ABCCS;02;2FC009;2026-10-04;14:00;0686625;AS SP ENTREMONT RIXHEIM;0941410;VIE AU GRAND AIR DE ST MAUR;3-1;25-20,25-18,22-25,25-19;4;CITE DES SPORTS;LI09;;
+ABCCS;02;2FC009;2026-10-04;14:00;0686625;AS SP ENTREMONT RIXHEIM;0941410;VIE AU GRAND AIR DE ST MAUR; 3/1;25-20,25-18,22-25,25-19;4;CITE DES SPORTS;LI09;;
 LIIDF;14;PFAR069;2027-03-07;13:00;0757777;PUC VOLLEY-BALL 1;0941410;VIE AU GRAND AIR DE ST MAUR 2;;;;CHARPY;;;
 "
 
@@ -41,6 +41,7 @@ pub fn parse_flips_the_sides_when_away_test() {
 }
 
 /// The same file carries fixtures and results — a played match is one with a score.
+/// FFVB writes the sets as " 3/1"; they come out as "3-1".
 pub fn parse_keeps_the_result_of_a_played_match_test() {
   let assert [_, played, ..] = ffvb.parse(sample)
 

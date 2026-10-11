@@ -121,7 +121,7 @@ fn parse_row(line: String) -> Result(Match, Nil) {
         opponent:,
         at_home:,
         venue:,
-        sets:,
+        sets: sets |> string.trim |> string.replace("/", "-"),
         score:,
         referees: [referee_a, referee_b] |> list.filter(fn(r) { r != "" }),
       ))

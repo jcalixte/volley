@@ -153,8 +153,6 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
         <h1 class="mt-1 text-2xl font-bold sm:text-3xl">
           {{ calendar?.club ?? "Vie au Grand Air de Saint-Maur" }}
         </h1>
-        <p class="mt-1 text-sm opacity-80">Tous les matchs du club, toutes équipes confondues.</p>
-
         <div v-if="nextMatch" class="mt-6 rounded-box bg-primary-content/15 p-4 backdrop-blur-sm">
           <p class="text-xs uppercase tracking-wider opacity-80">Prochain match</p>
           <p class="mt-1 text-lg font-semibold">
