@@ -154,6 +154,14 @@ describe("App", () => {
     expect(wrapper.text()).toContain("25-20 · 25-18 · 22-25 · 25-19")
   })
 
+  it("counts only the results of the picked championship", async () => {
+    const wrapper = await render()
+    const tab = () => wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
+    expect(tab().text()).toBe("Résultats (1)")
+    await wrapper.find("select").setValue("2MB")
+    expect(tab().text()).toBe("Résultats (0)")
+  })
+
   it("warns when the calendar being shown is a stale fallback", async () => {
     stubFetch({ ...calendar, stale: true })
     const wrapper = mount(App)

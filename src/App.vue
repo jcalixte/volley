@@ -140,7 +140,7 @@ const agendaLabel = computed(() => {
 
 const nextAbsence = computed(() => (nextMatch.value ? absenceOn(nextMatch.value.date) : undefined))
 
-const playedCount = computed(() => matches.value.filter((m) => m.played).length)
+const playedCount = computed(() => inCompetition.value.filter((m) => m.played).length)
 </script>
 
 <template>
@@ -190,19 +190,19 @@ const playedCount = computed(() => matches.value.filter((m) => m.played).length)
           </span>
         </div>
 
-        <label class="form-control mb-4 w-full">
-          <span class="sr-only">Équipe</span>
-          <select v-model="pickedCompetition" class="select select-bordered w-full">
-            <option value="all">Toutes les équipes</option>
-            <option v-for="entry in competitions" :key="entry.key" :value="entry.key">
-              {{ entry.label }} ({{ entry.count }})
-            </option>
-          </select>
-        </label>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <label class="min-w-56 flex-1">
+            <span class="sr-only">Équipe</span>
+            <select v-model="pickedCompetition" class="select select-bordered w-full">
+              <option value="all">Toutes les équipes</option>
+              <option v-for="entry in competitions" :key="entry.key" :value="entry.key">
+                {{ entry.label }} ({{ entry.count }})
+              </option>
+            </select>
+          </label>
 
-        <div class="mb-4 flex justify-end">
           <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-outline btn-sm">
+            <div tabindex="0" role="button" class="btn btn-outline">
               <svg
                 class="size-4"
                 viewBox="0 0 24 24"
