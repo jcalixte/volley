@@ -28,7 +28,7 @@ error page.
 
 ```
 src/            Vue 3 SPA — the page
-backend/        Gleam (wisp + mist) — GET /api/matches
+backend/        Gleam (wisp + mist) — GET /api/matches, /api/standings
 nginx.conf      serves the SPA and proxies /api to the backend
 ```
 
@@ -62,6 +62,57 @@ nginx.conf      serves the SPA and proxies /api to the backend
 
 `stale: true` means FFVB could not be reached and this is the last good copy.
 
+`GET /api/standings` returns the standing of every poule the club plays in, from a
+second whole-club page FFVB publishes — `planning_club_class.php?cnclub=0941410`. One
+request again, so the ranking costs no per-poule scraping:
+
+```json
+{
+  "club": "VIE AU GRAND AIR DE ST MAUR",
+  "season": "2026/2027",
+  "fetchedAt": 1788507000,
+  "stale": false,
+  "tables": [
+    {
+      "key": "2MB",
+      "title": "NATIONALE 2 MASCULINE - POULE B",
+      "level": "NAT",
+      "entity": "ABCCS",
+      "ffvbUrl": "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?saison=2026%2F2027&codent=ABCCS&poule=2MB",
+      "rows": [
+        {
+          "rank": 5,
+          "team": "VIE AU GRAND AIR DE ST MAUR",
+          "ours": true,
+          "points": 4,
+          "played": 3,
+          "won": 2,
+          "lost": 1,
+          "forfeits": 0,
+          "setsWon": 7,
+          "setsLost": 7,
+          "setRatio": "1.000",
+          "pointsWon": 311,
+          "pointsLost": 306,
+          "pointRatio": "1.016"
+        }
+      ]
+    }
+  ]
+}
+```
+
+That page is hand-built PHP HTML, so it is read positionally rather than with a DOM:
+a `<tr>` carrying `titrepoule` opens a table, a `<tr>` carrying the magnifier icon is
+one team's line, and the nineteen first `<td>`s of that line are the columns FFVB
+prints. An empty cell is how FFVB writes a zero, and `MAX` is how it writes a set ratio
+with no set conceded — which is why the two ratios stay strings.
+
+`key` is the poule code, the same key the matches carry, so a championship and its table
+line up without a lookup table. Our own lines are found by the club code FFVB stamps on
+each row rather than by name: the departmental poule calls us "VGA ST MAUR 3" where the
+national one spells the club out.
+
 `GET /api/calendar.ics` returns the same fixtures as an iCalendar feed, narrowed to one
 championship with `?equipe=<competitionKey>`. It is meant to be **subscribed** to, not
 downloaded: FFVB moves fixtures during the season, and a subscription picks that up where
@@ -93,6 +144,12 @@ Each venue links to a Google Maps search. FFVB publishes the hall's street addre
 inside the per-match PDF, so the page searches for the hall name plus its town instead —
 the name alone is ambiguous ("PALAIS DES SPORTS", "GYMNASE MUNICIPAL"), but the host club
 names the town, and home games are always in Saint-Maur.
+
+The **Classement** tab shows the standing of the picked championship, or of every one of
+them when no team is picked, with the club's own lines highlighted. It is fetched only
+once that tab is opened — the standings page is a far bigger document than the calendar
+export, and most visits never ask for it. FFVB publishes no table for the youth poules,
+which the tab says rather than showing an empty page.
 
 Fixtures played while a regular is away carry a flag: the setter is in Japan from
 17 November 2026 to 15 February 2027, so every match in that window shows 🇯🇵. The window

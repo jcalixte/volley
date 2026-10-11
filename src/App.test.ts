@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import App from "./App.vue"
 import type { Calendar, RawMatch } from "./lib/matches"
+import type { Ranking, StandingRow, Standings } from "./lib/standings"
 
 function match(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
@@ -56,10 +57,69 @@ const calendar: Calendar = {
   ],
 }
 
-function stubFetch(body: Calendar, ok = true) {
+function standing(overrides: Partial<StandingRow> = {}): StandingRow {
+  return {
+    rank: 1,
+    team: "PUC VOLLEY-BALL 3",
+    ours: false,
+    points: 9,
+    played: 3,
+    won: 3,
+    lost: 0,
+    forfeits: 0,
+    setsWon: 9,
+    setsLost: 3,
+    setRatio: "3.000",
+    pointsWon: 290,
+    pointsLost: 251,
+    pointRatio: "1.155",
+    ...overrides,
+  }
+}
+
+function ranking(overrides: Partial<Ranking> = {}): Ranking {
+  return {
+    key: "2MB",
+    title: "NATIONALE 2 MASCULINE - POULE B",
+    level: "NAT",
+    entity: "ABCCS",
+    ffvbUrl: "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?poule=2MB",
+    rows: [
+      standing(),
+      standing({ rank: 2, team: "VIE AU GRAND AIR DE ST MAUR", ours: true, points: 4 }),
+    ],
+    ...overrides,
+  }
+}
+
+const standings: Standings = {
+  club: "VIE AU GRAND AIR DE ST MAUR",
+  season: "2026/2027",
+  fetchedAt: Math.floor(Date.now() / 1000),
+  stale: false,
+  tables: [
+    ranking(),
+    ranking({
+      key: "1MA",
+      title: "CHAMPIONNAT REGIONAL 1 SENIOR MASCULIN : POULE A",
+      level: "REG",
+      entity: "LIIDF",
+      rows: [standing({ team: "VIE AU GRAND AIR DE ST MAUR 2", ours: true, points: 6 })],
+    }),
+  ],
+}
+
+// Two endpoints now answer the page, so the stub has to tell them apart.
+function stubFetch(body: Calendar, ok = true, tables: Standings = standings) {
   vi.stubGlobal(
     "fetch",
-    vi.fn(() => Promise.resolve({ ok, status: ok ? 200 : 502, json: () => Promise.resolve(body) })),
+    vi.fn((url: string) =>
+      Promise.resolve({
+        ok,
+        status: ok ? 200 : 502,
+        json: () => Promise.resolve(url === "/api/standings" ? tables : body),
+      }),
+    ),
   )
 }
 
@@ -287,5 +347,67 @@ describe("the calendar view", () => {
     await wrapper.find('[aria-label="Mois suivant"]').trigger("click")
     expect(wrapper.text()).toContain("VOLLEY 6")
     expect(wrapper.text()).not.toContain("PUC VOLLEY-BALL 3")
+  })
+})
+
+describe("the ranking view", () => {
+  async function openRanking(wrapper: Wrapper) {
+    const tab = wrapper.findAll("button").find((b) => b.text() === "Classement")!
+    await tab.trigger("click")
+    await flushPromises()
+    return wrapper
+  }
+
+  // The table is a much bigger upstream document than the calendar, so nobody
+  // pays for it until they ask for it.
+  it("leaves the ranking unfetched until the tab is opened", async () => {
+    const wrapper = await render()
+    expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).not.toContain("/api/standings")
+    await openRanking(wrapper)
+    expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toContain("/api/standings")
+  })
+
+  it("shows every championship's table when no team is picked", async () => {
+    const wrapper = await openRanking(await render())
+    expect(wrapper.findAll("table")).toHaveLength(2)
+    expect(wrapper.text()).toContain("PUC VOLLEY-BALL 3")
+  })
+
+  it("names the table with the app's own wording, not FFVB's capitals", async () => {
+    const wrapper = await openRanking(await render())
+    expect(wrapper.text()).toContain("Nationale 2 Masculine · Poule B")
+    expect(wrapper.text()).not.toContain("NATIONALE 2 MASCULINE")
+  })
+
+  it("narrows to the table of the picked championship", async () => {
+    const wrapper = await render()
+    await pickRegional(wrapper)
+    await openRanking(wrapper)
+    expect(wrapper.findAll("table")).toHaveLength(1)
+    expect(wrapper.text()).toContain("VIE AU GRAND AIR DE ST MAUR 2")
+  })
+
+  it("highlights our own line", async () => {
+    const wrapper = await openRanking(await render())
+    const ours = wrapper.findAll("tbody tr").filter((row) => row.classes("bg-primary/10"))
+    expect(ours).toHaveLength(2)
+  })
+
+  // FFVB publishes no table for the youth poules, which must not look like a bug.
+  it("says so when the championship has no published table", async () => {
+    const wrapper = await render()
+    await wrapper.find("select").setValue("2MB")
+    stubFetch(calendar, true, { ...standings, tables: [] })
+    await openRanking(wrapper)
+    expect(wrapper.text()).toContain("ne publie pas de classement")
+  })
+
+  it("surfaces an error instead of an empty table when the ranking is down", async () => {
+    stubFetch(calendar)
+    const wrapper = mount(App)
+    await flushPromises()
+    stubFetch(calendar, false)
+    await openRanking(wrapper)
+    expect(wrapper.text()).toContain("injoignable")
   })
 })

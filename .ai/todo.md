@@ -130,3 +130,46 @@ rendered output.
 
 Known edge: an `?equipe=` key that matches nothing returns an empty calendar still titled
 "tous les matchs". Unreachable from the UI, where keys come from the data.
+
+## Ranking
+
+`GET /api/standings` — the standing of every poule the club plays in, from a second
+whole-club FFVB page, `planning_club_class.php?cnclub=0941410`. Same bargain as the
+calendar export: one request, no per-poule scraping, no cron. Six tables for 2026/2027
+(2FC, 2MB, PFA, 1MA, 2FA, ARM); FFVB publishes none for the youth poules.
+
+Three things that page gives that nothing else does:
+
+- The poule code it titles each table with is the app's own competition key, so a
+  championship and its table line up with no lookup table.
+- Each row carries the hidden `cnclub` of the club it belongs to, so our own lines are
+  known exactly. A name match would have missed the departmental poule, where the club
+  is spelled "VGA ST MAUR 3" and not "VIE AU GRAND AIR DE ST MAUR".
+- Each row also carries `codent`, which is the entity code needed to link a table back
+  to its FFVB page.
+
+The page is hand-built PHP HTML, read positionally: `titrepoule` opens a table, the
+magnifier icon marks a team line, the nineteen first `<td>`s are the printed columns.
+An empty cell is a zero and `MAX` is a set ratio with no set conceded, so both ratios
+stay strings.
+
+Fetched lazily, on first open of the Classement tab — 170 KB upstream against the
+calendar export's 33 KB, and most visits never ask for it. Its own cache, so a ranking
+FFVB cannot serve does not take the calendar down with it.
+
+Verified: `gleam check` clean; 7 new frontend tests (lazy fetch, all-tables vs one,
+our-line highlight, missing table, API error) inside 57 green; `pnpm build`/`lint` clean.
+Smoke-mounted against the real FFVB payload through a stub API — 6 tables, the club's 6
+lines highlighted, a youth poule showing the "no table" note.
+
+Not verified here: `gleam test` and the running server. This container has no Erlang at
+all now (`erl` and `escript` both missing), so only type-checking runs locally. The
+standings parser was instead validated line by line against the real 170 KB page with a
+mirror of the same algorithm, and the Gleam test fixture checked through that mirror.
+
+Known, pre-existing, now more visible: `ffvb.competition_label` calls every non-national
+poule "Île-de-France" and reads the gender off the second letter of the code, so the
+departmental men's poule `ARM` is labelled "Île-de-France Féminine · ARM" — in the match
+list already, and now as a ranking heading. The standings feed carries FFVB's own title
+("ACCESSION REGIONALE - MASCULINS 94") and the real entity (`PTIDF94`), which is what a
+fix would use.

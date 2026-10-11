@@ -9,6 +9,7 @@ import mist
 import volley/cache.{type Cache}
 import volley/ffvb.{type Match}
 import volley/ics
+import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
 
@@ -17,13 +18,21 @@ import wisp/wisp_mist
 /// source itself gets.
 const ttl_seconds = 900
 
+/// The two upstream documents the app reads, each behind its own TTL cache: the
+/// club's whole-season calendar and the club's standing tables.
+type Stores {
+  Stores(matches: Cache(List(Match)), standings: Cache(List(Table)))
+}
+
 pub fn main() {
   wisp.configure_logger()
 
-  let assert Ok(store) = cache.start()
+  let assert Ok(matches) = cache.start()
+  let assert Ok(tables) = cache.start()
+  let stores = Stores(matches:, standings: tables)
 
   let assert Ok(_) =
-    handle_request(store, _)
+    handle_request(stores, _)
     |> wisp_mist.handler(secret_key_base())
     |> mist.new
     |> mist.bind("0.0.0.0")
@@ -39,23 +48,37 @@ fn secret_key_base() -> String {
   crypto.strong_random_bytes(32) |> bit_array.base16_encode
 }
 
-fn handle_request(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
+fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
   use <- wisp.log_request(req)
   use <- wisp.rescue_crashes
 
   case wisp.path_segments(req) {
     ["api", "health"] -> wisp.ok()
-    ["api", "matches"] -> matches(store)
-    ["api", "calendar.ics"] -> feed(store, req)
+    ["api", "matches"] -> matches(stores.matches)
+    ["api", "standings"] -> ranking(stores.standings)
+    ["api", "calendar.ics"] -> feed(stores.matches, req)
     _ -> wisp.not_found()
   }
 }
 
 fn matches(store: Cache(List(Match))) -> wisp.Response {
-  case current(store) {
+  case current(store, ffvb.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
       ffvb.to_json(fetched, fetched_at, stale)
+      |> wisp.json_response(200)
+      |> wisp.set_header("cache-control", "public, max-age=60")
+  }
+}
+
+/// The standing of every poule the club plays in. Fetched on its own schedule
+/// from its own upstream page, so a ranking FFVB cannot serve does not take the
+/// calendar down with it.
+fn ranking(store: Cache(List(Table))) -> wisp.Response {
+  case current(store, standings.fetch) {
+    Error(reason) -> failure(reason)
+    Ok(#(fetched, fetched_at, stale)) ->
+      standings.to_json(fetched, fetched_at, stale)
       |> wisp.json_response(200)
       |> wisp.set_header("cache-control", "public, max-age=60")
   }
@@ -65,7 +88,7 @@ fn matches(store: Cache(List(Match))) -> wisp.Response {
 /// `?equipe=<key>`. Calendar clients re-read this on their own schedule, which is
 /// the point: a fixture FFVB moves in January reaches a subscriber's phone.
 fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
-  case current(store) {
+  case current(store, ffvb.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, _, _)) -> {
       let wanted = wisp.get_query(req) |> list.key_find("equipe")
@@ -98,8 +121,9 @@ fn feed_name(selected: List(Match), wanted: Result(String, Nil)) -> String {
 /// refresh the previous copy is served rather than an error — better a calendar
 /// from an hour ago than an error page on match day.
 fn current(
-  store: Cache(List(Match)),
-) -> Result(#(List(Match), Int, Bool), String) {
+  store: Cache(value),
+  fetch: fn() -> Result(value, String),
+) -> Result(#(value, Int, Bool), String) {
   let now = now_seconds()
   let cached = cache.read(store)
 
@@ -107,18 +131,19 @@ fn current(
     Some(entry) ->
       case now - entry.fetched_at < ttl_seconds {
         True -> Ok(#(entry.value, entry.fetched_at, False))
-        False -> refresh(store, cached, now)
+        False -> refresh(store, fetch, cached, now)
       }
-    None -> refresh(store, None, now)
+    None -> refresh(store, fetch, None, now)
   }
 }
 
 fn refresh(
-  store: Cache(List(Match)),
-  fallback: Option(cache.Entry(List(Match))),
+  store: Cache(value),
+  fetch: fn() -> Result(value, String),
+  fallback: Option(cache.Entry(value)),
   now: Int,
-) -> Result(#(List(Match), Int, Bool), String) {
-  case ffvb.fetch() {
+) -> Result(#(value, Int, Bool), String) {
+  case fetch() {
     Ok(fetched) -> {
       cache.write(store, fetched, now)
       Ok(#(fetched, now, False))

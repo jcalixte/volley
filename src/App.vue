@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import MatchRow from "@/components/MatchRow.vue"
 import MatchCalendar from "@/components/MatchCalendar.vue"
+import RankingTable from "@/components/RankingTable.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import { absenceOn } from "@/lib/absences"
 import {
@@ -12,8 +13,9 @@ import {
   type Calendar,
   type Match,
 } from "@/lib/matches"
+import { fetchStandings, type Standings } from "@/lib/standings"
 
-type View = "upcoming" | "results" | "all" | "calendar"
+type View = "upcoming" | "results" | "all" | "calendar" | "standings"
 
 const FILTER_PARAM = "equipe"
 
@@ -23,6 +25,8 @@ const loading = ref(true)
 const competition = ref(rememberedCompetition())
 const view = ref<View>("upcoming")
 const now = ref(Date.now())
+const standings = ref<Standings | null>(null)
+const standingsError = ref<string | null>(null)
 
 // Most people open this page for one team. `?equipe=2MB` makes that shareable,
 // and the last choice is remembered so the regulars land on their own list.
@@ -52,10 +56,27 @@ async function load() {
   }
 }
 
+// The ranking sits behind its own upstream page, which is a far bigger document
+// than the calendar export, so it is only fetched once someone asks for it.
+async function loadStandings() {
+  try {
+    standings.value = await fetchStandings()
+    standingsError.value = null
+  } catch (cause) {
+    standingsError.value = cause instanceof Error ? cause.message : String(cause)
+  }
+}
+
+watch(view, (tab) => {
+  if (tab === "standings" && !standings.value) loadStandings()
+})
+
 // The FFVB calendar changes when results are entered, so a tab left open all
 // weekend should not keep showing Saturday morning's version.
 function refreshWhenVisible() {
-  if (document.visibilityState === "visible") load()
+  if (document.visibilityState !== "visible") return
+  load()
+  if (standings.value) loadStandings()
 }
 
 onMounted(() => {
@@ -141,6 +162,20 @@ const agendaLabel = computed(() => {
 const nextAbsence = computed(() => (nextMatch.value ? absenceOn(nextMatch.value.date) : undefined))
 
 const playedCount = computed(() => inCompetition.value.filter((m) => m.played).length)
+
+// FFVB ranks a poule under its own code, which is the key the matches already
+// carry — so one championship lines up with one table, and a youth poule FFVB
+// publishes no table for simply has none.
+const rankings = computed(() => {
+  const tables = standings.value?.tables ?? []
+  if (activeCompetition.value === "all") return tables
+  return tables.filter((table) => table.key === activeCompetition.value)
+})
+
+// The app's own wording wherever it has one; FFVB's all-caps title otherwise.
+function rankingLabel(key: string, fallback: string): string {
+  return competitions.value.find((entry) => entry.key === key)?.label ?? fallback
+}
 </script>
 
 <template>
@@ -276,6 +311,7 @@ const playedCount = computed(() => inCompetition.value.filter((m) => m.played).l
               { id: 'results' as View, label: `Résultats (${playedCount})` },
               { id: 'all' as View, label: 'Toute la saison' },
               { id: 'calendar' as View, label: 'Calendrier' },
+              { id: 'standings' as View, label: 'Classement' },
             ]"
             :key="tab.id"
             role="tab"
@@ -288,6 +324,30 @@ const playedCount = computed(() => inCompetition.value.filter((m) => m.played).l
         </div>
 
         <MatchCalendar v-if="view === 'calendar'" :matches="inCompetition" />
+
+        <template v-else-if="view === 'standings'">
+          <div v-if="standingsError" class="alert alert-error">
+            <span>{{ standingsError }}</span>
+            <button class="btn btn-sm" @click="loadStandings">Réessayer</button>
+          </div>
+
+          <div v-else-if="!standings" class="flex justify-center py-16">
+            <span class="loading loading-lg loading-dots text-primary" />
+          </div>
+
+          <p v-else-if="!rankings.length" class="py-12 text-center text-base-content/60">
+            La FFVB ne publie pas de classement pour cette compétition.
+          </p>
+
+          <template v-else>
+            <RankingTable
+              v-for="ranking in rankings"
+              :key="ranking.key"
+              :ranking="ranking"
+              :label="rankingLabel(ranking.key, ranking.title)"
+            />
+          </template>
+        </template>
 
         <template v-else>
           <p v-if="!visible.length" class="py-12 text-center text-base-content/60">
