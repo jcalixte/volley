@@ -87,21 +87,25 @@ describe("mapsUrl", () => {
 
 describe("calendarLinks", () => {
   it("subscribes over webcal so the client keeps re-reading it", () => {
-    expect(calendarLinks("2MB").webcal).toBe(
+    expect(calendarLinks(["2MB"]).webcal).toBe(
       `webcal://${location.host}/api/calendar.ics?equipe=2MB`,
     )
   })
 
   it("hands the https feed to Google, the only route Android offers", () => {
     const feed = encodeURIComponent(`${location.origin}/api/calendar.ics?equipe=2MB`)
-    expect(calendarLinks("2MB").google).toBe(`https://calendar.google.com/calendar/r?cid=${feed}`)
+    expect(calendarLinks(["2MB"]).google).toBe(`https://calendar.google.com/calendar/r?cid=${feed}`)
   })
 
   it("downloads over plain http", () => {
-    expect(calendarLinks("2MB").file).toBe("/api/calendar.ics?equipe=2MB")
+    expect(calendarLinks(["2MB"]).file).toBe("/api/calendar.ics?equipe=2MB")
   })
 
   it("omits the filter for the whole club", () => {
-    expect(calendarLinks("all").file).toBe("/api/calendar.ics")
+    expect(calendarLinks([]).file).toBe("/api/calendar.ics")
+  })
+
+  it("lists several championships in one feed", () => {
+    expect(calendarLinks(["2MB", "2FA"]).file).toBe("/api/calendar.ics?equipe=2MB,2FA")
   })
 })

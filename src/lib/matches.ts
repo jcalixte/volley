@@ -63,10 +63,10 @@ export interface CalendarLinks {
 
 // A subscription rather than a download: FFVB moves fixtures mid-season, and a
 // subscribed calendar picks that up where an imported file stays wrong.
-export function calendarLinks(competition: string): CalendarLinks {
+export function calendarLinks(competitions: string[]): CalendarLinks {
   const file =
     "/api/calendar.ics" +
-    (competition === "all" ? "" : `?equipe=${encodeURIComponent(competition)}`)
+    (competitions.length ? `?equipe=${competitions.map(encodeURIComponent).join(",")}` : "")
   const url = `${location.origin}${file}`
   return {
     file,
@@ -74,6 +74,23 @@ export function calendarLinks(competition: string): CalendarLinks {
     webcal: `webcal://${location.host}${file}`,
     google: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(url)}`,
   }
+}
+
+// One colour per championship so several teams can share the calendar. Each
+// carries white text at 4.9:1 or more, in both themes.
+const TEAM_COLORS = [
+  "#1d4ed8",
+  "#be185d",
+  "#047857",
+  "#c2410c",
+  "#7e22ce",
+  "#0e7490",
+  "#b91c1c",
+  "#a16207",
+]
+
+export function teamColor(index: number): string {
+  return TEAM_COLORS[index % TEAM_COLORS.length]
 }
 
 export async function fetchCalendar(): Promise<Calendar> {

@@ -4,6 +4,8 @@ import gleam/erlang/process
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import gleam/time/timestamp
 import mist
 import volley/cache.{type Cache}
@@ -84,18 +86,24 @@ fn ranking(store: Cache(List(Table))) -> wisp.Response {
   }
 }
 
-/// An iCalendar subscription, optionally narrowed to one championship with
-/// `?equipe=<key>`. Calendar clients re-read this on their own schedule, which is
-/// the point: a fixture FFVB moves in January reaches a subscriber's phone.
+/// An iCalendar subscription, optionally narrowed to some championships with
+/// `?equipe=<key>,<key>`. Calendar clients re-read this on their own schedule,
+/// which is the point: a fixture FFVB moves in January reaches a subscriber's phone.
 fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
   case current(store, ffvb.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, _, _)) -> {
-      let wanted = wisp.get_query(req) |> list.key_find("equipe")
+      let wanted = case wisp.get_query(req) |> list.key_find("equipe") {
+        Ok(keys) ->
+          string.split(keys, ",") |> list.filter(fn(key) { key != "" })
+        Error(_) -> []
+      }
       let selected = case wanted {
-        Error(_) -> fetched
-        Ok(key) ->
-          list.filter(fetched, fn(match) { ffvb.competition_key(match) == key })
+        [] -> fetched
+        _ ->
+          list.filter(fetched, fn(match) {
+            list.contains(wanted, ffvb.competition_key(match))
+          })
       }
 
       wisp.response(200)
@@ -110,10 +118,15 @@ fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
   }
 }
 
-fn feed_name(selected: List(Match), wanted: Result(String, Nil)) -> String {
-  case selected, wanted {
-    [match, ..], Ok(_) -> "St Maur — " <> ffvb.competition_label(match)
-    _, _ -> "St Maur — tous les matchs"
+fn feed_name(selected: List(Match), wanted: List(String)) -> String {
+  let labels =
+    list.filter_map(wanted, fn(key) {
+      list.find(selected, fn(match) { ffvb.competition_key(match) == key })
+      |> result.map(ffvb.competition_label)
+    })
+  case labels {
+    [] -> "St Maur — tous les matchs"
+    _ -> "St Maur — " <> string.join(labels, " + ")
   }
 }
 

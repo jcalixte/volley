@@ -173,3 +173,15 @@ departmental men's poule `ARM` is labelled "Île-de-France Féminine · ARM" —
 list already, and now as a ranking heading. The standings feed carries FFVB's own title
 ("ACCESSION REGIONALE - MASCULINS 94") and the real entity (`PTIDF94`), which is what a
 fix would use.
+
+## Several teams in one view, one colour each
+
+- [x] Team picker is a checkbox dropdown; no tick means every team. `?equipe=2MB,2FA`
+      and localStorage hold a comma list; old single keys still read.
+- [x] Each championship gets a fixed colour (8-colour palette, white text ≥ 4.9:1).
+      Calendar chip: solid = home, tint = away, grey + colour bar = played. Legend below.
+- [x] `/api/calendar.ics?equipe=a,b` returns both; feed name joins the labels with " + ".
+- [x] Standings show every picked championship's table.
+
+Verified: 65 vitest green (8 new), `pnpm build`/`lint` clean, `gleam check` clean.
+Not verified: live browser, `gleam test` (no Erlang in this container).

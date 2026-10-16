@@ -10,6 +10,7 @@ import {
   calendarLinks,
   decorate,
   fetchCalendar,
+  teamColor,
   type Calendar,
   type Match,
 } from "@/lib/matches"
@@ -22,24 +23,26 @@ const FILTER_PARAM = "equipe"
 const calendar = ref<Calendar | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
-const competition = ref(rememberedCompetition())
+const picked = ref(rememberedCompetitions())
 const view = ref<View>("upcoming")
 const now = ref(Date.now())
 const standings = ref<Standings | null>(null)
 const standingsError = ref<string | null>(null)
 
-// Most people open this page for one team. `?equipe=2MB` makes that shareable,
-// and the last choice is remembered so the regulars land on their own list.
-function rememberedCompetition(): string {
+// Most people open this page for one or two teams. `?equipe=2MB,2FA` makes that
+// shareable, and the last choice is remembered so the regulars land on their own
+// list. No pick at all means every team.
+function rememberedCompetitions(): string[] {
   const fromLink = new URLSearchParams(location.search).get(FILTER_PARAM)
-  return fromLink ?? localStorage.getItem(FILTER_PARAM) ?? "all"
+  const stored = fromLink ?? localStorage.getItem(FILTER_PARAM) ?? ""
+  return stored.split(",").filter(Boolean)
 }
 
-watch(competition, (key) => {
-  localStorage.setItem(FILTER_PARAM, key)
+watch(picked, (keys) => {
+  localStorage.setItem(FILTER_PARAM, keys.join(","))
   const url = new URL(location.href)
-  if (key === "all") url.searchParams.delete(FILTER_PARAM)
-  else url.searchParams.set(FILTER_PARAM, key)
+  if (keys.length) url.searchParams.set(FILTER_PARAM, keys.join(","))
+  else url.searchParams.delete(FILTER_PARAM)
   history.replaceState(null, "", url)
 })
 
@@ -90,7 +93,7 @@ const matches = computed<Match[]>(() =>
 )
 
 const competitions = computed(() => {
-  const seen = new Map<string, { key: string; label: string; count: number }>()
+  const seen = new Map<string, { key: string; label: string; count: number; color: string }>()
   for (const match of matches.value) {
     const entry = seen.get(match.competitionKey)
     if (entry) entry.count += 1
@@ -99,26 +102,37 @@ const competitions = computed(() => {
         key: match.competitionKey,
         label: match.competition,
         count: 1,
+        color: teamColor(seen.size),
       })
   }
   return [...seen.values()]
 })
 
-const activeCompetition = computed(() =>
-  competitions.value.some((entry) => entry.key === competition.value) ? competition.value : "all",
+// Poule codes change between seasons, so a remembered one that has disappeared
+// is ignored rather than leaving the page empty.
+const activeCompetitions = computed(() =>
+  competitions.value.filter((entry) => picked.value.includes(entry.key)).map((entry) => entry.key),
 )
 
-// The select must show "all" when a remembered poule code has disappeared,
-// while still writing the user's pick back to the stored filter.
-const pickedCompetition = computed({
-  get: () => activeCompetition.value,
-  set: (key: string) => (competition.value = key),
-})
+function toggle(key: string) {
+  const keys = activeCompetitions.value
+  picked.value = keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key]
+}
+
+const shownTeams = computed(() =>
+  activeCompetitions.value.length
+    ? competitions.value.filter((entry) => activeCompetitions.value.includes(entry.key))
+    : competitions.value,
+)
+
+const teamColors = computed(() =>
+  Object.fromEntries(competitions.value.map((entry) => [entry.key, entry.color])),
+)
 
 const inCompetition = computed(() =>
-  activeCompetition.value === "all"
-    ? matches.value
-    : matches.value.filter((match) => match.competitionKey === activeCompetition.value),
+  activeCompetitions.value.length
+    ? matches.value.filter((match) => activeCompetitions.value.includes(match.competitionKey))
+    : matches.value,
 )
 
 const nextMatch = computed(() =>
@@ -142,7 +156,7 @@ const months = computed(() => {
   return groups
 })
 
-const agenda = computed(() => calendarLinks(activeCompetition.value))
+const agenda = computed(() => calendarLinks(activeCompetitions.value))
 
 const copied = ref(false)
 
@@ -154,9 +168,19 @@ async function copyFeed() {
   setTimeout(() => (copied.value = false), 3000)
 }
 
-const agendaLabel = computed(() => {
-  const entry = competitions.value.find((c) => c.key === activeCompetition.value)
-  return entry ? entry.label : "Toutes les équipes"
+const pickedLabels = computed(() =>
+  competitions.value
+    .filter((entry) => activeCompetitions.value.includes(entry.key))
+    .map((entry) => entry.label),
+)
+
+const agendaLabel = computed(() => pickedLabels.value.join(" + ") || "Toutes les équipes")
+
+const pickerLabel = computed(() => {
+  const labels = pickedLabels.value
+  if (labels.length === 0) return "Toutes les équipes"
+  if (labels.length === 1) return labels[0]
+  return `${labels.length} équipes`
 })
 
 const nextAbsence = computed(() => (nextMatch.value ? absenceOn(nextMatch.value.date) : undefined))
@@ -168,8 +192,8 @@ const playedCount = computed(() => inCompetition.value.filter((m) => m.played).l
 // publishes no table for simply has none.
 const rankings = computed(() => {
   const tables = standings.value?.tables ?? []
-  if (activeCompetition.value === "all") return tables
-  return tables.filter((table) => table.key === activeCompetition.value)
+  if (!activeCompetitions.value.length) return tables
+  return tables.filter((table) => activeCompetitions.value.includes(table.key))
 })
 
 // The app's own wording wherever it has one; FFVB's all-caps title otherwise.
@@ -226,15 +250,53 @@ function rankingLabel(key: string, fallback: string): string {
         </div>
 
         <div class="mb-4 flex flex-wrap items-center gap-2">
-          <label class="min-w-56 flex-1">
-            <span class="sr-only">Équipe</span>
-            <select v-model="pickedCompetition" class="select select-bordered w-full">
-              <option value="all">Toutes les équipes</option>
-              <option v-for="entry in competitions" :key="entry.key" :value="entry.key">
-                {{ entry.label }} ({{ entry.count }})
-              </option>
-            </select>
-          </label>
+          <div class="dropdown min-w-56 flex-1">
+            <div
+              tabindex="0"
+              role="button"
+              class="select select-bordered w-full"
+              aria-label="Équipes"
+              data-testid="team-picker"
+            >
+              <span class="flex min-w-0 items-center gap-1.5">
+                <span
+                  v-for="key in activeCompetitions"
+                  :key="key"
+                  class="size-2.5 shrink-0 rounded-full"
+                  :style="{ backgroundColor: teamColors[key] }"
+                />
+                <span class="truncate">{{ pickerLabel }}</span>
+              </span>
+            </div>
+            <ul
+              tabindex="0"
+              class="dropdown-content menu z-10 w-full min-w-72 rounded-box bg-base-100 p-2 shadow-lg ring-1 ring-base-300"
+            >
+              <li>
+                <button
+                  type="button"
+                  :class="{ 'menu-active': !activeCompetitions.length }"
+                  @click="picked = []"
+                >
+                  Toutes les équipes
+                </button>
+              </li>
+              <li v-for="entry in competitions" :key="entry.key">
+                <label>
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm"
+                    :style="{ '--input-color': entry.color, color: '#ffffff' }"
+                    :value="entry.key"
+                    :checked="activeCompetitions.includes(entry.key)"
+                    @change="toggle(entry.key)"
+                  />
+                  <span class="flex-1">{{ entry.label }}</span>
+                  <span class="text-xs opacity-60">{{ entry.count }}</span>
+                </label>
+              </li>
+            </ul>
+          </div>
 
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-outline">
@@ -323,7 +385,12 @@ function rankingLabel(key: string, fallback: string): string {
           </button>
         </div>
 
-        <MatchCalendar v-if="view === 'calendar'" :matches="inCompetition" />
+        <MatchCalendar
+          v-if="view === 'calendar'"
+          :matches="inCompetition"
+          :colors="teamColors"
+          :teams="shownTeams"
+        />
 
         <template v-else-if="view === 'standings'">
           <div v-if="standingsError" class="alert alert-error">

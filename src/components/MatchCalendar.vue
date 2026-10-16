@@ -5,7 +5,13 @@ import { addMonths, monthGrid, startOfMonth, weekdayHeaders } from "@/lib/calend
 import { monthLabel } from "@/lib/format"
 import { absenceOn } from "@/lib/absences"
 
-const props = defineProps<{ matches: Match[] }>()
+const props = defineProps<{
+  matches: Match[]
+  /** Championship key to its colour. */
+  colors: Record<string, string>
+  /** The championships on show, for the legend. */
+  teams: { key: string; label: string; color: string }[]
+}>()
 
 // Read once: the month must not slide under the user while the tab is open.
 const today = new Date()
@@ -84,14 +90,15 @@ function chipLabel(match: Match): string {
         <span
           v-for="match in day.matches"
           :key="match.code"
-          class="truncate rounded px-1 text-[0.6rem] leading-tight sm:text-[0.7rem]"
+          class="truncate rounded border-l-3 border-(color:--team) px-1 text-[0.6rem] leading-tight sm:text-[0.7rem]"
           :class="
             match.played
               ? 'bg-base-300 text-base-content/70'
               : match.atHome
-                ? 'bg-primary text-primary-content'
-                : 'bg-base-content/15 text-base-content'
+                ? 'bg-(color:--team) text-white'
+                : 'bg-(color:--team)/20 text-base-content'
           "
+          :style="{ '--team': colors[match.competitionKey] }"
           :title="`${match.time} · ${match.atHome ? 'Domicile' : 'Extérieur'} · ${match.opponent} · ${match.competition}`"
         >
           <span class="font-semibold tabular-nums">{{ chipLabel(match) }}</span>
@@ -99,6 +106,14 @@ function chipLabel(match: Match): string {
           <template v-if="absenceOn(match.date)"> {{ absenceOn(match.date)!.flag }}</template>
         </span>
       </div>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-base-content/70">
+      <span v-for="team in teams" :key="team.key" class="flex items-center gap-1.5">
+        <span class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: team.color }" />
+        {{ team.label }}
+      </span>
+      <span class="text-base-content/50">Plein : domicile · clair : extérieur · gris : joué</span>
     </div>
   </section>
 </template>

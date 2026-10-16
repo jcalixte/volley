@@ -145,11 +145,15 @@ async function render() {
 type Wrapper = Awaited<ReturnType<typeof render>>
 
 function teamOptions(wrapper: Wrapper) {
-  return wrapper.findAll("select option").map((o) => o.text())
+  return wrapper.findAll(".dropdown-content label").map((o) => o.text())
+}
+
+async function pick(wrapper: Wrapper, key: string) {
+  await wrapper.find(`input[type="checkbox"][value="${key}"]`).setValue(true)
 }
 
 async function pickRegional(wrapper: Wrapper) {
-  await wrapper.find("select").setValue("1MA")
+  await pick(wrapper, "1MA")
 }
 
 describe("App", () => {
@@ -205,6 +209,24 @@ describe("App", () => {
     expect(wrapper.text()).not.toContain("PARIS VOLLEY CLUB")
   })
 
+  it("shows several championships together", async () => {
+    const wrapper = await render()
+    await pick(wrapper, "2MB")
+    await pickRegional(wrapper)
+    expect(wrapper.findAll("section li")).toHaveLength(3)
+    expect(wrapper.text()).toContain("PARIS VOLLEY CLUB")
+    expect(wrapper.text()).toContain("ASV")
+  })
+
+  it("goes back to every team in one click", async () => {
+    const wrapper = await render()
+    await pickRegional(wrapper)
+    const all = wrapper.findAll(".dropdown-content button")
+    await all.find((b) => b.text() === "Toutes les équipes")!.trigger("click")
+    expect(wrapper.findAll("section li")).toHaveLength(3)
+    expect(new URL(location.href).searchParams.has("equipe")).toBe(false)
+  })
+
   it("shows played matches with their score under Résultats", async () => {
     const wrapper = await render()
     const results = wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
@@ -218,7 +240,7 @@ describe("App", () => {
     const wrapper = await render()
     const tab = () => wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
     expect(tab().text()).toBe("Résultats (1)")
-    await wrapper.find("select").setValue("2MB")
+    await pick(wrapper, "2MB")
     expect(tab().text()).toBe("Résultats (0)")
   })
 
@@ -251,6 +273,19 @@ describe("remembering a team", () => {
     const wrapper = await render()
     await pickRegional(wrapper)
     expect(new URL(location.href).searchParams.get("equipe")).toBe("1MA")
+  })
+
+  it("puts every picked championship in the URL", async () => {
+    const wrapper = await render()
+    await pick(wrapper, "2MB")
+    await pickRegional(wrapper)
+    expect(new URL(location.href).searchParams.get("equipe")).toBe("2MB,1MA")
+  })
+
+  it("opens on the championships named in the link", async () => {
+    history.replaceState(null, "", "/?equipe=2MB,1MA")
+    const wrapper = await render()
+    expect(wrapper.findAll("section li")).toHaveLength(3)
   })
 
   it("opens on the championship named in the link", async () => {
@@ -287,6 +322,16 @@ describe("adding to a calendar", () => {
     const wrapper = await render()
     await pickRegional(wrapper)
     expect(wrapper.find(".menu-title").text()).toBe("Île-de-France Masculine · 1MA")
+  })
+
+  it("puts several championships in one subscription", async () => {
+    const wrapper = await render()
+    await pick(wrapper, "2MB")
+    await pickRegional(wrapper)
+    expect(wrapper.find('a[href^="webcal://"]').attributes("href")).toContain("equipe=2MB,1MA")
+    expect(wrapper.find(".menu-title").text()).toBe(
+      "Nationale 2 Masculine · Poule B + Île-de-France Masculine · 1MA",
+    )
   })
 
   it("also offers a one-off download", async () => {
@@ -338,6 +383,24 @@ describe("the calendar view", () => {
     const back = wrapper.findAll("button").find((b) => b.text() === "Aujourd'hui")!
     await back.trigger("click")
     expect(wrapper.text()).toContain("septembre 2026")
+  })
+
+  it("gives each championship its own colour", async () => {
+    const wrapper = await openCalendar(await render())
+    await wrapper.find('[aria-label="Mois suivant"]').trigger("click")
+    const chip = (opponent: string) =>
+      wrapper.findAll("[title]").find((c) => c.attributes("title")!.includes(opponent))!
+    const national = chip("PUC VOLLEY-BALL 3").attributes("style")
+    const regional = chip("VOLLEY 6").attributes("style")
+    expect(national).toContain("--team:")
+    expect(regional).toContain("--team:")
+    expect(national).not.toBe(regional)
+  })
+
+  it("names each colour in a legend", async () => {
+    const calendarView = (await openCalendar(await render())).find("section")
+    expect(calendarView.text()).toContain("Nationale 2 Masculine · Poule B")
+    expect(calendarView.text()).toContain("Île-de-France Masculine · 1MA")
   })
 
   it("keeps the team filter", async () => {
@@ -396,7 +459,7 @@ describe("the ranking view", () => {
   // FFVB publishes no table for the youth poules, which must not look like a bug.
   it("says so when the championship has no published table", async () => {
     const wrapper = await render()
-    await wrapper.find("select").setValue("2MB")
+    await pick(wrapper, "2MB")
     stubFetch(calendar, true, { ...standings, tables: [] })
     await openRanking(wrapper)
     expect(wrapper.text()).toContain("ne publie pas de classement")
