@@ -460,6 +460,7 @@ function rankingLabel(key: string, fallback: string): string {
           rel="noopener"
           >ffvbbeach.org</a
         >
+        · <a class="link" href="/comment-ca-marche.html">Comment ça marche ?</a>
       </p>
     </footer>
   </div>
