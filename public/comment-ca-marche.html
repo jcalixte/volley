@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Comment marche le site du club — Volley St Maur</title>
+    <meta
+      name="description"
+      content="Le site des matchs du VGA Saint-Maur expliqué sans jargon : d'où viennent les données, qui fait quoi, et à quoi ressemble le code."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <style>
+      :root {
+        --brand: #1d4ed8;
+        --brand-soft: #dbeafe;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --ink: #0f172a;
+        --muted: #5b6678;
+        --line: #e2e8f0;
+        --code-bg: #0f172a;
+        --code-ink: #e2e8f0;
+        --code-key: #c4b5fd;
+        --code-str: #86efac;
+        --code-com: #7f8ea3;
+        --code-fn: #7dd3fc;
+        --ok: #047857;
+        --radius: 16px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --brand: #60a5fa;
+          --brand-soft: #1e293b;
+          --bg: #0b1120;
+          --surface: #111a2e;
+          --ink: #e8edf6;
+          --muted: #9aa8bf;
+          --line: #22304b;
+          --code-bg: #060b16;
+          --ok: #34d399;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 17px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main { max-width: 760px; margin: 0 auto; padding: 0 20px 96px; }
+
+      /* ---------- hero ---------- */
+      .hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 55%, #6d28d9 100%);
+        color: #fff;
+        padding: 72px 20px 80px;
+        text-align: center;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -10% -60% -10%;
+        height: 160px;
+        background: var(--bg);
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      }
+      .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+      .hero svg { width: 56px; height: 56px; stroke: #fff; opacity: .95; }
+      .hero h1 {
+        font-size: clamp(2rem, 6vw, 2.9rem);
+        line-height: 1.15;
+        margin: 18px 0 10px;
+        letter-spacing: -0.02em;
+      }
+      .hero p { margin: 0 auto; max-width: 30em; font-size: 1.05rem; color: #dbeafe; }
+      .hero .tag {
+        display: inline-block;
+        margin-bottom: 4px;
+        padding: 5px 13px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .16);
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      /* ---------- sections ---------- */
+      section { margin-top: 56px; scroll-margin-top: 24px; }
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.45rem;
+        letter-spacing: -0.015em;
+        margin: 0 0 6px;
+      }
+      h2 .num {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: .95rem;
+        font-weight: 700;
+      }
+      h3 { font-size: 1.02rem; margin: 28px 0 8px; }
+      p { margin: 12px 0; }
+      .lead { color: var(--muted); }
+      strong { font-weight: 600; }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin: 18px 0;
+      }
+
+      .note {
+        border-left: 3px solid var(--brand);
+        background: var(--brand-soft);
+        border-radius: 0 12px 12px 0;
+        padding: 14px 18px;
+        margin: 20px 0;
+        font-size: .95rem;
+      }
+      .note b { color: var(--brand); }
+
+      /* ---------- pipeline ---------- */
+      .flow { margin: 26px 0; }
+      .step {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+      }
+      .step .icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--brand-soft);
+        font-size: 1.25rem;
+      }
+      .step h4 { margin: 0 0 2px; font-size: 1rem; }
+      .step .where {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: .68rem;
+        font-weight: 600;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        vertical-align: 2px;
+      }
+      .step p { margin: 2px 0 0; font-size: .93rem; color: var(--muted); }
+      .arrow {
+        display: block;
+        margin: 0 auto;
+        padding: 6px 0;
+        width: 2px;
+        height: 26px;
+        background: linear-gradient(var(--line), var(--brand));
+        position: relative;
+      }
+      .arrow::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: var(--brand);
+      }
+      .arrow span {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-size: .78rem;
+        color: var(--muted);
+      }
+
+      /* ---------- table ---------- */
+      table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .95rem; }
+      th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+      td:first-child { color: var(--muted); width: 32%; }
+
+      /* ---------- code ---------- */
+      .snippet { margin: 16px 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+      .snippet figcaption {
+        padding: 9px 16px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: .76rem;
+        color: var(--muted);
+      }
+      pre {
+        margin: 0;
+        padding: 16px 18px;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        overflow-x: auto;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: .83rem;
+        line-height: 1.7;
+        -webkit-overflow-scrolling: touch;
+      }
+      code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+      p code, li code, td code {
+        background: var(--brand-soft);
+        color: var(--brand);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: .86em;
+      }
+      .k { color: var(--code-key); }
+      .s { color: var(--code-str); }
+      .c { color: var(--code-com); font-style: italic; }
+      .f { color: var(--code-fn); }
+      .tree { color: var(--code-ink); }
+      .tree .c { color: var(--code-com); }
+
+      /* ---------- endpoints ---------- */
+      .routes { display: grid; gap: 12px; margin: 20px 0; }
+      .route {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+      .route code {
+        background: var(--brand-soft);
+        color: var(--brand);
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: .83rem;
+        font-weight: 600;
+      }
+      .route span { font-size: .92rem; color: var(--muted); }
+
+      /* ---------- footer ---------- */
+      footer {
+        margin-top: 64px;
+        padding-top: 26px;
+        border-top: 1px solid var(--line);
+        font-size: .9rem;
+        color: var(--muted);
+        text-align: center;
+      }
+      a { color: var(--brand); }
+      .cta {
+        display: inline-block;
+        margin: 6px 6px 14px;
+        padding: 11px 22px;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .cta.ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
+
+      @media (max-width: 520px) {
+        body { font-size: 16px; }
+        .step { flex-direction: row; padding: 15px 16px; }
+        .arrow span { position: static; display: block; transform: none; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+          <path d="M12 12a8 8 0 0 0 8 4" />
+          <path d="M7.5 13.5a12 12 0 0 0 8.5 6.5" />
+          <path d="M12 12a8 8 0 0 0 -7.464 4.928" />
+          <path d="M12.951 7.353a12 12 0 0 0 -9.88 4.111" />
+          <path d="M12 12a8 8 0 0 0 -.536 -8.928" />
+          <path d="M15.549 15.147a12 12 0 0 0 1.38 -10.611" />
+        </svg>
+        <span class="tag">Sous le capot</span>
+        <h1>Comment marche le site des matchs</h1>
+        <p>
+          Tous les matchs du VGA Saint-Maur sur une page. Voici d'où viennent les données,
+          qui fait quoi, et à quoi ressemble le code. Sans jargon.
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <section id="idee">
+        <h2><span class="num">1</span> L'idée en une phrase</h2>
+        <p>
+          La FFVB publie déjà tous les matchs du club — mais éparpillés sur cinq pages,
+          une par championnat. Ce site va chercher ces données une seule fois, puis les
+          affiche proprement sur <strong>une seule page</strong>.
+        </p>
+        <div class="note">
+          <b>À retenir :</b> le site n'invente rien et ne stocke rien. Il recopie la FFVB et
+          la met en forme. Quand la FFVB saisit un résultat, le site l'a dans le quart d'heure.
+        </div>
+      </section>
+
+      <section id="schema">
+        <h2><span class="num">2</span> Le trajet d'un match</h2>
+        <p class="lead">Quatre étapes, de la fédération jusqu'à ton téléphone.</p>
+
+        <div class="flow">
+          <div class="step">
+            <div class="icon">🏐</div>
+            <div>
+              <h4>Le site de la FFVB <span class="where">ffvbbeach.org</span></h4>
+              <p>La source officielle : un fichier texte avec les 98 matchs de la saison.</p>
+            </div>
+          </div>
+
+          <div class="arrow"><span>va chercher le fichier, au plus une fois toutes les 15 min</span></div>
+
+          <div class="step">
+            <div class="icon">👨‍🍳</div>
+            <div>
+              <h4>Le backend — « la cuisine » <span class="where">backend/</span></h4>
+              <p>
+                Il télécharge, traduit le texte brut en données propres, et garde la dernière
+                bonne copie. Si la FFVB tombe en panne, il ressert cette copie plutôt qu'une
+                page d'erreur.
+              </p>
+            </div>
+          </div>
+
+          <div class="arrow"><span>envoie une liste de matchs bien rangée</span></div>
+
+          <div class="step">
+            <div class="icon">🖼️</div>
+            <div>
+              <h4>Le frontend — « la vitrine » <span class="where">src/</span></h4>
+              <p>Il trie par date, colore chaque équipe, affiche le score, le gymnase, l'adversaire.</p>
+            </div>
+          </div>
+
+          <div class="arrow"><span>dessine la page</span></div>
+
+          <div class="step">
+            <div class="icon">📱</div>
+            <div>
+              <h4>Ton téléphone <span class="where">volley.apoena.dev</span></h4>
+              <p>Une page qui s'ouvre sur ton équipe et se rafraîchit toute seule.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          <b>Image mentale :</b> la FFVB, c'est le marché — la matière première en vrac.
+          Le backend, c'est la cuisine : il nettoie et prépare. Le frontend, c'est l'assiette :
+          c'est joli et ça se mange.
+        </div>
+      </section>
+
+      <section id="deux-parties">
+        <h2><span class="num">3</span> Pourquoi deux parties ?</h2>
+        <table>
+          <thead>
+            <tr><th></th><th>Backend (cuisine)</th><th>Frontend (vitrine)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Où ça tourne</td><td>Sur un serveur, invisible</td><td>Dans ton navigateur</td></tr>
+            <tr><td>Son travail</td><td>Parler à la FFVB, nettoyer</td><td>Afficher, trier, filtrer</td></tr>
+            <tr><td>Si la FFVB tombe</td><td>Ressert la dernière copie</td><td>Affiche « données d'hier »</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Le backend est le seul à parler à la FFVB. Résultat : la FFVB reçoit quatre visites
+          par heure, pas quatre mille — même si cent personnes ouvrent la page en même temps.
+        </p>
+      </section>
+
+      <section id="donnee">
+        <h2><span class="num">4</span> La donnée, étape par étape</h2>
+
+        <h3>A. Ce que la FFVB donne</h3>
+        <p>Du texte brut, séparé par des points-virgules. Fait pour les machines, pas pour nous :</p>
+        <figure class="snippet">
+          <figcaption>réponse de la FFVB</figcaption>
+<pre>2MB004;2MB;ABCCS;01;27/09/2026;16:00;VIE AU GRAND AIR DE ST MAUR;
+PARIS VOLLEY CLUB;BROSSOLETTE;3-1;25-20,22-25,25-19,25-21</pre>
+        </figure>
+
+        <h3>B. Ce que le backend en fait</h3>
+        <p>Chaque information reçoit une étiquette. <code>atHome: true</code> veut dire « match à domicile » :</p>
+        <figure class="snippet">
+          <figcaption>réponse de /api/matches</figcaption>
+<pre>{
+  <span class="s">"date"</span>:     <span class="s">"2026-09-27"</span>,
+  <span class="s">"time"</span>:     <span class="s">"16:00"</span>,
+  <span class="s">"team"</span>:     <span class="s">"VIE AU GRAND AIR DE ST MAUR"</span>,
+  <span class="s">"opponent"</span>: <span class="s">"PARIS VOLLEY CLUB"</span>,
+  <span class="s">"atHome"</span>:   <span class="k">true</span>,
+  <span class="s">"venue"</span>:    <span class="s">"BROSSOLETTE"</span>,
+  <span class="s">"sets"</span>:     <span class="s">"3-1"</span>
+}</pre>
+        </figure>
+
+        <h3>C. Ce que le site calcule en plus</h3>
+        <p>
+          Toute la « magie » tient en quatre lignes. La FFVB écrit toujours le score de
+          l'équipe qui reçoit en premier — donc à l'extérieur, il faut inverser :
+        </p>
+        <figure class="snippet">
+          <figcaption>src/lib/matches.ts</figcaption>
+<pre><span class="c">// On lit "3-1". Mais 3-1 pour qui ?</span>
+<span class="k">const</span> [homeSets, awaySets] = raw.sets.<span class="f">split</span>(<span class="s">"-"</span>).<span class="f">map</span>(Number)
+
+<span class="k">const</span> played    = Number.<span class="f">isFinite</span>(homeSets)         <span class="c">// match joué ?</span>
+<span class="k">const</span> ourSets   = raw.atHome ? homeSets : awaySets <span class="c">// nos sets à nous</span>
+<span class="k">const</span> theirSets = raw.atHome ? awaySets : homeSets <span class="c">// ceux d'en face</span>
+<span class="k">const</span> won       = ourSets &gt; theirSets              <span class="c">// victoire ?</span></pre>
+        </figure>
+        <p class="lead">
+          <code>?</code> se lit « si … alors … sinon ». Quatre lignes, et la page sait dire
+          gagné ou perdu pour les 98 matchs.
+        </p>
+
+        <h3>D. L'affichage</h3>
+        <p>Ça se lit presque comme une phrase :</p>
+        <figure class="snippet">
+          <figcaption>src/components/MatchRow.vue</figcaption>
+<pre><span class="c">&lt;!-- si à domicile, écris "Domicile" ; sinon "Extérieur" --&gt;</span>
+<span class="k">&lt;span</span> <span class="f">:class</span>=<span class="s">"match.atHome ? 'badge-primary' : 'badge-ghost'"</span><span class="k">&gt;</span>
+  {{ match.atHome ? <span class="s">"Domicile"</span> : <span class="s">"Extérieur"</span> }}
+<span class="k">&lt;/span&gt;</span>
+
+<span class="c">&lt;!-- si gagné, le score en vert ; sinon en gris --&gt;</span>
+<span class="k">&lt;div</span> <span class="f">:class</span>=<span class="s">"match.won ? 'text-success' : 'text-base-content/50'"</span><span class="k">&gt;</span>
+  {{ match.ourSets }}–{{ match.theirSets }}
+<span class="k">&lt;/div&gt;</span></pre>
+        </figure>
+      </section>
+
+      <section id="japon">
+        <h2><span class="num">5</span> Un exemple concret : le drapeau 🇯🇵</h2>
+        <p>
+          Le passeur part au Japon du 17 novembre au 15 février. On veut un petit drapeau
+          sur chaque match de cette période. Tout tient en deux fichiers et cinq lignes.
+        </p>
+
+        <figure class="snippet">
+          <figcaption>src/lib/absences.ts — la règle</figcaption>
+<pre><span class="k">export const</span> ABSENCES = [
+  { flag: <span class="s">"🇯🇵"</span>, reason: <span class="s">"Passeur au Japon"</span>,
+    from: <span class="s">"2026-11-17"</span>, to: <span class="s">"2027-02-15"</span> },
+]
+
+<span class="c">// Est-ce qu'une absence couvre cette date ?</span>
+<span class="k">export function</span> <span class="f">absenceOn</span>(date) {
+  <span class="k">return</span> ABSENCES.<span class="f">find</span>((a) =&gt; date &gt;= a.from &amp;&amp; date &lt;= a.to)
+}</pre>
+        </figure>
+
+        <figure class="snippet">
+          <figcaption>src/components/MatchRow.vue — l'affichage</figcaption>
+<pre><span class="k">&lt;span</span> <span class="f">v-if</span>=<span class="s">"absence"</span> <span class="f">:title</span>=<span class="s">"absence.reason"</span><span class="k">&gt;</span>{{ absence.flag }}<span class="k">&lt;/span&gt;</span></pre>
+        </figure>
+
+        <p>
+          <code>v-if</code> veut dire « affiche ceci <strong>seulement si</strong> ».
+          Pas d'absence ce jour-là, rien ne s'affiche.
+        </p>
+        <div class="note">
+          <b>C'est ça, tout le repo :</b> une petite règle écrite une seule fois, appliquée
+          automatiquement aux 98 matchs. Pour ajouter une deuxième absence, on ajoute une ligne.
+        </div>
+      </section>
+
+      <section id="routes">
+        <h2><span class="num">6</span> Les trois choses que le site sait faire</h2>
+        <div class="routes">
+          <div class="route">
+            <code>/api/matches</code>
+            <span>la liste des matchs → onglets « À venir » et « Résultats »</span>
+          </div>
+          <div class="route">
+            <code>/api/standings</code>
+            <span>les classements → onglet « Classement »</span>
+          </div>
+          <div class="route">
+            <code>/api/calendar.ics</code>
+            <span>un abonnement agenda → bouton « Ajouter à mon calendrier »</span>
+          </div>
+        </div>
+        <p>
+          Le dernier est le plus malin. Au lieu de télécharger un fichier figé, ton téléphone
+          <strong>s'abonne</strong>. Si la FFVB déplace un match, ton agenda se corrige tout seul.
+        </p>
+      </section>
+
+      <section id="carte">
+        <h2><span class="num">7</span> La carte du projet</h2>
+        <p class="lead">Règle de lecture : <code>.vue</code> = ce qui s'affiche · <code>.ts</code> = ce qui se calcule · <code>.gleam</code> = ce qui va chercher les données.</p>
+        <figure class="snippet">
+          <figcaption>arborescence</figcaption>
+<pre class="tree">volley/
+├── src/                    <span class="c">LA VITRINE (ce que tu vois)</span>
+│   ├── App.vue             <span class="c">la page entière, les onglets</span>
+│   ├── components/
+│   │   ├── MatchRow.vue        <span class="c">UNE ligne de match</span>
+│   │   ├── MatchCalendar.vue   <span class="c">la vue mois</span>
+│   │   └── PrintSummary.vue    <span class="c">la feuille A4 à imprimer</span>
+│   └── lib/                <span class="c">les règles de calcul</span>
+│       ├── matches.ts          <span class="c">qui a gagné, lien Google Maps</span>
+│       ├── absences.ts         <span class="c">le drapeau 🇯🇵</span>
+│       └── format.ts           <span class="c">"sam.", "il y a 5 min"</span>
+│
+├── backend/                <span class="c">LA CUISINE (invisible)</span>
+│   └── src/volley.gleam    <span class="c">va chercher la FFVB, garde 15 min en mémoire</span>
+│
+└── docker-compose.yml      <span class="c">la recette pour mettre le site en ligne</span></pre>
+        </figure>
+      </section>
+
+      <section id="tests">
+        <h2><span class="num">8</span> Pourquoi ça ne casse pas</h2>
+        <p>
+          À côté de chaque fichier de règles, il y a un fichier de tests. C'est un filet de
+          sécurité : on écrit à l'avance la bonne réponse, et l'ordinateur vérifie.
+        </p>
+        <figure class="snippet">
+          <figcaption>src/lib/absences.test.ts</figcaption>
+<pre><span class="c">// "le 20 novembre, le drapeau doit être là"</span>
+<span class="f">expect</span>(<span class="f">absenceOn</span>(<span class="s">"2026-11-20"</span>)).<span class="f">toBeDefined</span>()
+
+<span class="c">// "la veille du départ, rien"</span>
+<span class="f">expect</span>(<span class="f">absenceOn</span>(<span class="s">"2026-11-16"</span>)).<span class="f">toBeUndefined</span>()</pre>
+        </figure>
+        <p>
+          Une seule commande rejoue tous ces contrôles. Si quelqu'un casse une règle en
+          modifiant le code, l'ordinateur le dit immédiatement — avant que ça n'arrive sur le site.
+        </p>
+      </section>
+
+      <section id="resume">
+        <h2><span class="num">9</span> En une phrase, pour le coach</h2>
+        <div class="card">
+          <p style="margin: 0">
+            Un programme lit la FFVB toutes les quinze minutes, range chaque match dans des
+            cases nommées, et une page web dessine ces cases avec une couleur par équipe.
+            <strong>Aucune saisie à la main.</strong> Quand la FFVB publie un résultat,
+            le site l'affiche dans le quart d'heure.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <a class="cta" href="/">Voir le site</a>
+        <a class="cta ghost" href="https://github.com/jcalixte/volley" target="_blank" rel="noopener">Le code</a>
+        <p>Vie au Grand Air de Saint-Maur — tous les matchs, tous les championnats, sur une page.</p>
+      </footer>
+    </main>
+  </body>
+</html>
