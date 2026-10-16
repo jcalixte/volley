@@ -474,3 +474,88 @@ describe("the ranking view", () => {
     expect(wrapper.text()).toContain("injoignable")
   })
 })
+
+describe("the summary view", () => {
+  async function openSummary(wrapper: Wrapper) {
+    const tab = wrapper.findAll("button").find((b) => b.text() === "Synthèse")!
+    await tab.trigger("click")
+    await flushPromises()
+    return wrapper
+  }
+
+  it("lays the season out as dates down and one column per team", async () => {
+    const wrapper = await openSummary(await render())
+    const headers = wrapper.findAll('[data-testid="summary-grid"] th').map((th) => th.text())
+    expect(headers).toEqual([
+      "Date",
+      "Heure",
+      "Nationale 2 Masculine · Poule B",
+      "Île-de-France Masculine · 1MA",
+    ])
+    const rows = wrapper.findAll('[data-testid="summary-row"]')
+    expect(rows).toHaveLength(4)
+    const cells = rows[2].findAll("td").map((td) => td.text())
+    expect(cells[0]).toContain("11/10")
+    expect(cells[1]).toBe("16:00")
+    expect(cells[2]).toBe("")
+    expect(cells[3]).toContain("VOLLEY 6")
+    expect(cells[3]).toContain("3–1")
+  })
+
+  it("puts teams playing at the same time on one row", async () => {
+    stubFetch({
+      ...calendar,
+      matches: [
+        ...calendar.matches,
+        match({
+          code: "1MAA001",
+          poule: "1MAA",
+          competitionKey: "1MA",
+          competition: "Île-de-France Masculine · 1MA",
+          date: "2026-09-27",
+          opponent: "RAMBOUILLET",
+        }),
+      ],
+    })
+    const wrapper = mount(App)
+    await flushPromises()
+    await openSummary(wrapper)
+    const first = wrapper.findAll('[data-testid="summary-row"]')[0].findAll("td")
+    expect(first[2].text()).toContain("PARIS VOLLEY CLUB")
+    expect(first[3].text()).toContain("RAMBOUILLET")
+  })
+
+  it("adds each team's ranking under the grid", async () => {
+    const wrapper = await openSummary(await render())
+    const rankings = wrapper.findAll('[data-testid="summary-ranking"]')
+    expect(rankings).toHaveLength(2)
+    expect(rankings[0].text()).toContain("2e sur 2 · 4 pts")
+    expect(rankings[1].text()).toContain("VIE AU GRAND AIR DE ST MAUR 2")
+  })
+
+  it("keeps to the picked teams", async () => {
+    const wrapper = await render()
+    await pickRegional(wrapper)
+    await openSummary(wrapper)
+    const headers = wrapper.findAll('[data-testid="summary-grid"] th').map((th) => th.text())
+    expect(headers).toEqual(["Date", "Heure", "Île-de-France Masculine · 1MA"])
+    expect(wrapper.findAll('[data-testid="summary-row"]')).toHaveLength(2)
+  })
+
+  // On paper a dark theme would print near-white text on an unprinted page.
+  it("stays light whatever the screen's theme", async () => {
+    const wrapper = await openSummary(await render())
+    expect(wrapper.find('article[data-theme="light"]').exists()).toBe(true)
+  })
+
+  it("opens the print dialog", async () => {
+    const print = vi.fn()
+    vi.stubGlobal("print", print)
+    const wrapper = await openSummary(await render())
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Imprimer")!
+      .trigger("click")
+    expect(print).toHaveBeenCalled()
+  })
+})

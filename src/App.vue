@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import MatchRow from "@/components/MatchRow.vue"
 import MatchCalendar from "@/components/MatchCalendar.vue"
 import RankingTable from "@/components/RankingTable.vue"
+import PrintSummary from "@/components/PrintSummary.vue"
 import { fullDate, monthLabel, relativeTime } from "@/lib/format"
 import { absenceOn } from "@/lib/absences"
 import {
@@ -16,7 +17,7 @@ import {
 } from "@/lib/matches"
 import { fetchStandings, type Standings } from "@/lib/standings"
 
-type View = "upcoming" | "results" | "all" | "calendar" | "standings"
+type View = "upcoming" | "results" | "all" | "calendar" | "standings" | "summary"
 
 const FILTER_PARAM = "equipe"
 
@@ -71,7 +72,7 @@ async function loadStandings() {
 }
 
 watch(view, (tab) => {
-  if (tab === "standings" && !standings.value) loadStandings()
+  if ((tab === "standings" || tab === "summary") && !standings.value) loadStandings()
 })
 
 // The FFVB calendar changes when results are entered, so a tab left open all
@@ -203,8 +204,8 @@ function rankingLabel(key: string, fallback: string): string {
 </script>
 
 <template>
-  <div class="min-h-dvh bg-base-200">
-    <header class="bg-primary text-primary-content">
+  <div class="min-h-dvh bg-base-200 print:bg-white">
+    <header class="bg-primary text-primary-content print:hidden">
       <div class="mx-auto max-w-3xl px-4 py-8">
         <p class="text-xs uppercase tracking-widest opacity-80">
           Saison {{ calendar?.season ?? "" }}
@@ -231,7 +232,7 @@ function rankingLabel(key: string, fallback: string): string {
       </div>
     </header>
 
-    <main class="mx-auto max-w-3xl px-4 py-6">
+    <main class="mx-auto max-w-3xl px-4 py-6 print:max-w-none print:p-0">
       <div v-if="error" class="alert alert-error">
         <span>{{ error }}</span>
         <button class="btn btn-sm" @click="load">Réessayer</button>
@@ -242,14 +243,14 @@ function rankingLabel(key: string, fallback: string): string {
       </div>
 
       <template v-else>
-        <div v-if="calendar?.stale" class="alert alert-warning mb-4" role="status">
+        <div v-if="calendar?.stale" class="alert alert-warning mb-4 print:hidden" role="status">
           <span>
             La FFVB ne répond pas. Calendrier affiché tel qu'il était
             {{ relativeTime(calendar.fetchedAt) }}.
           </span>
         </div>
 
-        <div class="mb-4 flex flex-wrap items-center gap-2">
+        <div class="mb-4 flex flex-wrap items-center gap-2 print:hidden">
           <div class="dropdown min-w-56 flex-1">
             <div
               tabindex="0"
@@ -366,7 +367,7 @@ function rankingLabel(key: string, fallback: string): string {
           </div>
         </div>
 
-        <div role="tablist" class="tabs-box tabs mb-4">
+        <div role="tablist" class="tabs-box tabs mb-4 print:hidden">
           <button
             v-for="tab in [
               { id: 'upcoming' as View, label: 'À venir' },
@@ -374,6 +375,7 @@ function rankingLabel(key: string, fallback: string): string {
               { id: 'all' as View, label: 'Toute la saison' },
               { id: 'calendar' as View, label: 'Calendrier' },
               { id: 'standings' as View, label: 'Classement' },
+              { id: 'summary' as View, label: 'Synthèse' },
             ]"
             :key="tab.id"
             role="tab"
@@ -390,6 +392,15 @@ function rankingLabel(key: string, fallback: string): string {
           :matches="inCompetition"
           :colors="teamColors"
           :teams="shownTeams"
+        />
+
+        <PrintSummary
+          v-else-if="view === 'summary'"
+          :club="calendar?.club ?? ''"
+          :season="calendar?.season ?? ''"
+          :teams="shownTeams"
+          :matches="inCompetition"
+          :rankings="rankings"
         />
 
         <template v-else-if="view === 'standings'">
@@ -433,7 +444,9 @@ function rankingLabel(key: string, fallback: string): string {
       </template>
     </main>
 
-    <footer class="mx-auto max-w-3xl px-4 pb-10 text-center text-xs text-base-content/50">
+    <footer
+      class="mx-auto max-w-3xl px-4 pb-10 text-center text-xs text-base-content/50 print:hidden"
+    >
       <p v-if="calendar">
         Données FFVB, mises à jour {{ relativeTime(calendar.fetchedAt) }}.
         <button class="link" @click="load">Actualiser</button>

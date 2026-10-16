@@ -28,6 +28,11 @@
   --color-primary-content: #ffffff;
 }
 
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
