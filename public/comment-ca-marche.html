@@ -576,7 +576,134 @@
 
       <!-- 10 -->
       <section>
-        <h2><span class="n">10</span> Si tu ne retiens qu'une chose</h2>
+        <h2><span class="n">10</span> Le vrai code, pour finir</h2>
+        <p>
+          Tu as vu des morceaux simplifiés jusqu'ici. Voilà maintenant trois extraits du vrai
+          site, tout juste débarrassés de leurs décorations. Ce code tourne pendant que tu lis
+          cette page.
+        </p>
+        <p>
+          Le site parle deux langues, une par côté. Côté serveur, le robot est écrit en
+          <strong>Gleam</strong>, une langue faite pour des programmes qui tournent des semaines
+          sans redémarrer. Côté écran, la page est écrite en <strong>Vue</strong>, une langue faite
+          pour dessiner et redessiner vite.
+        </p>
+
+        <h3>Le standard téléphonique du robot</h3>
+        <p>
+          Quand une demande arrive, le robot regarde l'adresse réclamée et choisit quoi répondre.
+          Cinq lignes, cinq cas.
+        </p>
+
+        <div class="dual">
+          <div class="tabs">
+            <button type="button" data-panel="fr3" aria-selected="true">👋 En français</button>
+            <button type="button" data-panel="code3" aria-selected="false">💻 Gleam</button>
+            <span class="fname">backend/src/volley.gleam</span>
+          </div>
+          <div class="panel on" id="fr3">
+            <ol class="human">
+              <li>On demande <b>/api/health</b> ? Réponds « je suis vivant ».</li>
+              <li>On demande <b>/api/matches</b> ? Envoie la liste des matchs.</li>
+              <li>On demande <b>/api/standings</b> ? Envoie les classements.</li>
+              <li>On demande <b>/api/calendar.ics</b> ? Envoie l'agenda à abonner.</li>
+              <li>Autre chose ? Réponds « cette page n'existe pas ».</li>
+            </ol>
+          </div>
+          <div class="panel" id="code3">
+<pre><span class="k">fn</span> <span class="f">handle_request</span>(stores: Stores, req: wisp.Request) -> wisp.Response {
+  <span class="k">case</span> wisp.<span class="f">path_segments</span>(req) {
+    [<span class="s">"api"</span>, <span class="s">"health"</span>] -> wisp.<span class="f">ok</span>()
+    [<span class="s">"api"</span>, <span class="s">"matches"</span>] -> <span class="f">matches</span>(stores.matches)
+    [<span class="s">"api"</span>, <span class="s">"standings"</span>] -> <span class="f">ranking</span>(stores.standings)
+    [<span class="s">"api"</span>, <span class="s">"calendar.ics"</span>] -> <span class="f">feed</span>(stores.matches, req)
+    _ -> wisp.<span class="f">not_found</span>()
+  }
+}</pre>
+          </div>
+        </div>
+        <p class="lead">
+          Le <code>_</code> de l'avant-dernière ligne veut dire « tout le reste ». Et les flèches
+          se lisent « alors réponds ».
+        </p>
+
+        <h3>Les quatre lignes qui définissent le club</h3>
+        <p>
+          Celles-là tiennent le site entier. Le numéro du club à la fédération, son nom, la saison
+          en cours, et le fameux quart d'heure, écrit en secondes.
+        </p>
+
+        <div class="dual">
+          <div class="tabs">
+            <button type="button" data-panel="fr4" aria-selected="true">👋 En français</button>
+            <button type="button" data-panel="code4" aria-selected="false">💻 Gleam</button>
+            <span class="fname">backend/src/volley/ffvb.gleam</span>
+          </div>
+          <div class="panel on" id="fr4">
+            <ol class="human">
+              <li>Le club porte le numéro <b>0941410</b> chez la fédération. C'est lui qu'on présente à chaque visite.</li>
+              <li>Son nom officiel sert à repérer nos équipes dans les tableaux.</li>
+              <li>La saison en cours est <b>2026/2027</b>.</li>
+              <li><b>900 secondes</b> entre deux visites chez la fédération, soit quinze minutes.</li>
+              <li>En septembre prochain, changer de saison tiendra en une ligne modifiée.</li>
+            </ol>
+          </div>
+          <div class="panel" id="code4">
+<pre><span class="k">pub const</span> club_code = <span class="s">"0941410"</span>
+<span class="k">pub const</span> club_name = <span class="s">"VIE AU GRAND AIR DE ST MAUR"</span>
+<span class="k">pub const</span> season = <span class="s">"2026/2027"</span>
+
+<span class="c">// (dans le fichier voisin volley.gleam)</span>
+<span class="k">const</span> ttl_seconds = 900</pre>
+          </div>
+        </div>
+
+        <h3>Une ligne de match, côté page</h3>
+        <p>
+          Voilà le dessin d'une ligne, celle que tu as sous les yeux quand tu ouvres le site.
+          Les décorations de style sont retirées pour garder l'essentiel.
+        </p>
+
+        <div class="dual">
+          <div class="tabs">
+            <button type="button" data-panel="fr5" aria-selected="true">👋 En français</button>
+            <button type="button" data-panel="code5" aria-selected="false">💻 Vue</button>
+            <span class="fname">src/components/MatchRow.vue</span>
+          </div>
+          <div class="panel on" id="fr5">
+            <ol class="human">
+              <li>Une étiquette : <b>Domicile</b> en bleu, <b>Extérieur</b> en gris.</li>
+              <li>Le nom de l'adversaire, raccourci s'il déborde.</li>
+              <li>Match joué ? Affiche le score, en vert si on a gagné.</li>
+              <li>Match à venir ? Affiche l'heure du coup d'envoi à la place.</li>
+            </ol>
+          </div>
+          <div class="panel" id="code5">
+<pre><span class="k">&lt;span</span> <span class="f">:class</span>=<span class="s">"match.atHome ? 'badge-primary' : 'badge-ghost'"</span><span class="k">&gt;</span>
+  {{ match.atHome ? <span class="s">"Domicile"</span> : <span class="s">"Extérieur"</span> }}
+<span class="k">&lt;/span&gt;</span>
+
+<span class="k">&lt;span&gt;</span>{{ match.opponent }}<span class="k">&lt;/span&gt;</span>
+
+<span class="k">&lt;template</span> <span class="f">v-if</span>=<span class="s">"match.played"</span><span class="k">&gt;</span>
+  <span class="k">&lt;div</span> <span class="f">:class</span>=<span class="s">"match.won ? 'text-success' : 'text-base-content/50'"</span><span class="k">&gt;</span>
+    {{ match.ourSets }}–{{ match.theirSets }}
+  <span class="k">&lt;/div&gt;</span>
+<span class="k">&lt;/template&gt;</span>
+<span class="k">&lt;div</span> <span class="f">v-else</span><span class="k">&gt;</span>{{ match.time }}<span class="k">&lt;/div&gt;</span></pre>
+          </div>
+        </div>
+        <div class="note">
+          Tu reconnais maintenant trois choses dans n'importe quel programme : les valeurs qu'on
+          fixe une fois (le numéro du club), les cas de figure (telle demande, telle réponse), et
+          les conditions (si gagné, en vert). Le reste du site, environ 1 500 lignes, est fait de
+          ces trois briques répétées.
+        </div>
+      </section>
+
+      <!-- 11 -->
+      <section>
+        <h2><span class="n">11</span> Si tu ne retiens qu'une chose</h2>
         <div class="card">
           <p class="big-quote">
             Un robot lit la fédération toutes les quinze minutes, range chaque match dans des
@@ -588,9 +715,9 @@
 
       <footer>
         <a class="cta" href="/">Voir le site des matchs</a>
-        <a class="cta ghost" href="https://github.com/jcalixte/volley" target="_blank" rel="noopener">La recette complète</a>
         <p>Vie au Grand Air de Saint-Maur, tous les matchs, tous les championnats, sur une page.</p>
       </footer>
+
     </main>
 
     <script>
