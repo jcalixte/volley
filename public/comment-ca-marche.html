@@ -108,7 +108,6 @@
         margin: 20px 0; padding: 15px 18px; border-left: 4px solid var(--brand);
         background: var(--soft); border-radius: 0 13px 13px 0; font-size: .96rem;
       }
-      .note b { color: var(--brand); }
       .big-quote { font-size: 1.12rem; font-weight: 600; text-align: center; margin: 0; }
 
       /* ---------- avant / après ---------- */
@@ -116,11 +115,12 @@
       .compare > div { border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; background: var(--surface); }
       .compare h4 { margin: 0 0 8px; font-size: .95rem; display: flex; align-items: center; gap: 7px; }
       .compare ul { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
+      .compare ul li { margin: 4px 0; }
       .compare .bad { border-color: #f3c6c6; }
       .compare .good { border-color: #b9e6cd; }
       @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
-      /* ---------- personnages ---------- */
+      /* ---------- rôles ---------- */
       .cast { display: grid; gap: 14px; margin: 22px 0; }
       .who { display: flex; gap: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 17px 18px; }
       .who .face { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--soft); font-size: 1.5rem; }
@@ -172,7 +172,7 @@
       .tabs button[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
       .panel { display: none; }
       .panel.on { display: block; }
-      .human { margin: 0; padding: 16px 20px; counter-reset: line; }
+      .human { margin: 0; padding: 16px 20px; }
       .human li { margin: 7px 0; font-size: .96rem; }
       .human li b { color: var(--brand); }
       pre {
@@ -226,7 +226,7 @@
         <h1>Comment marche le site des matchs&nbsp;?</h1>
         <p>
           Expliqué à quelqu'un qui n'a jamais vu une ligne de code de sa vie.
-          Pas de jargon. Des images, un bouton à presser, et un petit quiz à la fin.
+          Avec des images, un bouton à presser et un petit quiz à la fin.
         </p>
       </div>
     </header>
@@ -234,63 +234,61 @@
     <main>
       <!-- 1 -->
       <section>
-        <h2><span class="n">1</span> D'abord : c'est quoi, « du code » ?</h2>
+        <h2><span class="n">1</span> C'est quoi, « du code »&nbsp;?</h2>
         <p>
-          Du code, c'est <strong>une recette de cuisine écrite pour un commis très rapide et très bête</strong>.
+          Une recette. Écrite pour quelqu'un qui travaille à une vitesse folle et ne devine
+          jamais rien.
         </p>
         <p>
-          Ce commis, c'est l'ordinateur. Il travaille à une vitesse folle — des milliers de gestes
-          par seconde — mais il ne comprend rien et ne devine rien. Il fait <em>exactement</em>
-          ce qui est écrit, dans l'ordre.
+          Ce quelqu'un, c'est l'ordinateur. Il fait les gestes dans l'ordre où ils sont écrits,
+          à la lettre, sans jamais compléter ce que tu as oublié de dire.
         </p>
         <div class="card">
-          <p style="margin:0 0 6px"><strong>Tu écris :</strong> « casse 3 œufs »  →  il casse 3 œufs. 👌</p>
-          <p style="margin:0"><strong>Tu écris :</strong> « casse 300 œufs »  →  il casse 300 œufs, sans trouver ça bizarre. 🥚🥚🥚</p>
+          <p style="margin:0 0 6px">Tu écris « casse 3 œufs », il casse 3 œufs. 👌</p>
+          <p style="margin:0">Tu écris « casse 300 œufs », il en casse 300 sans trouver ça bizarre. 🥚🥚🥚</p>
         </div>
         <p>
-          Donc : quand un site « bugue », ce n'est presque jamais l'ordinateur qui s'est trompé.
-          C'est la recette qui était mal écrite.
+          Quand un site se met à faire n'importe quoi, la faute est donc presque toujours
+          dans la recette.
         </p>
         <div class="note">
-          <b>Un mot à retenir :</b> un <strong>programme</strong>, c'est juste une recette.
-          <strong>Coder</strong>, c'est écrire la recette. Rien de plus mystérieux.
+          Deux mots qui reviendront : un <strong>programme</strong>, c'est une recette.
+          <strong>Coder</strong>, c'est l'écrire.
         </div>
       </section>
 
       <!-- 2 -->
       <section>
-        <h2><span class="n">2</span> Et un site internet, alors ?</h2>
+        <h2><span class="n">2</span> Et un site internet&nbsp;?</h2>
         <p>
-          Deux ordinateurs qui se parlent, comme au restaurant.
+          Deux ordinateurs qui se parlent. Le tien demande, un autre répond.
         </p>
         <p>
-          Le tien — ton téléphone — c'est <strong>le client à table</strong>. Il demande.<br />
-          En face, un ordinateur allumé jour et nuit quelque part — on l'appelle
-          <strong>un serveur</strong> — c'est <strong>la cuisine</strong>. Il répond.
+          Celui qui répond reste allumé jour et nuit dans un bâtiment plein de machines,
+          et on l'appelle <strong>un serveur</strong>. Au restaurant, tu serais à table et lui
+          serait en cuisine. Tu tapes l'adresse du site, ton téléphone passe commande,
+          l'assiette arrive en moins d'une seconde.
         </p>
         <p>
-          Quand tu tapes l'adresse du site, ton téléphone passe commande.
-          La cuisine prépare et renvoie. Ça prend moins d'une seconde.
+          Pourquoi ne pas tout mettre dans le téléphone ? Parce que la cuisine doit servir
+          tout le club en même temps, et parce qu'elle a des choses à faire pendant que
+          personne ne regarde. On va voir lesquelles.
         </p>
-        <div class="note">
-          <b>Pourquoi deux&nbsp;?</b> Parce que la cuisine ne peut pas tenir dans ta poche,
-          et qu'elle doit servir tout le club en même temps.
-        </div>
       </section>
 
       <!-- 3 -->
       <section>
-        <h2><span class="n">3</span> Le problème qu'on a voulu régler</h2>
+        <h2><span class="n">3</span> Le problème qu'on voulait régler</h2>
         <p>
-          La fédération (la FFVB) publie déjà tous nos matchs. Mais elle les range championnat par
-          championnat. Le club en a cinq. Donc nos résultats sont éparpillés sur cinq pages
-          différentes, dans un site pas très accueillant.
+          La fédération publie déjà tous nos matchs, rangés championnat par championnat.
+          Le club en a cinq, donc nos résultats vivent sur cinq pages différentes d'un site
+          assez austère.
         </p>
         <div class="compare">
           <div class="bad">
             <h4>😤 Avant</h4>
             <ul>
-              <li>5 pages à ouvrir</li>
+              <li>Cinq pages à ouvrir</li>
               <li>Chercher son équipe à chaque fois</li>
               <li>Aucun lien vers le gymnase</li>
               <li>Rien dans son agenda</li>
@@ -299,55 +297,54 @@
           <div class="good">
             <h4>😌 Avec le site</h4>
             <ul>
-              <li>1 seule page</li>
-              <li>Elle s'ouvre sur TON équipe</li>
+              <li>Une seule page</li>
+              <li>Elle s'ouvre sur ton équipe</li>
               <li>Le gymnase s'ouvre dans Maps</li>
               <li>Les matchs arrivent dans ton agenda</li>
             </ul>
           </div>
         </div>
         <div class="note">
-          <b>Important :</b> le site <strong>n'invente rien</strong>. Il recopie la fédération et la
-          met en forme. Si la FFVB se trompe sur un horaire, notre site affiche la même erreur —
-          c'est la même source.
+          Le site ne produit aucune information de son côté. Il recopie la fédération et la met
+          en forme. Si elle publie un horaire faux, on affiche le même horaire faux.
         </div>
       </section>
 
       <!-- 4 -->
       <section>
-        <h2><span class="n">4</span> Les trois personnages</h2>
-        <p class="lead">Tout le système tient en trois rôles. Comme dans un restaurant.</p>
+        <h2><span class="n">4</span> Les trois rôles</h2>
+        <p class="lead">Tout le système tient en trois acteurs.</p>
         <div class="cast">
           <div class="who">
             <div class="face">🏐</div>
             <div>
-              <span class="role">Le producteur</span>
+              <span class="role">La source</span>
               <h4>Le site de la fédération</h4>
-              <p>Il détient la vérité : dates, horaires, scores, classements. Mais il livre ça en vrac, dans un format illisible pour nous.</p>
+              <p>Il détient la vérité : dates, horaires, scores, classements. Il la publie en vrac, dans un format prévu pour les machines.</p>
             </div>
           </div>
           <div class="who">
-            <div class="face">👨‍🍳</div>
+            <div class="face">🤖</div>
             <div>
               <span class="role">La cuisine</span>
-              <h4>Le robot-cuisinier</h4>
-              <p>Un programme qui tourne jour et nuit. Il va chercher le vrac chez la fédération, le nettoie, le range. Il garde toujours son dernier panier au frais.</p>
+              <h4>Le robot</h4>
+              <p>Un programme qui tourne jour et nuit sur le serveur. Il va chercher le vrac, le nettoie, le range par date. Il garde toujours sa dernière copie sous le coude.</p>
             </div>
           </div>
           <div class="who">
-            <div class="face">🖼️</div>
+            <div class="face">🎨</div>
             <div>
               <span class="role">La salle</span>
               <h4>La page que tu vois</h4>
-              <p>Elle reçoit les données déjà propres et les dessine : une ligne par match, une couleur par équipe, le score en vert quand c'est gagné.</p>
+              <p>Elle reçoit des données déjà propres et les dessine : une ligne par match, une couleur par équipe, le score en vert quand c'est gagné.</p>
             </div>
           </div>
         </div>
-        <div class="note">
-          <b>Le truc malin :</b> seul le robot-cuisinier parle à la fédération. Il y va au maximum
-          <strong>une fois tous les quarts d'heure</strong>, même si 200 personnes ouvrent la page.
-          La fédération ne croule pas sous les visites, et la page répond instantanément.
-        </div>
+        <p>
+          Seul le robot a le droit d'aller frapper chez la fédération, et il y va au maximum
+          une fois par quart d'heure. Même si deux cents personnes ouvrent la page le même soir,
+          la fédération reçoit quatre visites dans l'heure, et la page répond du tac au tac.
+        </p>
       </section>
 
       <!-- 5 -->
@@ -362,17 +359,17 @@
           <div class="step">
             <div class="ico">✍️</div>
             <div>
-              <h4>Samedi, 18 h 30 — le match est fini</h4>
-              <p>Le marqueur saisit le score sur le site de la fédération. 3 sets à 1.</p>
+              <h4>Samedi, 18 h 30 : le match est fini</h4>
+              <p>Le marqueur saisit le score sur le site de la fédération. Trois sets à un.</p>
             </div>
           </div>
           <div class="rail"><span>la fédération publie</span></div>
 
           <div class="step">
-            <div class="ico">👨‍🍳</div>
+            <div class="ico">🤖</div>
             <div>
-              <h4>Dans le quart d'heure — le robot passe</h4>
-              <p>Il récupère la saison entière d'un coup, repère ce qui a changé, et range tout proprement.</p>
+              <h4>Dans le quart d'heure, le robot passe</h4>
+              <p>Il récupère la saison entière d'un coup, repère ce qui a changé et range tout proprement.</p>
             </div>
           </div>
           <div class="rail"><span>il transmet la liste rangée</span></div>
@@ -389,8 +386,8 @@
           <div class="step">
             <div class="ico">📱</div>
             <div>
-              <h4>18 h 45 — tu ouvres le site</h4>
-              <p>C'est déjà à jour. Personne n'a rien recopié à la main.</p>
+              <h4>18 h 45, tu ouvres le site</h4>
+              <p>C'est déjà à jour, et personne n'a rien recopié à la main.</p>
             </div>
           </div>
         </div>
@@ -398,22 +395,22 @@
 
       <!-- 6 -->
       <section>
-        <h2><span class="n">6</span> Alors, à quoi ça ressemble vraiment&nbsp;?</h2>
+        <h2><span class="n">6</span> À quoi ça ressemble, concrètement&nbsp;?</h2>
         <p>
-          Voilà le moment où on soulève le capot. Garde juste ça en tête :
-          <strong>le code, ça se lit comme des phrases</strong>. Des phrases très sèches, écrites
-          pour le commis bête.
+          Voilà le moment où on soulève le capot. Une seule chose à garder en tête : le code se lit
+          comme des phrases, très sèches, écrites pour quelqu'un qui ne comble aucun trou tout seul.
         </p>
         <p class="lead">
-          Chaque encadré ci-dessous a deux boutons. Reste sur « En français » autant que tu veux,
-          puis clique « Le vrai code » quand tu es curieux : c'est la même chose, mot pour mot.
+          Chaque encadré ci-dessous a deux onglets. Reste sur « En français » autant que tu veux,
+          puis clique sur « Le vrai code » quand la curiosité te prend : c'est la même chose,
+          dite autrement.
         </p>
 
-        <h3>Exemple 1 — qui a gagné ?</h3>
+        <h3>Exemple 1 : qui a gagné ?</h3>
         <p>
-          La fédération écrit le score sous la forme <code>3-1</code>. Mais 3 pour qui ?
-          Elle met <strong>toujours l'équipe qui reçoit en premier</strong>. Il faut donc savoir
-          si on jouait chez nous ou chez eux.
+          La fédération écrit le score sous la forme <code>3-1</code>, en plaçant toujours
+          l'équipe qui recevait en premier. Pour savoir si on a gagné, il faut donc d'abord
+          savoir où le match se jouait.
         </p>
 
         <div class="dual">
@@ -426,9 +423,9 @@
             <ol class="human">
               <li>Lis le score écrit par la fédération : <b>3-1</b>.</li>
               <li>Le premier chiffre appartient à l'équipe qui recevait.</li>
-              <li>Si on jouait <b>à la maison</b> → le 3 est à nous, le 1 est à eux.</li>
-              <li>Si on jouait <b>dehors</b> → le 3 est à eux, le 1 est à nous.</li>
-              <li>Si notre chiffre est le plus grand → <b>c'est gagné</b>, on l'affiche en vert.</li>
+              <li>Match <b>à la maison</b> : le 3 est à nous, le 1 est à eux.</li>
+              <li>Match <b>à l'extérieur</b> : le 3 est à eux, le 1 est à nous.</li>
+              <li>Notre chiffre est le plus grand ? C'est gagné, on l'affiche en vert.</li>
             </ol>
           </div>
           <div class="panel" id="code1">
@@ -444,18 +441,18 @@
           </div>
         </div>
         <p class="lead">
-          Le petit <code>?</code> se lit « si… alors… sinon ». C'est le seul symbole bizarre de
-          l'encadré, et tu viens de l'apprendre.
+          Le petit <code>?</code> se lit « si… alors… sinon ». C'est le seul symbole inhabituel
+          de l'encadré, et tu viens de l'apprendre.
         </p>
 
-        <h3>Exemple 2 — le drapeau japonais 🇯🇵</h3>
+        <h3>Exemple 2 : le drapeau japonais 🇯🇵</h3>
         <p>
-          Le passeur est au Japon du 17 novembre au 15 février. On voulait un petit drapeau sur
-          chaque match de cette période — pour voir d'un coup d'œil les week-ends concernés.
+          Le passeur est au Japon du 17 novembre au 15 février. On voulait un drapeau sur les
+          matchs de cette période, pour repérer les week-ends concernés d'un coup d'œil.
         </p>
         <p>
-          On ne va pas marquer les 98 matchs un par un. On écrit <strong>la règle une seule fois</strong>,
-          et le commis l'applique partout, pour toujours.
+          Marquer les 98 matchs un par un serait long et se périmerait au premier changement
+          de date. On écrit donc la règle une seule fois, et l'ordinateur l'applique partout.
         </p>
 
         <div class="dual">
@@ -468,8 +465,8 @@
             <ol class="human">
               <li>Note l'absence : <b>drapeau 🇯🇵</b>, motif « Passeur au Japon », <b>du</b> 17/11/2026 <b>au</b> 15/02/2027.</li>
               <li>Pour chaque match, compare sa date à cette période.</li>
-              <li>Si la date tombe dedans → affiche le drapeau.</li>
-              <li>Sinon → n'affiche rien du tout.</li>
+              <li>La date tombe dedans ? Affiche le drapeau.</li>
+              <li>Sinon, n'affiche rien du tout.</li>
             </ol>
           </div>
           <div class="panel" id="code2">
@@ -485,34 +482,34 @@
           </div>
         </div>
         <div class="note">
-          <b>C'est tout le métier, résumé :</b> on n'écrit pas les réponses, on écrit les règles.
-          Pour signaler un deuxième absent, on ajoute <strong>une ligne</strong> — et les 98 matchs
-          se mettent à jour tout seuls.
+          Pour signaler un deuxième absent, on ajoute une ligne : le drapeau, le motif,
+          les deux dates. Les 98 matchs se mettent à jour d'eux-mêmes.
         </div>
       </section>
 
       <!-- 7 -->
       <section>
-        <h2><span class="n">7</span> Et si quelque chose casse&nbsp;?</h2>
+        <h2><span class="n">7</span> Et quand ça casse&nbsp;?</h2>
         <h3>Si le site de la fédération tombe en panne</h3>
         <p>
-          Ça arrive, souvent un samedi soir. Le robot-cuisinier garde toujours son dernier panier.
-          Donc la page continue de s'afficher, avec une petite mention « données d'il y a 2 h ».
-          Mieux vaut un calendrier d'hier qu'une page blanche.
+          Ça arrive, souvent le samedi soir. Le robot garde sa dernière copie, donc la page
+          s'affiche quand même, avec la mention « données d'il y a 2 h ». Un calendrier de la
+          veille rend plus service qu'une page blanche.
         </p>
 
-        <h3>Si quelqu'un casse la recette en la modifiant</h3>
+        <h3>Si quelqu'un abîme la recette en la modifiant</h3>
         <p>
-          Il y a un goûteur automatique. Avant chaque modification, une machine rejoue une liste
-          de questions dont on connaît déjà la réponse :
+          Avant chaque modification, une machine rejoue une liste de questions dont la réponse
+          est écrite à l'avance :
         </p>
         <div class="card">
-          <p style="margin:0 0 6px">« Le 20 novembre, le drapeau est bien là ? » → <strong style="color:var(--ok)">oui ✓</strong></p>
-          <p style="margin:0">« La veille du départ, pas de drapeau ? » → <strong style="color:var(--ok)">correct ✓</strong></p>
+          <p style="margin:0 0 6px">« Le 20 novembre, le drapeau est bien là ? » Réponse attendue : <strong style="color:var(--ok)">oui ✓</strong></p>
+          <p style="margin:0">« La veille du départ, pas de drapeau ? » Réponse attendue : <strong style="color:var(--ok)">oui ✓</strong></p>
         </div>
         <p>
-          Si une seule réponse devient fausse, la machine refuse la modification. Ça s'appelle
-          <strong>des tests</strong>, et c'est ce qui permet de toucher au site sans avoir peur.
+          Si une seule réponse change, la machine refuse la modification. On appelle ça
+          <strong>des tests</strong>, et c'est ce qui permet de toucher au site sans retenir
+          son souffle.
         </p>
       </section>
 
@@ -524,9 +521,9 @@
         <div class="quiz" data-right="1">
           <p class="q">1. Qui va chercher les résultats sur le site de la fédération ?</p>
           <button type="button">Ton téléphone, à chaque fois que tu ouvres la page</button>
-          <button type="button">Le robot-cuisinier, au maximum une fois par quart d'heure</button>
+          <button type="button">Le robot, au maximum une fois par quart d'heure</button>
           <button type="button">Un bénévole du club, le dimanche soir</button>
-          <p class="why">Ton téléphone, lui, ne parle qu'au robot. Résultat : la fédération reçoit 4 visites par heure, pas 4 000.</p>
+          <p class="why">Ton téléphone ne parle qu'au robot. La fédération reçoit quatre visites dans l'heure au lieu de quatre mille.</p>
         </div>
 
         <div class="quiz" data-right="0">
@@ -534,7 +531,7 @@
           <button type="button">La dernière version connue, avec la mention « pas tout frais »</button>
           <button type="button">Une page blanche</button>
           <button type="button">Les matchs du club disparaissent</button>
-          <p class="why">Le robot garde toujours son dernier panier. Une panne dégrade la fraîcheur, pas le service.</p>
+          <p class="why">Le robot garde toujours sa dernière copie. Une panne coûte un peu de fraîcheur et laisse le site debout.</p>
         </div>
 
         <div class="quiz" data-right="2">
@@ -542,22 +539,22 @@
           <button type="button">Recopier le drapeau sur les 98 matchs</button>
           <button type="button">Refaire tout le site</button>
           <button type="button">Ajouter une ligne de règle : le drapeau, le motif, les deux dates</button>
-          <p class="why">On écrit la règle, jamais les réponses. Le commis se charge de l'appliquer partout.</p>
+          <p class="why">On écrit la règle, et l'ordinateur l'applique aux 98 matchs, cette saison et les suivantes.</p>
         </div>
       </section>
 
       <!-- 9 -->
       <section>
         <h2><span class="n">9</span> Les mots qu'on t'a dits</h2>
-        <p class="lead">Clique pour ouvrir. Tu peux en citer en réunion sans risque. 😄</p>
+        <p class="lead">Clique pour ouvrir. Tu pourras les replacer en réunion sans risque. 😄</p>
 
         <details>
-          <summary>Un programme / du code</summary>
-          <p>Une recette écrite pour l'ordinateur. Des instructions dans l'ordre, sans aucun sous-entendu.</p>
+          <summary>Un programme, du code</summary>
+          <p>Une recette écrite pour l'ordinateur : des instructions dans l'ordre, sans aucun sous-entendu.</p>
         </details>
         <details>
           <summary>Un serveur</summary>
-          <p>Un ordinateur allumé en permanence, quelque part, qui répond aux demandes des autres. Celui du club tient dans une boîte partagée, ça coûte quelques euros par mois.</p>
+          <p>Un ordinateur allumé en permanence quelque part, qui répond aux demandes des autres. Celui du club partage une machine avec d'autres sites et coûte quelques euros par mois.</p>
         </details>
         <details>
           <summary>Des données</summary>
@@ -565,15 +562,15 @@
         </details>
         <details>
           <summary>Un bug</summary>
-          <p>Une faute dans la recette. Le commis a obéi parfaitement… à une consigne mal écrite.</p>
+          <p>Une faute dans la recette. L'ordinateur a obéi parfaitement à une consigne mal écrite.</p>
         </details>
         <details>
           <summary>Un test</summary>
-          <p>Une question dont la bonne réponse est écrite à l'avance, rejouée automatiquement pour vérifier qu'on n'a rien cassé.</p>
+          <p>Une question dont la bonne réponse est écrite à l'avance, rejouée automatiquement pour vérifier qu'on n'a rien abîmé.</p>
         </details>
         <details>
-          <summary>Déployer / mettre en ligne</summary>
-          <p>Envoyer la nouvelle version de la recette à la cuisine. Deux minutes plus tard, tout le monde l'a.</p>
+          <summary>Déployer, mettre en ligne</summary>
+          <p>Envoyer la nouvelle version de la recette sur le serveur. Deux minutes plus tard, tout le monde l'a.</p>
         </details>
       </section>
 
@@ -582,9 +579,9 @@
         <h2><span class="n">10</span> Si tu ne retiens qu'une chose</h2>
         <div class="card">
           <p class="big-quote">
-            Un robot lit la fédération toutes les 15 minutes, range chaque match dans des cases
-            nommées, et une page dessine ces cases joliment.<br />
-            <span style="color:var(--brand)">Zéro saisie à la main. Jamais.</span>
+            Un robot lit la fédération toutes les quinze minutes, range chaque match dans des
+            cases nommées, et une page dessine ces cases joliment.<br />
+            <span style="color:var(--brand)">Personne ne recopie quoi que ce soit à la main.</span>
           </p>
         </div>
       </section>
@@ -592,7 +589,7 @@
       <footer>
         <a class="cta" href="/">Voir le site des matchs</a>
         <a class="cta ghost" href="https://github.com/jcalixte/volley" target="_blank" rel="noopener">La recette complète</a>
-        <p>Vie au Grand Air de Saint-Maur — tous les matchs, tous les championnats, sur une page.</p>
+        <p>Vie au Grand Air de Saint-Maur, tous les matchs, tous les championnats, sur une page.</p>
       </footer>
     </main>
 
