@@ -3,18 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Comment marche le site du club — Volley St Maur</title>
+    <title>Comment marche le site du club ? — Volley St Maur</title>
     <meta
       name="description"
-      content="Le site des matchs du VGA Saint-Maur expliqué sans jargon : d'où viennent les données, qui fait quoi, et à quoi ressemble le code."
+      content="Le site des matchs du VGA Saint-Maur expliqué à quelqu'un qui n'a jamais vu une ligne de code. Avec des images, un quiz, et zéro jargon."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
     <style>
       :root {
         --brand: #1d4ed8;
-        --brand-soft: #dbeafe;
-        --bg: #f8fafc;
+        --brand-2: #6d28d9;
+        --soft: #e8eeff;
+        --bg: #f6f8fc;
         --surface: #ffffff;
         --ink: #0f172a;
         --muted: #5b6678;
@@ -23,570 +24,612 @@
         --code-ink: #e2e8f0;
         --code-key: #c4b5fd;
         --code-str: #86efac;
-        --code-com: #7f8ea3;
+        --code-com: #8a98ad;
         --code-fn: #7dd3fc;
         --ok: #047857;
-        --radius: 16px;
+        --ok-soft: #d1fae5;
+        --no: #b91c1c;
+        --no-soft: #fee2e2;
       }
-
       @media (prefers-color-scheme: dark) {
         :root {
-          --brand: #60a5fa;
-          --brand-soft: #1e293b;
-          --bg: #0b1120;
+          --brand: #7aa5ff;
+          --brand-2: #a78bfa;
+          --soft: #1b2743;
+          --bg: #0a0f1d;
           --surface: #111a2e;
-          --ink: #e8edf6;
+          --ink: #e9eefa;
           --muted: #9aa8bf;
-          --line: #22304b;
-          --code-bg: #060b16;
+          --line: #233250;
+          --code-bg: #050a14;
           --ok: #34d399;
+          --ok-soft: #06351f;
+          --no: #fca5a5;
+          --no-soft: #3a1113;
         }
       }
 
       * { box-sizing: border-box; }
-
       html { scroll-behavior: smooth; }
-
       body {
         margin: 0;
         background: var(--bg);
         color: var(--ink);
         font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
         font-size: 17px;
-        line-height: 1.65;
+        line-height: 1.68;
         -webkit-font-smoothing: antialiased;
       }
-
-      main { max-width: 760px; margin: 0 auto; padding: 0 20px 96px; }
+      main { max-width: 740px; margin: 0 auto; padding: 0 20px 90px; }
+      p { margin: 13px 0; }
+      strong { font-weight: 650; }
+      a { color: var(--brand); }
 
       /* ---------- hero ---------- */
       .hero {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 55%, #6d28d9 100%);
-        color: #fff;
-        padding: 72px 20px 80px;
+        padding: 68px 20px 86px;
         text-align: center;
+        color: #fff;
+        background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #7c3aed 100%);
       }
       .hero::after {
         content: "";
         position: absolute;
-        inset: auto -10% -60% -10%;
-        height: 160px;
+        inset: auto -10% -62% -10%;
+        height: 150px;
         background: var(--bg);
         border-radius: 50% 50% 0 0 / 100% 100% 0 0;
       }
-      .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
-      .hero svg { width: 56px; height: 56px; stroke: #fff; opacity: .95; }
-      .hero h1 {
-        font-size: clamp(2rem, 6vw, 2.9rem);
-        line-height: 1.15;
-        margin: 18px 0 10px;
-        letter-spacing: -0.02em;
-      }
-      .hero p { margin: 0 auto; max-width: 30em; font-size: 1.05rem; color: #dbeafe; }
-      .hero .tag {
-        display: inline-block;
-        margin-bottom: 4px;
-        padding: 5px 13px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, .16);
-        font-size: .75rem;
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+      .hero-in { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+      .ball { width: 60px; height: 60px; stroke: #fff; animation: spin 14s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .hero h1 { font-size: clamp(2rem, 6.5vw, 2.9rem); line-height: 1.12; margin: 16px 0 12px; letter-spacing: -.02em; font-weight: 800; }
+      .hero p { color: #dde7ff; font-size: 1.06rem; margin: 0 auto; max-width: 28em; }
+      .pill {
+        display: inline-block; padding: 5px 14px; border-radius: 999px;
+        background: rgba(255,255,255,.17); font-size: .74rem; font-weight: 700;
+        letter-spacing: .09em; text-transform: uppercase;
       }
 
       /* ---------- sections ---------- */
-      section { margin-top: 56px; scroll-margin-top: 24px; }
-      h2 {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 1.45rem;
-        letter-spacing: -0.015em;
-        margin: 0 0 6px;
+      section { margin-top: 58px; }
+      h2 { display: flex; gap: 12px; align-items: center; font-size: 1.42rem; letter-spacing: -.015em; margin: 0 0 4px; font-weight: 750; }
+      h2 .n {
+        flex: none; display: grid; place-items: center; width: 34px; height: 34px;
+        border-radius: 11px; background: var(--soft); color: var(--brand); font-size: .95rem; font-weight: 800;
       }
-      h2 .num {
-        flex: none;
-        display: grid;
-        place-items: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        background: var(--brand-soft);
-        color: var(--brand);
-        font-size: .95rem;
-        font-weight: 700;
-      }
-      h3 { font-size: 1.02rem; margin: 28px 0 8px; }
-      p { margin: 12px 0; }
+      h3 { font-size: 1.04rem; margin: 26px 0 6px; }
       .lead { color: var(--muted); }
-      strong { font-weight: 600; }
 
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 20px 22px;
-        margin: 18px 0;
-      }
-
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin: 18px 0; }
       .note {
-        border-left: 3px solid var(--brand);
-        background: var(--brand-soft);
-        border-radius: 0 12px 12px 0;
-        padding: 14px 18px;
-        margin: 20px 0;
-        font-size: .95rem;
+        margin: 20px 0; padding: 15px 18px; border-left: 4px solid var(--brand);
+        background: var(--soft); border-radius: 0 13px 13px 0; font-size: .96rem;
       }
       .note b { color: var(--brand); }
+      .big-quote { font-size: 1.12rem; font-weight: 600; text-align: center; margin: 0; }
 
-      /* ---------- pipeline ---------- */
-      .flow { margin: 26px 0; }
-      .step {
-        display: flex;
-        gap: 16px;
-        align-items: flex-start;
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 18px 20px;
-      }
-      .step .icon {
-        flex: none;
-        display: grid;
-        place-items: center;
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background: var(--brand-soft);
-        font-size: 1.25rem;
-      }
+      /* ---------- avant / après ---------- */
+      .compare { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; margin: 22px 0; }
+      .compare > div { border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; background: var(--surface); }
+      .compare h4 { margin: 0 0 8px; font-size: .95rem; display: flex; align-items: center; gap: 7px; }
+      .compare ul { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
+      .compare .bad { border-color: #f3c6c6; }
+      .compare .good { border-color: #b9e6cd; }
+      @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+
+      /* ---------- personnages ---------- */
+      .cast { display: grid; gap: 14px; margin: 22px 0; }
+      .who { display: flex; gap: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 17px 18px; }
+      .who .face { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--soft); font-size: 1.5rem; }
+      .who h4 { margin: 0; font-size: 1rem; }
+      .who .role { font-size: .78rem; color: var(--brand); font-weight: 650; text-transform: uppercase; letter-spacing: .05em; }
+      .who p { margin: 5px 0 0; font-size: .93rem; color: var(--muted); }
+
+      /* ---------- flow animé ---------- */
+      .flow { position: relative; margin: 24px 0 8px; }
+      .step { display: flex; gap: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; transition: box-shadow .3s, border-color .3s, transform .3s; }
+      .step .ico { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; background: var(--soft); font-size: 1.35rem; }
       .step h4 { margin: 0 0 2px; font-size: 1rem; }
-      .step .where {
-        display: inline-block;
-        margin-left: 8px;
-        padding: 1px 8px;
-        border-radius: 999px;
-        background: var(--brand-soft);
-        color: var(--brand);
-        font-size: .68rem;
-        font-weight: 600;
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-        vertical-align: 2px;
+      .step p { margin: 0; font-size: .92rem; color: var(--muted); }
+      .rail { position: relative; height: 34px; }
+      .rail::before { content: ""; position: absolute; left: 39px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+      .rail span { position: absolute; left: 60px; top: 50%; transform: translateY(-50%); font-size: .8rem; color: var(--muted); }
+      .playing .step { animation: glow 3.6s ease both; }
+      .playing .step:nth-of-type(1) { animation-delay: 0s; }
+      .playing .step:nth-of-type(2) { animation-delay: .9s; }
+      .playing .step:nth-of-type(3) { animation-delay: 1.8s; }
+      .playing .step:nth-of-type(4) { animation-delay: 2.7s; }
+      @keyframes glow {
+        0%, 22%, 100% { box-shadow: none; border-color: var(--line); transform: none; }
+        8% { box-shadow: 0 8px 28px rgba(29,78,216,.26); border-color: var(--brand); transform: translateY(-2px); }
       }
-      .step p { margin: 2px 0 0; font-size: .93rem; color: var(--muted); }
-      .arrow {
-        display: block;
-        margin: 0 auto;
-        padding: 6px 0;
-        width: 2px;
-        height: 26px;
-        background: linear-gradient(var(--line), var(--brand));
-        position: relative;
+      .runner { position: absolute; left: 28px; top: 8px; font-size: 1.4rem; opacity: 0; pointer-events: none; }
+      .playing .runner { animation: travel 3.6s ease-in-out both; }
+      @keyframes travel {
+        0% { opacity: 0; transform: translateY(0) rotate(0); }
+        6% { opacity: 1; }
+        94% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(var(--travel, 320px)) rotate(720deg); }
       }
-      .arrow::after {
-        content: "";
-        position: absolute;
-        bottom: -1px;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 5px solid transparent;
-        border-top-color: var(--brand);
+      .play {
+        display: inline-flex; align-items: center; gap: 8px; margin: 2px 0 6px;
+        padding: 9px 18px; border: 0; border-radius: 999px; cursor: pointer;
+        background: var(--brand); color: #fff; font: inherit; font-size: .9rem; font-weight: 650;
       }
-      .arrow span {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        white-space: nowrap;
-        font-size: .78rem;
-        color: var(--muted);
-      }
+      .play:hover { filter: brightness(1.08); }
 
-      /* ---------- table ---------- */
-      table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .95rem; }
-      th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-      td:first-child { color: var(--muted); width: 32%; }
-
-      /* ---------- code ---------- */
-      .snippet { margin: 16px 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
-      .snippet figcaption {
-        padding: 9px 16px;
-        background: var(--surface);
-        border-bottom: 1px solid var(--line);
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-        font-size: .76rem;
-        color: var(--muted);
+      /* ---------- code / traduction ---------- */
+      .dual { margin: 18px 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); }
+      .tabs { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+      .tabs .fname { margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: .72rem; color: var(--muted); }
+      .tabs button {
+        border: 1px solid var(--line); background: transparent; color: var(--muted);
+        border-radius: 999px; padding: 5px 14px; font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
       }
+      .tabs button[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+      .panel { display: none; }
+      .panel.on { display: block; }
+      .human { margin: 0; padding: 16px 20px; counter-reset: line; }
+      .human li { margin: 7px 0; font-size: .96rem; }
+      .human li b { color: var(--brand); }
       pre {
-        margin: 0;
-        padding: 16px 18px;
-        background: var(--code-bg);
-        color: var(--code-ink);
-        overflow-x: auto;
-        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-        font-size: .83rem;
-        line-height: 1.7;
-        -webkit-overflow-scrolling: touch;
+        margin: 0; padding: 16px 18px; background: var(--code-bg); color: var(--code-ink);
+        overflow-x: auto; font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: .82rem; line-height: 1.75;
       }
-      code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-      p code, li code, td code {
-        background: var(--brand-soft);
-        color: var(--brand);
-        padding: 1px 6px;
-        border-radius: 6px;
-        font-size: .86em;
-      }
-      .k { color: var(--code-key); }
-      .s { color: var(--code-str); }
-      .c { color: var(--code-com); font-style: italic; }
-      .f { color: var(--code-fn); }
-      .tree { color: var(--code-ink); }
-      .tree .c { color: var(--code-com); }
+      code { font-family: ui-monospace, Menlo, Consolas, monospace; }
+      p code, li code, td code, .who code { background: var(--soft); color: var(--brand); padding: 1px 6px; border-radius: 6px; font-size: .85em; }
+      .k { color: var(--code-key); } .s { color: var(--code-str); } .c { color: var(--code-com); font-style: italic; } .f { color: var(--code-fn); }
 
-      /* ---------- endpoints ---------- */
-      .routes { display: grid; gap: 12px; margin: 20px 0; }
-      .route {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 10px;
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 14px 16px;
+      /* ---------- quiz ---------- */
+      .quiz { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 16px 0; }
+      .quiz p.q { margin: 0 0 12px; font-weight: 650; }
+      .quiz button {
+        display: block; width: 100%; text-align: left; margin: 7px 0; padding: 11px 14px;
+        border: 1px solid var(--line); border-radius: 12px; background: transparent; color: inherit;
+        font: inherit; font-size: .94rem; cursor: pointer; transition: .18s;
       }
-      .route code {
-        background: var(--brand-soft);
-        color: var(--brand);
-        padding: 2px 8px;
-        border-radius: 6px;
-        font-size: .83rem;
-        font-weight: 600;
-      }
-      .route span { font-size: .92rem; color: var(--muted); }
+      .quiz button:hover { border-color: var(--brand); }
+      .quiz button.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); font-weight: 600; }
+      .quiz button.wrong { background: var(--no-soft); border-color: var(--no); color: var(--no); }
+      .quiz .why { margin: 12px 0 0; font-size: .9rem; color: var(--muted); display: none; }
+      .quiz .why.on { display: block; }
 
-      /* ---------- footer ---------- */
-      footer {
-        margin-top: 64px;
-        padding-top: 26px;
-        border-top: 1px solid var(--line);
-        font-size: .9rem;
-        color: var(--muted);
-        text-align: center;
-      }
-      a { color: var(--brand); }
-      .cta {
-        display: inline-block;
-        margin: 6px 6px 14px;
-        padding: 11px 22px;
-        border-radius: 999px;
-        background: var(--brand);
-        color: #fff;
-        font-weight: 600;
-        text-decoration: none;
-      }
+      /* ---------- glossaire ---------- */
+      details { border: 1px solid var(--line); border-radius: 13px; background: var(--surface); padding: 12px 16px; margin: 10px 0; }
+      details summary { cursor: pointer; font-weight: 600; font-size: .96rem; }
+      details p { margin: 9px 0 2px; font-size: .93rem; color: var(--muted); }
+
+      footer { margin-top: 62px; padding-top: 26px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .9rem; }
+      .cta { display: inline-block; margin: 6px 6px 14px; padding: 11px 22px; border-radius: 999px; background: var(--brand); color: #fff; font-weight: 650; text-decoration: none; }
       .cta.ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
 
-      @media (max-width: 520px) {
-        body { font-size: 16px; }
-        .step { flex-direction: row; padding: 15px 16px; }
-        .arrow span { position: static; display: block; transform: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .ball, .playing .step, .playing .runner { animation: none; }
       }
     </style>
   </head>
 
   <body>
     <header class="hero">
-      <div class="hero-inner">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <div class="hero-in">
+        <svg class="ball" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-          <path d="M12 12a8 8 0 0 0 8 4" />
-          <path d="M7.5 13.5a12 12 0 0 0 8.5 6.5" />
-          <path d="M12 12a8 8 0 0 0 -7.464 4.928" />
-          <path d="M12.951 7.353a12 12 0 0 0 -9.88 4.111" />
-          <path d="M12 12a8 8 0 0 0 -.536 -8.928" />
-          <path d="M15.549 15.147a12 12 0 0 0 1.38 -10.611" />
+          <path d="M12 12a8 8 0 0 0 8 4" /><path d="M7.5 13.5a12 12 0 0 0 8.5 6.5" />
+          <path d="M12 12a8 8 0 0 0 -7.464 4.928" /><path d="M12.951 7.353a12 12 0 0 0 -9.88 4.111" />
+          <path d="M12 12a8 8 0 0 0 -.536 -8.928" /><path d="M15.549 15.147a12 12 0 0 0 1.38 -10.611" />
         </svg>
-        <span class="tag">Sous le capot</span>
-        <h1>Comment marche le site des matchs</h1>
+        <div><span class="pill">Visite guidée</span></div>
+        <h1>Comment marche le site des matchs&nbsp;?</h1>
         <p>
-          Tous les matchs du VGA Saint-Maur sur une page. Voici d'où viennent les données,
-          qui fait quoi, et à quoi ressemble le code. Sans jargon.
+          Expliqué à quelqu'un qui n'a jamais vu une ligne de code de sa vie.
+          Pas de jargon. Des images, un bouton à presser, et un petit quiz à la fin.
         </p>
       </div>
     </header>
 
     <main>
-      <section id="idee">
-        <h2><span class="num">1</span> L'idée en une phrase</h2>
+      <!-- 1 -->
+      <section>
+        <h2><span class="n">1</span> D'abord : c'est quoi, « du code » ?</h2>
         <p>
-          La FFVB publie déjà tous les matchs du club — mais éparpillés sur cinq pages,
-          une par championnat. Ce site va chercher ces données une seule fois, puis les
-          affiche proprement sur <strong>une seule page</strong>.
+          Du code, c'est <strong>une recette de cuisine écrite pour un commis très rapide et très bête</strong>.
+        </p>
+        <p>
+          Ce commis, c'est l'ordinateur. Il travaille à une vitesse folle — des milliers de gestes
+          par seconde — mais il ne comprend rien et ne devine rien. Il fait <em>exactement</em>
+          ce qui est écrit, dans l'ordre.
+        </p>
+        <div class="card">
+          <p style="margin:0 0 6px"><strong>Tu écris :</strong> « casse 3 œufs »  →  il casse 3 œufs. 👌</p>
+          <p style="margin:0"><strong>Tu écris :</strong> « casse 300 œufs »  →  il casse 300 œufs, sans trouver ça bizarre. 🥚🥚🥚</p>
+        </div>
+        <p>
+          Donc : quand un site « bugue », ce n'est presque jamais l'ordinateur qui s'est trompé.
+          C'est la recette qui était mal écrite.
         </p>
         <div class="note">
-          <b>À retenir :</b> le site n'invente rien et ne stocke rien. Il recopie la FFVB et
-          la met en forme. Quand la FFVB saisit un résultat, le site l'a dans le quart d'heure.
+          <b>Un mot à retenir :</b> un <strong>programme</strong>, c'est juste une recette.
+          <strong>Coder</strong>, c'est écrire la recette. Rien de plus mystérieux.
         </div>
       </section>
 
-      <section id="schema">
-        <h2><span class="num">2</span> Le trajet d'un match</h2>
-        <p class="lead">Quatre étapes, de la fédération jusqu'à ton téléphone.</p>
-
-        <div class="flow">
-          <div class="step">
-            <div class="icon">🏐</div>
-            <div>
-              <h4>Le site de la FFVB <span class="where">ffvbbeach.org</span></h4>
-              <p>La source officielle : un fichier texte avec les 98 matchs de la saison.</p>
-            </div>
-          </div>
-
-          <div class="arrow"><span>va chercher le fichier, au plus une fois toutes les 15 min</span></div>
-
-          <div class="step">
-            <div class="icon">👨‍🍳</div>
-            <div>
-              <h4>Le backend — « la cuisine » <span class="where">backend/</span></h4>
-              <p>
-                Il télécharge, traduit le texte brut en données propres, et garde la dernière
-                bonne copie. Si la FFVB tombe en panne, il ressert cette copie plutôt qu'une
-                page d'erreur.
-              </p>
-            </div>
-          </div>
-
-          <div class="arrow"><span>envoie une liste de matchs bien rangée</span></div>
-
-          <div class="step">
-            <div class="icon">🖼️</div>
-            <div>
-              <h4>Le frontend — « la vitrine » <span class="where">src/</span></h4>
-              <p>Il trie par date, colore chaque équipe, affiche le score, le gymnase, l'adversaire.</p>
-            </div>
-          </div>
-
-          <div class="arrow"><span>dessine la page</span></div>
-
-          <div class="step">
-            <div class="icon">📱</div>
-            <div>
-              <h4>Ton téléphone <span class="where">volley.apoena.dev</span></h4>
-              <p>Une page qui s'ouvre sur ton équipe et se rafraîchit toute seule.</p>
-            </div>
-          </div>
-        </div>
-
+      <!-- 2 -->
+      <section>
+        <h2><span class="n">2</span> Et un site internet, alors ?</h2>
+        <p>
+          Deux ordinateurs qui se parlent, comme au restaurant.
+        </p>
+        <p>
+          Le tien — ton téléphone — c'est <strong>le client à table</strong>. Il demande.<br />
+          En face, un ordinateur allumé jour et nuit quelque part — on l'appelle
+          <strong>un serveur</strong> — c'est <strong>la cuisine</strong>. Il répond.
+        </p>
+        <p>
+          Quand tu tapes l'adresse du site, ton téléphone passe commande.
+          La cuisine prépare et renvoie. Ça prend moins d'une seconde.
+        </p>
         <div class="note">
-          <b>Image mentale :</b> la FFVB, c'est le marché — la matière première en vrac.
-          Le backend, c'est la cuisine : il nettoie et prépare. Le frontend, c'est l'assiette :
-          c'est joli et ça se mange.
+          <b>Pourquoi deux&nbsp;?</b> Parce que la cuisine ne peut pas tenir dans ta poche,
+          et qu'elle doit servir tout le club en même temps.
         </div>
       </section>
 
-      <section id="deux-parties">
-        <h2><span class="num">3</span> Pourquoi deux parties ?</h2>
-        <table>
-          <thead>
-            <tr><th></th><th>Backend (cuisine)</th><th>Frontend (vitrine)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Où ça tourne</td><td>Sur un serveur, invisible</td><td>Dans ton navigateur</td></tr>
-            <tr><td>Son travail</td><td>Parler à la FFVB, nettoyer</td><td>Afficher, trier, filtrer</td></tr>
-            <tr><td>Si la FFVB tombe</td><td>Ressert la dernière copie</td><td>Affiche « données d'hier »</td></tr>
-          </tbody>
-        </table>
+      <!-- 3 -->
+      <section>
+        <h2><span class="n">3</span> Le problème qu'on a voulu régler</h2>
         <p>
-          Le backend est le seul à parler à la FFVB. Résultat : la FFVB reçoit quatre visites
-          par heure, pas quatre mille — même si cent personnes ouvrent la page en même temps.
+          La fédération (la FFVB) publie déjà tous nos matchs. Mais elle les range championnat par
+          championnat. Le club en a cinq. Donc nos résultats sont éparpillés sur cinq pages
+          différentes, dans un site pas très accueillant.
         </p>
+        <div class="compare">
+          <div class="bad">
+            <h4>😤 Avant</h4>
+            <ul>
+              <li>5 pages à ouvrir</li>
+              <li>Chercher son équipe à chaque fois</li>
+              <li>Aucun lien vers le gymnase</li>
+              <li>Rien dans son agenda</li>
+            </ul>
+          </div>
+          <div class="good">
+            <h4>😌 Avec le site</h4>
+            <ul>
+              <li>1 seule page</li>
+              <li>Elle s'ouvre sur TON équipe</li>
+              <li>Le gymnase s'ouvre dans Maps</li>
+              <li>Les matchs arrivent dans ton agenda</li>
+            </ul>
+          </div>
+        </div>
+        <div class="note">
+          <b>Important :</b> le site <strong>n'invente rien</strong>. Il recopie la fédération et la
+          met en forme. Si la FFVB se trompe sur un horaire, notre site affiche la même erreur —
+          c'est la même source.
+        </div>
       </section>
 
-      <section id="donnee">
-        <h2><span class="num">4</span> La donnée, étape par étape</h2>
+      <!-- 4 -->
+      <section>
+        <h2><span class="n">4</span> Les trois personnages</h2>
+        <p class="lead">Tout le système tient en trois rôles. Comme dans un restaurant.</p>
+        <div class="cast">
+          <div class="who">
+            <div class="face">🏐</div>
+            <div>
+              <span class="role">Le producteur</span>
+              <h4>Le site de la fédération</h4>
+              <p>Il détient la vérité : dates, horaires, scores, classements. Mais il livre ça en vrac, dans un format illisible pour nous.</p>
+            </div>
+          </div>
+          <div class="who">
+            <div class="face">👨‍🍳</div>
+            <div>
+              <span class="role">La cuisine</span>
+              <h4>Le robot-cuisinier</h4>
+              <p>Un programme qui tourne jour et nuit. Il va chercher le vrac chez la fédération, le nettoie, le range. Il garde toujours son dernier panier au frais.</p>
+            </div>
+          </div>
+          <div class="who">
+            <div class="face">🖼️</div>
+            <div>
+              <span class="role">La salle</span>
+              <h4>La page que tu vois</h4>
+              <p>Elle reçoit les données déjà propres et les dessine : une ligne par match, une couleur par équipe, le score en vert quand c'est gagné.</p>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          <b>Le truc malin :</b> seul le robot-cuisinier parle à la fédération. Il y va au maximum
+          <strong>une fois tous les quarts d'heure</strong>, même si 200 personnes ouvrent la page.
+          La fédération ne croule pas sous les visites, et la page répond instantanément.
+        </div>
+      </section>
 
-        <h3>A. Ce que la FFVB donne</h3>
-        <p>Du texte brut, séparé par des points-virgules. Fait pour les machines, pas pour nous :</p>
-        <figure class="snippet">
-          <figcaption>réponse de la FFVB</figcaption>
-<pre>2MB004;2MB;ABCCS;01;27/09/2026;16:00;VIE AU GRAND AIR DE ST MAUR;
-PARIS VOLLEY CLUB;BROSSOLETTE;3-1;25-20,22-25,25-19,25-21</pre>
-        </figure>
+      <!-- 5 -->
+      <section>
+        <h2><span class="n">5</span> Le voyage d'un match</h2>
+        <p class="lead">Appuie sur le bouton pour suivre un résultat, du gymnase jusqu'à ton téléphone.</p>
+        <button class="play" id="play" type="button">▶︎ Lancer le voyage</button>
 
-        <h3>B. Ce que le backend en fait</h3>
-        <p>Chaque information reçoit une étiquette. <code>atHome: true</code> veut dire « match à domicile » :</p>
-        <figure class="snippet">
-          <figcaption>réponse de /api/matches</figcaption>
-<pre>{
-  <span class="s">"date"</span>:     <span class="s">"2026-09-27"</span>,
-  <span class="s">"time"</span>:     <span class="s">"16:00"</span>,
-  <span class="s">"team"</span>:     <span class="s">"VIE AU GRAND AIR DE ST MAUR"</span>,
-  <span class="s">"opponent"</span>: <span class="s">"PARIS VOLLEY CLUB"</span>,
-  <span class="s">"atHome"</span>:   <span class="k">true</span>,
-  <span class="s">"venue"</span>:    <span class="s">"BROSSOLETTE"</span>,
-  <span class="s">"sets"</span>:     <span class="s">"3-1"</span>
-}</pre>
-        </figure>
+        <div class="flow" id="flow">
+          <div class="runner" id="runner">🏐</div>
 
-        <h3>C. Ce que le site calcule en plus</h3>
+          <div class="step">
+            <div class="ico">✍️</div>
+            <div>
+              <h4>Samedi, 18 h 30 — le match est fini</h4>
+              <p>Le marqueur saisit le score sur le site de la fédération. 3 sets à 1.</p>
+            </div>
+          </div>
+          <div class="rail"><span>la fédération publie</span></div>
+
+          <div class="step">
+            <div class="ico">👨‍🍳</div>
+            <div>
+              <h4>Dans le quart d'heure — le robot passe</h4>
+              <p>Il récupère la saison entière d'un coup, repère ce qui a changé, et range tout proprement.</p>
+            </div>
+          </div>
+          <div class="rail"><span>il transmet la liste rangée</span></div>
+
+          <div class="step">
+            <div class="ico">🎨</div>
+            <div>
+              <h4>La page se dessine</h4>
+              <p>Le match quitte « À venir » et rejoint « Résultats ». Le score s'affiche en vert : gagné.</p>
+            </div>
+          </div>
+          <div class="rail"><span>envoyé à ton écran</span></div>
+
+          <div class="step">
+            <div class="ico">📱</div>
+            <div>
+              <h4>18 h 45 — tu ouvres le site</h4>
+              <p>C'est déjà à jour. Personne n'a rien recopié à la main.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 -->
+      <section>
+        <h2><span class="n">6</span> Alors, à quoi ça ressemble vraiment&nbsp;?</h2>
         <p>
-          Toute la « magie » tient en quatre lignes. La FFVB écrit toujours le score de
-          l'équipe qui reçoit en premier — donc à l'extérieur, il faut inverser :
+          Voilà le moment où on soulève le capot. Garde juste ça en tête :
+          <strong>le code, ça se lit comme des phrases</strong>. Des phrases très sèches, écrites
+          pour le commis bête.
         </p>
-        <figure class="snippet">
-          <figcaption>src/lib/matches.ts</figcaption>
-<pre><span class="c">// On lit "3-1". Mais 3-1 pour qui ?</span>
-<span class="k">const</span> [homeSets, awaySets] = raw.sets.<span class="f">split</span>(<span class="s">"-"</span>).<span class="f">map</span>(Number)
-
-<span class="k">const</span> played    = Number.<span class="f">isFinite</span>(homeSets)         <span class="c">// match joué ?</span>
-<span class="k">const</span> ourSets   = raw.atHome ? homeSets : awaySets <span class="c">// nos sets à nous</span>
-<span class="k">const</span> theirSets = raw.atHome ? awaySets : homeSets <span class="c">// ceux d'en face</span>
-<span class="k">const</span> won       = ourSets &gt; theirSets              <span class="c">// victoire ?</span></pre>
-        </figure>
         <p class="lead">
-          <code>?</code> se lit « si … alors … sinon ». Quatre lignes, et la page sait dire
-          gagné ou perdu pour les 98 matchs.
+          Chaque encadré ci-dessous a deux boutons. Reste sur « En français » autant que tu veux,
+          puis clique « Le vrai code » quand tu es curieux : c'est la même chose, mot pour mot.
         </p>
 
-        <h3>D. L'affichage</h3>
-        <p>Ça se lit presque comme une phrase :</p>
-        <figure class="snippet">
-          <figcaption>src/components/MatchRow.vue</figcaption>
-<pre><span class="c">&lt;!-- si à domicile, écris "Domicile" ; sinon "Extérieur" --&gt;</span>
-<span class="k">&lt;span</span> <span class="f">:class</span>=<span class="s">"match.atHome ? 'badge-primary' : 'badge-ghost'"</span><span class="k">&gt;</span>
-  {{ match.atHome ? <span class="s">"Domicile"</span> : <span class="s">"Extérieur"</span> }}
-<span class="k">&lt;/span&gt;</span>
-
-<span class="c">&lt;!-- si gagné, le score en vert ; sinon en gris --&gt;</span>
-<span class="k">&lt;div</span> <span class="f">:class</span>=<span class="s">"match.won ? 'text-success' : 'text-base-content/50'"</span><span class="k">&gt;</span>
-  {{ match.ourSets }}–{{ match.theirSets }}
-<span class="k">&lt;/div&gt;</span></pre>
-        </figure>
-      </section>
-
-      <section id="japon">
-        <h2><span class="num">5</span> Un exemple concret : le drapeau 🇯🇵</h2>
+        <h3>Exemple 1 — qui a gagné ?</h3>
         <p>
-          Le passeur part au Japon du 17 novembre au 15 février. On veut un petit drapeau
-          sur chaque match de cette période. Tout tient en deux fichiers et cinq lignes.
+          La fédération écrit le score sous la forme <code>3-1</code>. Mais 3 pour qui ?
+          Elle met <strong>toujours l'équipe qui reçoit en premier</strong>. Il faut donc savoir
+          si on jouait chez nous ou chez eux.
         </p>
 
-        <figure class="snippet">
-          <figcaption>src/lib/absences.ts — la règle</figcaption>
-<pre><span class="k">export const</span> ABSENCES = [
-  { flag: <span class="s">"🇯🇵"</span>, reason: <span class="s">"Passeur au Japon"</span>,
-    from: <span class="s">"2026-11-17"</span>, to: <span class="s">"2027-02-15"</span> },
+        <div class="dual">
+          <div class="tabs">
+            <button type="button" data-panel="fr1" aria-selected="true">👋 En français</button>
+            <button type="button" data-panel="code1" aria-selected="false">💻 Le vrai code</button>
+            <span class="fname">matches.ts</span>
+          </div>
+          <div class="panel on" id="fr1">
+            <ol class="human">
+              <li>Lis le score écrit par la fédération : <b>3-1</b>.</li>
+              <li>Le premier chiffre appartient à l'équipe qui recevait.</li>
+              <li>Si on jouait <b>à la maison</b> → le 3 est à nous, le 1 est à eux.</li>
+              <li>Si on jouait <b>dehors</b> → le 3 est à eux, le 1 est à nous.</li>
+              <li>Si notre chiffre est le plus grand → <b>c'est gagné</b>, on l'affiche en vert.</li>
+            </ol>
+          </div>
+          <div class="panel" id="code1">
+<pre><span class="c">// On coupe "3-1" en deux nombres : celui qui reçoit, celui qui visite.</span>
+<span class="k">const</span> [recoit, visiteur] = score.<span class="f">split</span>(<span class="s">"-"</span>)
+
+<span class="c">// Selon l'endroit du match, on sait lequel est le nôtre.</span>
+<span class="k">const</span> nous = aDomicile ? recoit : visiteur
+<span class="k">const</span> eux  = aDomicile ? visiteur : recoit
+
+<span class="c">// Et voilà la victoire.</span>
+<span class="k">const</span> gagne = nous &gt; eux</pre>
+          </div>
+        </div>
+        <p class="lead">
+          Le petit <code>?</code> se lit « si… alors… sinon ». C'est le seul symbole bizarre de
+          l'encadré, et tu viens de l'apprendre.
+        </p>
+
+        <h3>Exemple 2 — le drapeau japonais 🇯🇵</h3>
+        <p>
+          Le passeur est au Japon du 17 novembre au 15 février. On voulait un petit drapeau sur
+          chaque match de cette période — pour voir d'un coup d'œil les week-ends concernés.
+        </p>
+        <p>
+          On ne va pas marquer les 98 matchs un par un. On écrit <strong>la règle une seule fois</strong>,
+          et le commis l'applique partout, pour toujours.
+        </p>
+
+        <div class="dual">
+          <div class="tabs">
+            <button type="button" data-panel="fr2" aria-selected="true">👋 En français</button>
+            <button type="button" data-panel="code2" aria-selected="false">💻 Le vrai code</button>
+            <span class="fname">absences.ts</span>
+          </div>
+          <div class="panel on" id="fr2">
+            <ol class="human">
+              <li>Note l'absence : <b>drapeau 🇯🇵</b>, motif « Passeur au Japon », <b>du</b> 17/11/2026 <b>au</b> 15/02/2027.</li>
+              <li>Pour chaque match, compare sa date à cette période.</li>
+              <li>Si la date tombe dedans → affiche le drapeau.</li>
+              <li>Sinon → n'affiche rien du tout.</li>
+            </ol>
+          </div>
+          <div class="panel" id="code2">
+<pre><span class="k">const</span> ABSENCES = [
+  { drapeau: <span class="s">"🇯🇵"</span>, motif: <span class="s">"Passeur au Japon"</span>,
+    du: <span class="s">"2026-11-17"</span>, au: <span class="s">"2027-02-15"</span> },
 ]
 
-<span class="c">// Est-ce qu'une absence couvre cette date ?</span>
-<span class="k">export function</span> <span class="f">absenceOn</span>(date) {
-  <span class="k">return</span> ABSENCES.<span class="f">find</span>((a) =&gt; date &gt;= a.from &amp;&amp; date &lt;= a.to)
+<span class="c">// Une absence couvre-t-elle cette date ?</span>
+<span class="k">function</span> <span class="f">absenceLe</span>(date) {
+  <span class="k">return</span> ABSENCES.<span class="f">find</span>((a) =&gt; date &gt;= a.du &amp;&amp; date &lt;= a.au)
 }</pre>
-        </figure>
-
-        <figure class="snippet">
-          <figcaption>src/components/MatchRow.vue — l'affichage</figcaption>
-<pre><span class="k">&lt;span</span> <span class="f">v-if</span>=<span class="s">"absence"</span> <span class="f">:title</span>=<span class="s">"absence.reason"</span><span class="k">&gt;</span>{{ absence.flag }}<span class="k">&lt;/span&gt;</span></pre>
-        </figure>
-
-        <p>
-          <code>v-if</code> veut dire « affiche ceci <strong>seulement si</strong> ».
-          Pas d'absence ce jour-là, rien ne s'affiche.
-        </p>
+          </div>
+        </div>
         <div class="note">
-          <b>C'est ça, tout le repo :</b> une petite règle écrite une seule fois, appliquée
-          automatiquement aux 98 matchs. Pour ajouter une deuxième absence, on ajoute une ligne.
+          <b>C'est tout le métier, résumé :</b> on n'écrit pas les réponses, on écrit les règles.
+          Pour signaler un deuxième absent, on ajoute <strong>une ligne</strong> — et les 98 matchs
+          se mettent à jour tout seuls.
         </div>
       </section>
 
-      <section id="routes">
-        <h2><span class="num">6</span> Les trois choses que le site sait faire</h2>
-        <div class="routes">
-          <div class="route">
-            <code>/api/matches</code>
-            <span>la liste des matchs → onglets « À venir » et « Résultats »</span>
-          </div>
-          <div class="route">
-            <code>/api/standings</code>
-            <span>les classements → onglet « Classement »</span>
-          </div>
-          <div class="route">
-            <code>/api/calendar.ics</code>
-            <span>un abonnement agenda → bouton « Ajouter à mon calendrier »</span>
-          </div>
-        </div>
+      <!-- 7 -->
+      <section>
+        <h2><span class="n">7</span> Et si quelque chose casse&nbsp;?</h2>
+        <h3>Si le site de la fédération tombe en panne</h3>
         <p>
-          Le dernier est le plus malin. Au lieu de télécharger un fichier figé, ton téléphone
-          <strong>s'abonne</strong>. Si la FFVB déplace un match, ton agenda se corrige tout seul.
+          Ça arrive, souvent un samedi soir. Le robot-cuisinier garde toujours son dernier panier.
+          Donc la page continue de s'afficher, avec une petite mention « données d'il y a 2 h ».
+          Mieux vaut un calendrier d'hier qu'une page blanche.
         </p>
-      </section>
 
-      <section id="carte">
-        <h2><span class="num">7</span> La carte du projet</h2>
-        <p class="lead">Règle de lecture : <code>.vue</code> = ce qui s'affiche · <code>.ts</code> = ce qui se calcule · <code>.gleam</code> = ce qui va chercher les données.</p>
-        <figure class="snippet">
-          <figcaption>arborescence</figcaption>
-<pre class="tree">volley/
-├── src/                    <span class="c">LA VITRINE (ce que tu vois)</span>
-│   ├── App.vue             <span class="c">la page entière, les onglets</span>
-│   ├── components/
-│   │   ├── MatchRow.vue        <span class="c">UNE ligne de match</span>
-│   │   ├── MatchCalendar.vue   <span class="c">la vue mois</span>
-│   │   └── PrintSummary.vue    <span class="c">la feuille A4 à imprimer</span>
-│   └── lib/                <span class="c">les règles de calcul</span>
-│       ├── matches.ts          <span class="c">qui a gagné, lien Google Maps</span>
-│       ├── absences.ts         <span class="c">le drapeau 🇯🇵</span>
-│       └── format.ts           <span class="c">"sam.", "il y a 5 min"</span>
-│
-├── backend/                <span class="c">LA CUISINE (invisible)</span>
-│   └── src/volley.gleam    <span class="c">va chercher la FFVB, garde 15 min en mémoire</span>
-│
-└── docker-compose.yml      <span class="c">la recette pour mettre le site en ligne</span></pre>
-        </figure>
-      </section>
-
-      <section id="tests">
-        <h2><span class="num">8</span> Pourquoi ça ne casse pas</h2>
+        <h3>Si quelqu'un casse la recette en la modifiant</h3>
         <p>
-          À côté de chaque fichier de règles, il y a un fichier de tests. C'est un filet de
-          sécurité : on écrit à l'avance la bonne réponse, et l'ordinateur vérifie.
+          Il y a un goûteur automatique. Avant chaque modification, une machine rejoue une liste
+          de questions dont on connaît déjà la réponse :
         </p>
-        <figure class="snippet">
-          <figcaption>src/lib/absences.test.ts</figcaption>
-<pre><span class="c">// "le 20 novembre, le drapeau doit être là"</span>
-<span class="f">expect</span>(<span class="f">absenceOn</span>(<span class="s">"2026-11-20"</span>)).<span class="f">toBeDefined</span>()
-
-<span class="c">// "la veille du départ, rien"</span>
-<span class="f">expect</span>(<span class="f">absenceOn</span>(<span class="s">"2026-11-16"</span>)).<span class="f">toBeUndefined</span>()</pre>
-        </figure>
-        <p>
-          Une seule commande rejoue tous ces contrôles. Si quelqu'un casse une règle en
-          modifiant le code, l'ordinateur le dit immédiatement — avant que ça n'arrive sur le site.
-        </p>
-      </section>
-
-      <section id="resume">
-        <h2><span class="num">9</span> En une phrase, pour le coach</h2>
         <div class="card">
-          <p style="margin: 0">
-            Un programme lit la FFVB toutes les quinze minutes, range chaque match dans des
-            cases nommées, et une page web dessine ces cases avec une couleur par équipe.
-            <strong>Aucune saisie à la main.</strong> Quand la FFVB publie un résultat,
-            le site l'affiche dans le quart d'heure.
+          <p style="margin:0 0 6px">« Le 20 novembre, le drapeau est bien là ? » → <strong style="color:var(--ok)">oui ✓</strong></p>
+          <p style="margin:0">« La veille du départ, pas de drapeau ? » → <strong style="color:var(--ok)">correct ✓</strong></p>
+        </div>
+        <p>
+          Si une seule réponse devient fausse, la machine refuse la modification. Ça s'appelle
+          <strong>des tests</strong>, et c'est ce qui permet de toucher au site sans avoir peur.
+        </p>
+      </section>
+
+      <!-- 8 -->
+      <section>
+        <h2><span class="n">8</span> Petit quiz 🏐</h2>
+        <p class="lead">Trois questions. Clique sur ta réponse.</p>
+
+        <div class="quiz" data-right="1">
+          <p class="q">1. Qui va chercher les résultats sur le site de la fédération ?</p>
+          <button type="button">Ton téléphone, à chaque fois que tu ouvres la page</button>
+          <button type="button">Le robot-cuisinier, au maximum une fois par quart d'heure</button>
+          <button type="button">Un bénévole du club, le dimanche soir</button>
+          <p class="why">Ton téléphone, lui, ne parle qu'au robot. Résultat : la fédération reçoit 4 visites par heure, pas 4 000.</p>
+        </div>
+
+        <div class="quiz" data-right="0">
+          <p class="q">2. La fédération est en panne samedi soir. Que voit-on sur le site ?</p>
+          <button type="button">La dernière version connue, avec la mention « pas tout frais »</button>
+          <button type="button">Une page blanche</button>
+          <button type="button">Les matchs du club disparaissent</button>
+          <p class="why">Le robot garde toujours son dernier panier. Une panne dégrade la fraîcheur, pas le service.</p>
+        </div>
+
+        <div class="quiz" data-right="2">
+          <p class="q">3. Pour signaler un deuxième joueur absent, il faut…</p>
+          <button type="button">Recopier le drapeau sur les 98 matchs</button>
+          <button type="button">Refaire tout le site</button>
+          <button type="button">Ajouter une ligne de règle : le drapeau, le motif, les deux dates</button>
+          <p class="why">On écrit la règle, jamais les réponses. Le commis se charge de l'appliquer partout.</p>
+        </div>
+      </section>
+
+      <!-- 9 -->
+      <section>
+        <h2><span class="n">9</span> Les mots qu'on t'a dits</h2>
+        <p class="lead">Clique pour ouvrir. Tu peux en citer en réunion sans risque. 😄</p>
+
+        <details>
+          <summary>Un programme / du code</summary>
+          <p>Une recette écrite pour l'ordinateur. Des instructions dans l'ordre, sans aucun sous-entendu.</p>
+        </details>
+        <details>
+          <summary>Un serveur</summary>
+          <p>Un ordinateur allumé en permanence, quelque part, qui répond aux demandes des autres. Celui du club tient dans une boîte partagée, ça coûte quelques euros par mois.</p>
+        </details>
+        <details>
+          <summary>Des données</summary>
+          <p>Des informations rangées dans des cases nommées : date, adversaire, gymnase, score. Un tableur, en somme.</p>
+        </details>
+        <details>
+          <summary>Un bug</summary>
+          <p>Une faute dans la recette. Le commis a obéi parfaitement… à une consigne mal écrite.</p>
+        </details>
+        <details>
+          <summary>Un test</summary>
+          <p>Une question dont la bonne réponse est écrite à l'avance, rejouée automatiquement pour vérifier qu'on n'a rien cassé.</p>
+        </details>
+        <details>
+          <summary>Déployer / mettre en ligne</summary>
+          <p>Envoyer la nouvelle version de la recette à la cuisine. Deux minutes plus tard, tout le monde l'a.</p>
+        </details>
+      </section>
+
+      <!-- 10 -->
+      <section>
+        <h2><span class="n">10</span> Si tu ne retiens qu'une chose</h2>
+        <div class="card">
+          <p class="big-quote">
+            Un robot lit la fédération toutes les 15 minutes, range chaque match dans des cases
+            nommées, et une page dessine ces cases joliment.<br />
+            <span style="color:var(--brand)">Zéro saisie à la main. Jamais.</span>
           </p>
         </div>
       </section>
 
       <footer>
-        <a class="cta" href="/">Voir le site</a>
-        <a class="cta ghost" href="https://github.com/jcalixte/volley" target="_blank" rel="noopener">Le code</a>
+        <a class="cta" href="/">Voir le site des matchs</a>
+        <a class="cta ghost" href="https://github.com/jcalixte/volley" target="_blank" rel="noopener">La recette complète</a>
         <p>Vie au Grand Air de Saint-Maur — tous les matchs, tous les championnats, sur une page.</p>
       </footer>
     </main>
+
+    <script>
+      // Le voyage animé : la hauteur dépend de l'écran, on la mesure au clic.
+      const flow = document.getElementById("flow")
+      const runner = document.getElementById("runner")
+      document.getElementById("play").addEventListener("click", () => {
+        flow.classList.remove("playing")
+        void flow.offsetWidth // redémarre l'animation
+        runner.style.setProperty("--travel", flow.offsetHeight - 50 + "px")
+        flow.classList.add("playing")
+      })
+
+      // Bascule « en français » / « le vrai code »
+      document.querySelectorAll(".tabs button").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const box = tab.closest(".dual")
+          box.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b === tab))
+          box.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === tab.dataset.panel))
+        })
+      })
+
+      // Quiz
+      document.querySelectorAll(".quiz").forEach((quiz) => {
+        const right = Number(quiz.dataset.right)
+        const choices = [...quiz.querySelectorAll("button")]
+        choices.forEach((choice, index) => {
+          choice.addEventListener("click", () => {
+            choices.forEach((c, i) => {
+              c.classList.toggle("right", i === right)
+              c.classList.toggle("wrong", i === index && index !== right)
+            })
+            quiz.querySelector(".why").classList.add("on")
+          })
+        })
+      })
+    </script>
   </body>
 </html>
