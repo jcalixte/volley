@@ -1,6 +1,7 @@
 import gleam/bit_array
 import gleam/crypto
 import gleam/erlang/process
+import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -163,8 +164,21 @@ fn refresh(
     }
     Error(reason) ->
       case fallback {
-        Some(entry) -> Ok(#(entry.value, entry.fetched_at, True))
-        None -> Error(reason)
+        Some(entry) -> {
+          wisp.log_warning(
+            "upstream refresh failed, serving a copy "
+            <> int.to_string(now - entry.fetched_at)
+            <> "s old: "
+            <> reason,
+          )
+          Ok(#(entry.value, entry.fetched_at, True))
+        }
+        None -> {
+          wisp.log_error(
+            "upstream refresh failed with nothing cached: " <> reason,
+          )
+          Error(reason)
+        }
       }
   }
 }

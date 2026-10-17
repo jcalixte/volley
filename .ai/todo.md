@@ -196,6 +196,7 @@ Not verified: live browser, `gleam test` (no Erlang in this container).
 
 Verified: 69 vitest green (4 new), build/lint clean. Not verified: real print preview
 (no browser in this container).
+
 - [x] Reworked: one grid — Date, Heure, then one column per picked team (header bar in
       team colour). One row per kickoff slot; date cell spans the day's rows; a cell
       lists opponent, score, Dom./Ext. and hall. Rankings sit below, two per line.

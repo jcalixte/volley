@@ -9,7 +9,10 @@
       content="Le site des matchs du VGA Saint-Maur expliqué à quelqu'un qui n'a jamais vu une ligne de code. Avec des images, un quiz, et zéro jargon."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
     <style>
       :root {
         --brand: #1d4ed8;
@@ -49,21 +52,41 @@
         }
       }
 
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--ink);
-        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-family:
+          "Inter",
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
         font-size: 17px;
         line-height: 1.68;
         -webkit-font-smoothing: antialiased;
       }
-      main { max-width: 740px; margin: 0 auto; padding: 0 20px 90px; }
-      p { margin: 13px 0; }
-      strong { font-weight: 650; }
-      a { color: var(--brand); }
+      main {
+        max-width: 740px;
+        margin: 0 auto;
+        padding: 0 20px 90px;
+      }
+      p {
+        margin: 13px 0;
+      }
+      strong {
+        font-weight: 650;
+      }
+      a {
+        color: var(--brand);
+      }
 
       /* ---------- hero ---------- */
       .hero {
@@ -82,133 +105,508 @@
         background: var(--bg);
         border-radius: 50% 50% 0 0 / 100% 100% 0 0;
       }
-      .hero-in { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
-      .ball { width: 60px; height: 60px; stroke: #fff; animation: spin 14s linear infinite; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .hero h1 { font-size: clamp(2rem, 6.5vw, 2.9rem); line-height: 1.12; margin: 16px 0 12px; letter-spacing: -.02em; font-weight: 800; }
-      .hero p { color: #dde7ff; font-size: 1.06rem; margin: 0 auto; max-width: 28em; }
+      .hero-in {
+        position: relative;
+        z-index: 1;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+      .ball {
+        width: 60px;
+        height: 60px;
+        stroke: #fff;
+        animation: spin 14s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .hero h1 {
+        font-size: clamp(2rem, 6.5vw, 2.9rem);
+        line-height: 1.12;
+        margin: 16px 0 12px;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+      }
+      .hero p {
+        color: #dde7ff;
+        font-size: 1.06rem;
+        margin: 0 auto;
+        max-width: 28em;
+      }
       .pill {
-        display: inline-block; padding: 5px 14px; border-radius: 999px;
-        background: rgba(255,255,255,.17); font-size: .74rem; font-weight: 700;
-        letter-spacing: .09em; text-transform: uppercase;
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.17);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
       }
 
       /* ---------- sections ---------- */
-      section { margin-top: 58px; }
-      h2 { display: flex; gap: 12px; align-items: center; font-size: 1.42rem; letter-spacing: -.015em; margin: 0 0 4px; font-weight: 750; }
+      section {
+        margin-top: 58px;
+      }
+      h2 {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 1.42rem;
+        letter-spacing: -0.015em;
+        margin: 0 0 4px;
+        font-weight: 750;
+      }
       h2 .n {
-        flex: none; display: grid; place-items: center; width: 34px; height: 34px;
-        border-radius: 11px; background: var(--soft); color: var(--brand); font-size: .95rem; font-weight: 800;
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        background: var(--soft);
+        color: var(--brand);
+        font-size: 0.95rem;
+        font-weight: 800;
       }
-      h3 { font-size: 1.04rem; margin: 26px 0 6px; }
-      .lead { color: var(--muted); }
+      h3 {
+        font-size: 1.04rem;
+        margin: 26px 0 6px;
+      }
+      .lead {
+        color: var(--muted);
+      }
 
-      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin: 18px 0; }
-      .note {
-        margin: 20px 0; padding: 15px 18px; border-left: 4px solid var(--brand);
-        background: var(--soft); border-radius: 0 13px 13px 0; font-size: .96rem;
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin: 18px 0;
       }
-      .big-quote { font-size: 1.12rem; font-weight: 600; text-align: center; margin: 0; }
+      .note {
+        margin: 20px 0;
+        padding: 15px 18px;
+        border-left: 4px solid var(--brand);
+        background: var(--soft);
+        border-radius: 0 13px 13px 0;
+        font-size: 0.96rem;
+      }
+      .big-quote {
+        font-size: 1.12rem;
+        font-weight: 600;
+        text-align: center;
+        margin: 0;
+      }
 
       /* ---------- avant / après ---------- */
-      .compare { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; margin: 22px 0; }
-      .compare > div { border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; background: var(--surface); }
-      .compare h4 { margin: 0 0 8px; font-size: .95rem; display: flex; align-items: center; gap: 7px; }
-      .compare ul { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
-      .compare ul li { margin: 4px 0; }
-      .compare .bad { border-color: #f3c6c6; }
-      .compare .good { border-color: #b9e6cd; }
-      @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+      .compare {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 1fr 1fr;
+        margin: 22px 0;
+      }
+      .compare > div {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px 18px;
+        background: var(--surface);
+      }
+      .compare h4 {
+        margin: 0 0 8px;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .compare ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .compare ul li {
+        margin: 4px 0;
+      }
+      .compare .bad {
+        border-color: #f3c6c6;
+      }
+      .compare .good {
+        border-color: #b9e6cd;
+      }
+      @media (max-width: 560px) {
+        .compare {
+          grid-template-columns: 1fr;
+        }
+      }
 
       /* ---------- rôles ---------- */
-      .cast { display: grid; gap: 14px; margin: 22px 0; }
-      .who { display: flex; gap: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 17px 18px; }
-      .who .face { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--soft); font-size: 1.5rem; }
-      .who h4 { margin: 0; font-size: 1rem; }
-      .who .role { font-size: .78rem; color: var(--brand); font-weight: 650; text-transform: uppercase; letter-spacing: .05em; }
-      .who p { margin: 5px 0 0; font-size: .93rem; color: var(--muted); }
+      .cast {
+        display: grid;
+        gap: 14px;
+        margin: 22px 0;
+      }
+      .who {
+        display: flex;
+        gap: 15px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 17px 18px;
+      }
+      .who .face {
+        flex: none;
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--soft);
+        font-size: 1.5rem;
+      }
+      .who h4 {
+        margin: 0;
+        font-size: 1rem;
+      }
+      .who .role {
+        font-size: 0.78rem;
+        color: var(--brand);
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .who p {
+        margin: 5px 0 0;
+        font-size: 0.93rem;
+        color: var(--muted);
+      }
 
       /* ---------- flow animé ---------- */
-      .flow { position: relative; margin: 24px 0 8px; }
-      .step { display: flex; gap: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; transition: box-shadow .3s, border-color .3s, transform .3s; }
-      .step .ico { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; background: var(--soft); font-size: 1.35rem; }
-      .step h4 { margin: 0 0 2px; font-size: 1rem; }
-      .step p { margin: 0; font-size: .92rem; color: var(--muted); }
-      .rail { position: relative; height: 34px; }
-      .rail::before { content: ""; position: absolute; left: 39px; top: 0; bottom: 0; width: 2px; background: var(--line); }
-      .rail span { position: absolute; left: 60px; top: 50%; transform: translateY(-50%); font-size: .8rem; color: var(--muted); }
-      .playing .step { animation: glow 3.6s ease both; }
-      .playing .step:nth-of-type(1) { animation-delay: 0s; }
-      .playing .step:nth-of-type(2) { animation-delay: .9s; }
-      .playing .step:nth-of-type(3) { animation-delay: 1.8s; }
-      .playing .step:nth-of-type(4) { animation-delay: 2.7s; }
-      @keyframes glow {
-        0%, 22%, 100% { box-shadow: none; border-color: var(--line); transform: none; }
-        8% { box-shadow: 0 8px 28px rgba(29,78,216,.26); border-color: var(--brand); transform: translateY(-2px); }
+      .flow {
+        position: relative;
+        margin: 24px 0 8px;
       }
-      .runner { position: absolute; left: 28px; top: 8px; font-size: 1.4rem; opacity: 0; pointer-events: none; }
-      .playing .runner { animation: travel 3.6s ease-in-out both; }
+      .step {
+        display: flex;
+        gap: 15px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px 18px;
+        transition:
+          box-shadow 0.3s,
+          border-color 0.3s,
+          transform 0.3s;
+      }
+      .step .ico {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: var(--soft);
+        font-size: 1.35rem;
+      }
+      .step h4 {
+        margin: 0 0 2px;
+        font-size: 1rem;
+      }
+      .step p {
+        margin: 0;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+      .rail {
+        position: relative;
+        height: 34px;
+      }
+      .rail::before {
+        content: "";
+        position: absolute;
+        left: 39px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--line);
+      }
+      .rail span {
+        position: absolute;
+        left: 60px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .playing .step {
+        animation: glow 3.6s ease both;
+      }
+      .playing .step:nth-of-type(1) {
+        animation-delay: 0s;
+      }
+      .playing .step:nth-of-type(2) {
+        animation-delay: 0.9s;
+      }
+      .playing .step:nth-of-type(3) {
+        animation-delay: 1.8s;
+      }
+      .playing .step:nth-of-type(4) {
+        animation-delay: 2.7s;
+      }
+      @keyframes glow {
+        0%,
+        22%,
+        100% {
+          box-shadow: none;
+          border-color: var(--line);
+          transform: none;
+        }
+        8% {
+          box-shadow: 0 8px 28px rgba(29, 78, 216, 0.26);
+          border-color: var(--brand);
+          transform: translateY(-2px);
+        }
+      }
+      .runner {
+        position: absolute;
+        left: 28px;
+        top: 8px;
+        font-size: 1.4rem;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .playing .runner {
+        animation: travel 3.6s ease-in-out both;
+      }
       @keyframes travel {
-        0% { opacity: 0; transform: translateY(0) rotate(0); }
-        6% { opacity: 1; }
-        94% { opacity: 1; }
-        100% { opacity: 0; transform: translateY(var(--travel, 320px)) rotate(720deg); }
+        0% {
+          opacity: 0;
+          transform: translateY(0) rotate(0);
+        }
+        6% {
+          opacity: 1;
+        }
+        94% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(var(--travel, 320px)) rotate(720deg);
+        }
       }
       .play {
-        display: inline-flex; align-items: center; gap: 8px; margin: 2px 0 6px;
-        padding: 9px 18px; border: 0; border-radius: 999px; cursor: pointer;
-        background: var(--brand); color: #fff; font: inherit; font-size: .9rem; font-weight: 650;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 2px 0 6px;
+        padding: 9px 18px;
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        background: var(--brand);
+        color: #fff;
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 650;
       }
-      .play:hover { filter: brightness(1.08); }
+      .play:hover {
+        filter: brightness(1.08);
+      }
 
       /* ---------- code / traduction ---------- */
-      .dual { margin: 18px 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); }
-      .tabs { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
-      .tabs .fname { margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: .72rem; color: var(--muted); }
+      .dual {
+        margin: 18px 0;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .tabs .fname {
+        margin-left: auto;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
       .tabs button {
-        border: 1px solid var(--line); background: transparent; color: var(--muted);
-        border-radius: 999px; padding: 5px 14px; font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 5px 14px;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
       }
-      .tabs button[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
-      .panel { display: none; }
-      .panel.on { display: block; }
-      .human { margin: 0; padding: 16px 20px; }
-      .human li { margin: 7px 0; font-size: .96rem; }
-      .human li b { color: var(--brand); }
+      .tabs button[aria-selected="true"] {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #fff;
+      }
+      .panel {
+        display: none;
+      }
+      .panel.on {
+        display: block;
+      }
+      .human {
+        margin: 0;
+        padding: 16px 20px;
+      }
+      .human li {
+        margin: 7px 0;
+        font-size: 0.96rem;
+      }
+      .human li b {
+        color: var(--brand);
+      }
       pre {
-        margin: 0; padding: 16px 18px; background: var(--code-bg); color: var(--code-ink);
-        overflow-x: auto; font-family: ui-monospace, Menlo, Consolas, monospace;
-        font-size: .82rem; line-height: 1.75;
+        margin: 0;
+        padding: 16px 18px;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        overflow-x: auto;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.75;
       }
-      code { font-family: ui-monospace, Menlo, Consolas, monospace; }
-      p code, li code, td code, .who code { background: var(--soft); color: var(--brand); padding: 1px 6px; border-radius: 6px; font-size: .85em; }
-      .k { color: var(--code-key); } .s { color: var(--code-str); } .c { color: var(--code-com); font-style: italic; } .f { color: var(--code-fn); }
+      code {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+      }
+      p code,
+      li code,
+      td code,
+      .who code {
+        background: var(--soft);
+        color: var(--brand);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 0.85em;
+      }
+      .k {
+        color: var(--code-key);
+      }
+      .s {
+        color: var(--code-str);
+      }
+      .c {
+        color: var(--code-com);
+        font-style: italic;
+      }
+      .f {
+        color: var(--code-fn);
+      }
 
       /* ---------- quiz ---------- */
-      .quiz { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 16px 0; }
-      .quiz p.q { margin: 0 0 12px; font-weight: 650; }
-      .quiz button {
-        display: block; width: 100%; text-align: left; margin: 7px 0; padding: 11px 14px;
-        border: 1px solid var(--line); border-radius: 12px; background: transparent; color: inherit;
-        font: inherit; font-size: .94rem; cursor: pointer; transition: .18s;
+      .quiz {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin: 16px 0;
       }
-      .quiz button:hover { border-color: var(--brand); }
-      .quiz button.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); font-weight: 600; }
-      .quiz button.wrong { background: var(--no-soft); border-color: var(--no); color: var(--no); }
-      .quiz .why { margin: 12px 0 0; font-size: .9rem; color: var(--muted); display: none; }
-      .quiz .why.on { display: block; }
+      .quiz p.q {
+        margin: 0 0 12px;
+        font-weight: 650;
+      }
+      .quiz button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        margin: 7px 0;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: 0.94rem;
+        cursor: pointer;
+        transition: 0.18s;
+      }
+      .quiz button:hover {
+        border-color: var(--brand);
+      }
+      .quiz button.right {
+        background: var(--ok-soft);
+        border-color: var(--ok);
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .quiz button.wrong {
+        background: var(--no-soft);
+        border-color: var(--no);
+        color: var(--no);
+      }
+      .quiz .why {
+        margin: 12px 0 0;
+        font-size: 0.9rem;
+        color: var(--muted);
+        display: none;
+      }
+      .quiz .why.on {
+        display: block;
+      }
 
       /* ---------- glossaire ---------- */
-      details { border: 1px solid var(--line); border-radius: 13px; background: var(--surface); padding: 12px 16px; margin: 10px 0; }
-      details summary { cursor: pointer; font-weight: 600; font-size: .96rem; }
-      details p { margin: 9px 0 2px; font-size: .93rem; color: var(--muted); }
+      details {
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      details summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.96rem;
+      }
+      details p {
+        margin: 9px 0 2px;
+        font-size: 0.93rem;
+        color: var(--muted);
+      }
 
-      footer { margin-top: 62px; padding-top: 26px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .9rem; }
-      .cta { display: inline-block; margin: 6px 6px 14px; padding: 11px 22px; border-radius: 999px; background: var(--brand); color: #fff; font-weight: 650; text-decoration: none; }
-      .cta.ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
+      footer {
+        margin-top: 62px;
+        padding-top: 26px;
+        border-top: 1px solid var(--line);
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .cta {
+        display: inline-block;
+        margin: 6px 6px 14px;
+        padding: 11px 22px;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 650;
+        text-decoration: none;
+      }
+      .cta.ghost {
+        background: transparent;
+        color: var(--brand);
+        border: 1px solid var(--line);
+      }
 
       @media (prefers-reduced-motion: reduce) {
-        .ball, .playing .step, .playing .runner { animation: none; }
+        .ball,
+        .playing .step,
+        .playing .runner {
+          animation: none;
+        }
       }
     </style>
   </head>
@@ -216,17 +614,28 @@
   <body>
     <header class="hero">
       <div class="hero-in">
-        <svg class="ball" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="ball"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-          <path d="M12 12a8 8 0 0 0 8 4" /><path d="M7.5 13.5a12 12 0 0 0 8.5 6.5" />
-          <path d="M12 12a8 8 0 0 0 -7.464 4.928" /><path d="M12.951 7.353a12 12 0 0 0 -9.88 4.111" />
-          <path d="M12 12a8 8 0 0 0 -.536 -8.928" /><path d="M15.549 15.147a12 12 0 0 0 1.38 -10.611" />
+          <path d="M12 12a8 8 0 0 0 8 4" />
+          <path d="M7.5 13.5a12 12 0 0 0 8.5 6.5" />
+          <path d="M12 12a8 8 0 0 0 -7.464 4.928" />
+          <path d="M12.951 7.353a12 12 0 0 0 -9.88 4.111" />
+          <path d="M12 12a8 8 0 0 0 -.536 -8.928" />
+          <path d="M15.549 15.147a12 12 0 0 0 1.38 -10.611" />
         </svg>
         <div><span class="pill">Visite guidée</span></div>
         <h1>Comment marche le site des matchs&nbsp;?</h1>
         <p>
-          Expliqué à quelqu'un qui n'a jamais vu une ligne de code de sa vie.
-          Avec des images, un bouton à presser et un petit quiz à la fin.
+          Expliqué à quelqu'un qui n'a jamais vu une ligne de code de sa vie. Avec des images, un
+          bouton à presser et un petit quiz à la fin.
         </p>
       </div>
     </header>
@@ -236,20 +645,22 @@
       <section>
         <h2><span class="n">1</span> C'est quoi, « du code »&nbsp;?</h2>
         <p>
-          Une recette. Écrite pour quelqu'un qui travaille à une vitesse folle et ne devine
-          jamais rien.
+          Une recette. Écrite pour quelqu'un qui travaille à une vitesse folle et ne devine jamais
+          rien.
         </p>
         <p>
-          Ce quelqu'un, c'est l'ordinateur. Il fait les gestes dans l'ordre où ils sont écrits,
-          à la lettre, sans jamais compléter ce que tu as oublié de dire.
+          Ce quelqu'un, c'est l'ordinateur. Il fait les gestes dans l'ordre où ils sont écrits, à la
+          lettre, sans jamais compléter ce que tu as oublié de dire.
         </p>
         <div class="card">
-          <p style="margin:0 0 6px">Tu écris « casse 3 œufs », il casse 3 œufs. 👌</p>
-          <p style="margin:0">Tu écris « casse 300 œufs », il en casse 300 sans trouver ça bizarre. 🥚🥚🥚</p>
+          <p style="margin: 0 0 6px">Tu écris « casse 3 œufs », il casse 3 œufs. 👌</p>
+          <p style="margin: 0">
+            Tu écris « casse 300 œufs », il en casse 300 sans trouver ça bizarre. 🥚🥚🥚
+          </p>
         </div>
         <p>
-          Quand un site se met à faire n'importe quoi, la faute est donc presque toujours
-          dans la recette.
+          Quand un site se met à faire n'importe quoi, la faute est donc presque toujours dans la
+          recette.
         </p>
         <div class="note">
           Deux mots qui reviendront : un <strong>programme</strong>, c'est une recette.
@@ -260,19 +671,17 @@
       <!-- 2 -->
       <section>
         <h2><span class="n">2</span> Et un site internet&nbsp;?</h2>
+        <p>Deux ordinateurs qui se parlent. Le tien demande, un autre répond.</p>
         <p>
-          Deux ordinateurs qui se parlent. Le tien demande, un autre répond.
+          Celui qui répond reste allumé jour et nuit dans un bâtiment plein de machines, et on
+          l'appelle <strong>un serveur</strong>. Au restaurant, tu serais à table et lui serait en
+          cuisine. Tu tapes l'adresse du site, ton téléphone passe commande, l'assiette arrive en
+          moins d'une seconde.
         </p>
         <p>
-          Celui qui répond reste allumé jour et nuit dans un bâtiment plein de machines,
-          et on l'appelle <strong>un serveur</strong>. Au restaurant, tu serais à table et lui
-          serait en cuisine. Tu tapes l'adresse du site, ton téléphone passe commande,
-          l'assiette arrive en moins d'une seconde.
-        </p>
-        <p>
-          Pourquoi ne pas tout mettre dans le téléphone ? Parce que la cuisine doit servir
-          tout le club en même temps, et parce qu'elle a des choses à faire pendant que
-          personne ne regarde. On va voir lesquelles.
+          Pourquoi ne pas tout mettre dans le téléphone ? Parce que la cuisine doit servir tout le
+          club en même temps, et parce qu'elle a des choses à faire pendant que personne ne regarde.
+          On va voir lesquelles.
         </p>
       </section>
 
@@ -280,9 +689,8 @@
       <section>
         <h2><span class="n">3</span> Le problème qu'on voulait régler</h2>
         <p>
-          La fédération publie déjà tous nos matchs, rangés championnat par championnat.
-          Le club en a cinq, donc nos résultats vivent sur cinq pages différentes d'un site
-          assez austère.
+          La fédération publie déjà tous nos matchs, rangés championnat par championnat. Le club en
+          a cinq, donc nos résultats vivent sur cinq pages différentes d'un site assez austère.
         </p>
         <div class="compare">
           <div class="bad">
@@ -305,8 +713,8 @@
           </div>
         </div>
         <div class="note">
-          Le site ne produit aucune information de son côté. Il recopie la fédération et la met
-          en forme. Si elle publie un horaire faux, on affiche le même horaire faux.
+          Le site ne produit aucune information de son côté. Il recopie la fédération et la met en
+          forme. Si elle publie un horaire faux, on affiche le même horaire faux.
         </div>
       </section>
 
@@ -320,7 +728,10 @@
             <div>
               <span class="role">La source</span>
               <h4>Le site de la fédération</h4>
-              <p>Il détient la vérité : dates, horaires, scores, classements. Il la publie en vrac, dans un format prévu pour les machines.</p>
+              <p>
+                Il détient la vérité : dates, horaires, scores, classements. Il la publie en vrac,
+                dans un format prévu pour les machines.
+              </p>
             </div>
           </div>
           <div class="who">
@@ -328,7 +739,10 @@
             <div>
               <span class="role">La cuisine</span>
               <h4>Le robot</h4>
-              <p>Un programme qui tourne jour et nuit sur le serveur. Il va chercher le vrac, le nettoie, le range par date. Il garde toujours sa dernière copie sous le coude.</p>
+              <p>
+                Un programme qui tourne jour et nuit sur le serveur. Il va chercher le vrac, le
+                nettoie, le range par date. Il garde toujours sa dernière copie sous le coude.
+              </p>
             </div>
           </div>
           <div class="who">
@@ -336,21 +750,26 @@
             <div>
               <span class="role">La salle</span>
               <h4>La page que tu vois</h4>
-              <p>Elle reçoit des données déjà propres et les dessine : une ligne par match, une couleur par équipe, le score en vert quand c'est gagné.</p>
+              <p>
+                Elle reçoit des données déjà propres et les dessine : une ligne par match, une
+                couleur par équipe, le score en vert quand c'est gagné.
+              </p>
             </div>
           </div>
         </div>
         <p>
-          Seul le robot a le droit d'aller frapper chez la fédération, et il y va au maximum
-          une fois par quart d'heure. Même si deux cents personnes ouvrent la page le même soir,
-          la fédération reçoit quatre visites dans l'heure, et la page répond du tac au tac.
+          Seul le robot a le droit d'aller frapper chez la fédération, et il y va au maximum une
+          fois par quart d'heure. Même si deux cents personnes ouvrent la page le même soir, la
+          fédération reçoit quatre visites dans l'heure, et la page répond du tac au tac.
         </p>
       </section>
 
       <!-- 5 -->
       <section>
         <h2><span class="n">5</span> Le voyage d'un match</h2>
-        <p class="lead">Appuie sur le bouton pour suivre un résultat, du gymnase jusqu'à ton téléphone.</p>
+        <p class="lead">
+          Appuie sur le bouton pour suivre un résultat, du gymnase jusqu'à ton téléphone.
+        </p>
         <button class="play" id="play" type="button">▶︎ Lancer le voyage</button>
 
         <div class="flow" id="flow">
@@ -369,7 +788,10 @@
             <div class="ico">🤖</div>
             <div>
               <h4>Dans le quart d'heure, le robot passe</h4>
-              <p>Il récupère la saison entière d'un coup, repère ce qui a changé et range tout proprement.</p>
+              <p>
+                Il récupère la saison entière d'un coup, repère ce qui a changé et range tout
+                proprement.
+              </p>
             </div>
           </div>
           <div class="rail"><span>il transmet la liste rangée</span></div>
@@ -378,7 +800,10 @@
             <div class="ico">🎨</div>
             <div>
               <h4>La page se dessine</h4>
-              <p>Le match quitte « À venir » et rejoint « Résultats ». Le score s'affiche en vert : gagné.</p>
+              <p>
+                Le match quitte « À venir » et rejoint « Résultats ». Le score s'affiche en vert :
+                gagné.
+              </p>
             </div>
           </div>
           <div class="rail"><span>envoyé à ton écran</span></div>
@@ -402,15 +827,15 @@
         </p>
         <p class="lead">
           Chaque encadré ci-dessous a deux onglets. Reste sur « En français » autant que tu veux,
-          puis clique sur « Le vrai code » quand la curiosité te prend : c'est la même chose,
-          dite autrement.
+          puis clique sur « Le vrai code » quand la curiosité te prend : c'est la même chose, dite
+          autrement.
         </p>
 
         <h3>Exemple 1 : qui a gagné ?</h3>
         <p>
-          La fédération écrit le score sous la forme <code>3-1</code>, en plaçant toujours
-          l'équipe qui recevait en premier. Pour savoir si on a gagné, il faut donc d'abord
-          savoir où le match se jouait.
+          La fédération écrit le score sous la forme <code>3-1</code>, en plaçant toujours l'équipe
+          qui recevait en premier. Pour savoir si on a gagné, il faut donc d'abord savoir où le
+          match se jouait.
         </p>
 
         <div class="dual">
@@ -429,7 +854,7 @@
             </ol>
           </div>
           <div class="panel" id="code1">
-<pre><span class="c">// On coupe "3-1" en deux nombres : celui qui reçoit, celui qui visite.</span>
+            <pre><span class="c">// On coupe "3-1" en deux nombres : celui qui reçoit, celui qui visite.</span>
 <span class="k">const</span> [recoit, visiteur] = score.<span class="f">split</span>(<span class="s">"-"</span>)
 
 <span class="c">// Selon l'endroit du match, on sait lequel est le nôtre.</span>
@@ -441,18 +866,18 @@
           </div>
         </div>
         <p class="lead">
-          Le petit <code>?</code> se lit « si… alors… sinon ». C'est le seul symbole inhabituel
-          de l'encadré, et tu viens de l'apprendre.
+          Le petit <code>?</code> se lit « si… alors… sinon ». C'est le seul symbole inhabituel de
+          l'encadré, et tu viens de l'apprendre.
         </p>
 
         <h3>Exemple 2 : le drapeau japonais 🇯🇵</h3>
         <p>
-          Le passeur est au Japon du 17 novembre au 15 février. On voulait un drapeau sur les
-          matchs de cette période, pour repérer les week-ends concernés d'un coup d'œil.
+          Le passeur est au Japon du 17 novembre au 15 février. On voulait un drapeau sur les matchs
+          de cette période, pour repérer les week-ends concernés d'un coup d'œil.
         </p>
         <p>
-          Marquer les 98 matchs un par un serait long et se périmerait au premier changement
-          de date. On écrit donc la règle une seule fois, et l'ordinateur l'applique partout.
+          Marquer les 98 matchs un par un serait long et se périmerait au premier changement de
+          date. On écrit donc la règle une seule fois, et l'ordinateur l'applique partout.
         </p>
 
         <div class="dual">
@@ -463,14 +888,17 @@
           </div>
           <div class="panel on" id="fr2">
             <ol class="human">
-              <li>Note l'absence : <b>drapeau 🇯🇵</b>, motif « Passeur au Japon », <b>du</b> 17/11/2026 <b>au</b> 15/02/2027.</li>
+              <li>
+                Note l'absence : <b>drapeau 🇯🇵</b>, motif « Passeur au Japon », <b>du</b> 17/11/2026
+                <b>au</b> 15/02/2027.
+              </li>
               <li>Pour chaque match, compare sa date à cette période.</li>
               <li>La date tombe dedans ? Affiche le drapeau.</li>
               <li>Sinon, n'affiche rien du tout.</li>
             </ol>
           </div>
           <div class="panel" id="code2">
-<pre><span class="k">const</span> ABSENCES = [
+            <pre><span class="k">const</span> ABSENCES = [
   { drapeau: <span class="s">"🇯🇵"</span>, motif: <span class="s">"Passeur au Japon"</span>,
     du: <span class="s">"2026-11-17"</span>, au: <span class="s">"2027-02-15"</span> },
 ]
@@ -482,8 +910,8 @@
           </div>
         </div>
         <div class="note">
-          Pour signaler un deuxième absent, on ajoute une ligne : le drapeau, le motif,
-          les deux dates. Les 98 matchs se mettent à jour d'eux-mêmes.
+          Pour signaler un deuxième absent, on ajoute une ligne : le drapeau, le motif, les deux
+          dates. Les 98 matchs se mettent à jour d'eux-mêmes.
         </div>
       </section>
 
@@ -492,24 +920,30 @@
         <h2><span class="n">7</span> Et quand ça casse&nbsp;?</h2>
         <h3>Si le site de la fédération tombe en panne</h3>
         <p>
-          Ça arrive, souvent le samedi soir. Le robot garde sa dernière copie, donc la page
-          s'affiche quand même, avec la mention « données d'il y a 2 h ». Un calendrier de la
-          veille rend plus service qu'une page blanche.
+          Ça peut arriver. Le robot garde sa dernière copie, donc la page s'affiche quand même, avec
+          la mention « Calendrier affiché tel qu'il était il y a 2 h ». Un calendrier de la veille
+          rend plus service qu'une page blanche.
         </p>
 
         <h3>Si quelqu'un abîme la recette en la modifiant</h3>
         <p>
-          Avant chaque modification, une machine rejoue une liste de questions dont la réponse
-          est écrite à l'avance :
+          Avant chaque modification, une machine rejoue une liste de questions dont la réponse est
+          écrite à l'avance :
         </p>
         <div class="card">
-          <p style="margin:0 0 6px">« Le 20 novembre, le drapeau est bien là ? » Réponse attendue : <strong style="color:var(--ok)">oui ✓</strong></p>
-          <p style="margin:0">« La veille du départ, pas de drapeau ? » Réponse attendue : <strong style="color:var(--ok)">oui ✓</strong></p>
+          <p style="margin: 0 0 6px">
+            « Le 20 novembre, le drapeau est bien là ? » Réponse attendue :
+            <strong style="color: var(--ok)">oui ✓</strong>
+          </p>
+          <p style="margin: 0">
+            « La veille du départ, pas de drapeau ? » Réponse attendue :
+            <strong style="color: var(--ok)">oui ✓</strong>
+          </p>
         </div>
         <p>
           Si une seule réponse change, la machine refuse la modification. On appelle ça
-          <strong>des tests</strong>, et c'est ce qui permet de toucher au site sans retenir
-          son souffle.
+          <strong>des tests</strong>, et c'est ce qui permet de toucher au site sans retenir son
+          souffle.
         </p>
       </section>
 
@@ -523,23 +957,36 @@
           <button type="button">Ton téléphone, à chaque fois que tu ouvres la page</button>
           <button type="button">Le robot, au maximum une fois par quart d'heure</button>
           <button type="button">Un bénévole du club, le dimanche soir</button>
-          <p class="why">Ton téléphone ne parle qu'au robot. La fédération reçoit quatre visites dans l'heure au lieu de quatre mille.</p>
+          <p class="why">
+            Ton téléphone ne parle qu'au robot. La fédération reçoit quatre visites dans l'heure au
+            lieu de quatre mille.
+          </p>
         </div>
 
         <div class="quiz" data-right="0">
           <p class="q">2. La fédération est en panne samedi soir. Que voit-on sur le site ?</p>
-          <button type="button">La dernière version connue, avec la mention « pas tout frais »</button>
+          <button type="button">
+            La dernière version connue, avec la mention « pas tout frais »
+          </button>
           <button type="button">Une page blanche</button>
           <button type="button">Les matchs du club disparaissent</button>
-          <p class="why">Le robot garde toujours sa dernière copie. Une panne coûte un peu de fraîcheur et laisse le site debout.</p>
+          <p class="why">
+            Le robot garde toujours sa dernière copie. Une panne coûte un peu de fraîcheur et laisse
+            le site debout.
+          </p>
         </div>
 
         <div class="quiz" data-right="2">
           <p class="q">3. Pour signaler un deuxième joueur absent, il faut…</p>
           <button type="button">Recopier le drapeau sur les 98 matchs</button>
           <button type="button">Refaire tout le site</button>
-          <button type="button">Ajouter une ligne de règle : le drapeau, le motif, les deux dates</button>
-          <p class="why">On écrit la règle, et l'ordinateur l'applique aux 98 matchs, cette saison et les suivantes.</p>
+          <button type="button">
+            Ajouter une ligne de règle : le drapeau, le motif, les deux dates
+          </button>
+          <p class="why">
+            On écrit la règle, et l'ordinateur l'applique aux 98 matchs, cette saison et les
+            suivantes.
+          </p>
         </div>
       </section>
 
@@ -550,27 +997,44 @@
 
         <details>
           <summary>Un programme, du code</summary>
-          <p>Une recette écrite pour l'ordinateur : des instructions dans l'ordre, sans aucun sous-entendu.</p>
+          <p>
+            Une recette écrite pour l'ordinateur : des instructions dans l'ordre, sans aucun
+            sous-entendu.
+          </p>
         </details>
         <details>
           <summary>Un serveur</summary>
-          <p>Un ordinateur allumé en permanence quelque part, qui répond aux demandes des autres. Celui du club partage une machine avec d'autres sites et coûte quelques euros par mois.</p>
+          <p>
+            Un ordinateur allumé en permanence quelque part, qui répond aux demandes des autres.
+            Celui du club partage une machine avec d'autres sites et coûte quelques euros par mois.
+          </p>
         </details>
         <details>
           <summary>Des données</summary>
-          <p>Des informations rangées dans des cases nommées : date, adversaire, gymnase, score. Un tableur, en somme.</p>
+          <p>
+            Des informations rangées dans des cases nommées : date, adversaire, gymnase, score. Un
+            tableur, en somme.
+          </p>
         </details>
         <details>
           <summary>Un bug</summary>
-          <p>Une faute dans la recette. L'ordinateur a obéi parfaitement à une consigne mal écrite.</p>
+          <p>
+            Une faute dans la recette. L'ordinateur a obéi parfaitement à une consigne mal écrite.
+          </p>
         </details>
         <details>
           <summary>Un test</summary>
-          <p>Une question dont la bonne réponse est écrite à l'avance, rejouée automatiquement pour vérifier qu'on n'a rien abîmé.</p>
+          <p>
+            Une question dont la bonne réponse est écrite à l'avance, rejouée automatiquement pour
+            vérifier qu'on n'a rien abîmé.
+          </p>
         </details>
         <details>
           <summary>Déployer, mettre en ligne</summary>
-          <p>Envoyer la nouvelle version de la recette sur le serveur. Deux minutes plus tard, tout le monde l'a.</p>
+          <p>
+            Envoyer la nouvelle version de la recette sur le serveur. Deux minutes plus tard, tout
+            le monde l'a.
+          </p>
         </details>
       </section>
 
@@ -578,9 +1042,8 @@
       <section>
         <h2><span class="n">10</span> Le vrai code, pour finir</h2>
         <p>
-          Tu as vu des morceaux simplifiés jusqu'ici. Voilà maintenant trois extraits du vrai
-          site, tout juste débarrassés de leurs décorations. Ce code tourne pendant que tu lis
-          cette page.
+          Tu as vu des morceaux simplifiés jusqu'ici. Voilà maintenant trois extraits du vrai site,
+          tout juste débarrassés de leurs décorations. Ce code tourne pendant que tu lis cette page.
         </p>
         <p>
           Le site parle deux langues, une par côté. Côté serveur, le robot est écrit en
@@ -611,7 +1074,7 @@
             </ol>
           </div>
           <div class="panel" id="code3">
-<pre><span class="k">fn</span> <span class="f">handle_request</span>(stores: Stores, req: wisp.Request) -> wisp.Response {
+            <pre><span class="k">fn</span> <span class="f">handle_request</span>(stores: Stores, req: wisp.Request) -> wisp.Response {
   <span class="k">case</span> wisp.<span class="f">path_segments</span>(req) {
     [<span class="s">"api"</span>, <span class="s">"health"</span>] -> wisp.<span class="f">ok</span>()
     [<span class="s">"api"</span>, <span class="s">"matches"</span>] -> <span class="f">matches</span>(stores.matches)
@@ -623,8 +1086,8 @@
           </div>
         </div>
         <p class="lead">
-          Le <code>_</code> de l'avant-dernière ligne veut dire « tout le reste ». Et les flèches
-          se lisent « alors réponds ».
+          Le <code>_</code> de l'avant-dernière ligne veut dire « tout le reste ». Et les flèches se
+          lisent « alors réponds ».
         </p>
 
         <h3>Les quatre lignes qui définissent le club</h3>
@@ -641,15 +1104,20 @@
           </div>
           <div class="panel on" id="fr4">
             <ol class="human">
-              <li>Le club porte le numéro <b>0941410</b> chez la fédération. C'est lui qu'on présente à chaque visite.</li>
+              <li>
+                Le club porte le numéro <b>0941410</b> chez la fédération. C'est lui qu'on présente
+                à chaque visite.
+              </li>
               <li>Son nom officiel sert à repérer nos équipes dans les tableaux.</li>
               <li>La saison en cours est <b>2026/2027</b>.</li>
-              <li><b>900 secondes</b> entre deux visites chez la fédération, soit quinze minutes.</li>
+              <li>
+                <b>900 secondes</b> entre deux visites chez la fédération, soit quinze minutes.
+              </li>
               <li>En septembre prochain, changer de saison tiendra en une ligne modifiée.</li>
             </ol>
           </div>
           <div class="panel" id="code4">
-<pre><span class="k">pub const</span> club_code = <span class="s">"0941410"</span>
+            <pre><span class="k">pub const</span> club_code = <span class="s">"0941410"</span>
 <span class="k">pub const</span> club_name = <span class="s">"VIE AU GRAND AIR DE ST MAUR"</span>
 <span class="k">pub const</span> season = <span class="s">"2026/2027"</span>
 
@@ -660,8 +1128,8 @@
 
         <h3>Une ligne de match, côté page</h3>
         <p>
-          Voilà le dessin d'une ligne, celle que tu as sous les yeux quand tu ouvres le site.
-          Les décorations de style sont retirées pour garder l'essentiel.
+          Voilà le dessin d'une ligne, celle que tu as sous les yeux quand tu ouvres le site. Les
+          décorations de style sont retirées pour garder l'essentiel.
         </p>
 
         <div class="dual">
@@ -679,7 +1147,7 @@
             </ol>
           </div>
           <div class="panel" id="code5">
-<pre><span class="k">&lt;span</span> <span class="f">:class</span>=<span class="s">"match.atHome ? 'badge-primary' : 'badge-ghost'"</span><span class="k">&gt;</span>
+            <pre><span class="k">&lt;span</span> <span class="f">:class</span>=<span class="s">"match.atHome ? 'badge-primary' : 'badge-ghost'"</span><span class="k">&gt;</span>
   {{ match.atHome ? <span class="s">"Domicile"</span> : <span class="s">"Extérieur"</span> }}
 <span class="k">&lt;/span&gt;</span>
 
@@ -706,9 +1174,9 @@
         <h2><span class="n">11</span> Si tu ne retiens qu'une chose</h2>
         <div class="card">
           <p class="big-quote">
-            Un robot lit la fédération toutes les quinze minutes, range chaque match dans des
-            cases nommées, et une page dessine ces cases joliment.<br />
-            <span style="color:var(--brand)">Personne ne recopie quoi que ce soit à la main.</span>
+            Un robot lit la fédération toutes les quinze minutes, range chaque match dans des cases
+            nommées, et une page dessine ces cases joliment.<br />
+            <span style="color: var(--brand)">Personne ne recopie quoi que ce soit à la main.</span>
           </p>
         </div>
       </section>
@@ -717,7 +1185,6 @@
         <a class="cta" href="/">Voir le site des matchs</a>
         <p>Vie au Grand Air de Saint-Maur, tous les matchs, tous les championnats, sur une page.</p>
       </footer>
-
     </main>
 
     <script>
@@ -735,8 +1202,12 @@
       document.querySelectorAll(".tabs button").forEach((tab) => {
         tab.addEventListener("click", () => {
           const box = tab.closest(".dual")
-          box.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b === tab))
-          box.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === tab.dataset.panel))
+          box
+            .querySelectorAll(".tabs button")
+            .forEach((b) => b.setAttribute("aria-selected", b === tab))
+          box
+            .querySelectorAll(".panel")
+            .forEach((p) => p.classList.toggle("on", p.id === tab.dataset.panel))
         })
       })
 

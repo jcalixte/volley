@@ -490,19 +490,21 @@ describe("the summary view", () => {
       "Date",
       "Heure",
       "Nationale 2 Masculine · Poule B",
+      "Heure",
       "Île-de-France Masculine · 1MA",
     ])
     const rows = wrapper.findAll('[data-testid="summary-row"]')
     expect(rows).toHaveLength(4)
     const cells = rows[2].findAll("td").map((td) => td.text())
     expect(cells[0]).toContain("11/10")
-    expect(cells[1]).toBe("16:00")
+    expect(cells[1]).toBe("")
     expect(cells[2]).toBe("")
-    expect(cells[3]).toContain("VOLLEY 6")
-    expect(cells[3]).toContain("3–1")
+    expect(cells[3]).toBe("16:00")
+    expect(cells[4]).toContain("VOLLEY 6")
+    expect(cells[4]).toContain("3–1")
   })
 
-  it("puts teams playing at the same time on one row", async () => {
+  it("puts teams playing the same day on one row, each with its own time", async () => {
     stubFetch({
       ...calendar,
       matches: [
@@ -513,6 +515,7 @@ describe("the summary view", () => {
           competitionKey: "1MA",
           competition: "Île-de-France Masculine · 1MA",
           date: "2026-09-27",
+          time: "14:00",
           opponent: "RAMBOUILLET",
         }),
       ],
@@ -521,16 +524,10 @@ describe("the summary view", () => {
     await flushPromises()
     await openSummary(wrapper)
     const first = wrapper.findAll('[data-testid="summary-row"]')[0].findAll("td")
-    expect(first[2].text()).toContain("PARIS VOLLEY CLUB")
-    expect(first[3].text()).toContain("RAMBOUILLET")
-  })
-
-  it("adds each team's ranking under the grid", async () => {
-    const wrapper = await openSummary(await render())
-    const rankings = wrapper.findAll('[data-testid="summary-ranking"]')
-    expect(rankings).toHaveLength(2)
-    expect(rankings[0].text()).toContain("2e sur 2 · 4 pts")
-    expect(rankings[1].text()).toContain("VIE AU GRAND AIR DE ST MAUR 2")
+    expect(first[1].text()).toBe("14:00")
+    expect(first[2].text()).toContain("RAMBOUILLET")
+    expect(first[3].text()).toBe("16:00")
+    expect(first[4].text()).toContain("PARIS VOLLEY CLUB")
   })
 
   it("keeps to the picked teams", async () => {
@@ -557,5 +554,52 @@ describe("the summary view", () => {
       .find((b) => b.text() === "Imprimer")!
       .trigger("click")
     expect(print).toHaveBeenCalled()
+  })
+})
+
+describe("the open tab", () => {
+  async function openTab(wrapper: Wrapper, label: string) {
+    const tab = wrapper.findAll("button").find((b) => b.text().startsWith(label))!
+    await tab.trigger("click")
+    await flushPromises()
+    return wrapper
+  }
+
+  it("puts the tab in the URL so a link opens on it", async () => {
+    await openTab(await render(), "Calendrier")
+    expect(new URL(location.href).searchParams.get("onglet")).toBe("calendar")
+  })
+
+  it("keeps the URL clean on the default tab", async () => {
+    const wrapper = await openTab(await render(), "Calendrier")
+    await openTab(wrapper, "À venir")
+    expect(new URL(location.href).searchParams.has("onglet")).toBe(false)
+  })
+
+  it("opens on the tab named in the link", async () => {
+    history.replaceState(null, "", "/?onglet=calendar")
+    const wrapper = await render()
+    expect(wrapper.text()).toContain("septembre 2026")
+  })
+
+  it("stays on the tab after a reload", async () => {
+    await openTab(await render(), "Résultats")
+    history.replaceState(null, "", "/")
+
+    const second = await render()
+    expect(second.findAll("section li")).toHaveLength(1)
+    expect(second.text()).toContain("VOLLEY 6")
+  })
+
+  it("fetches the ranking when the link opens on it", async () => {
+    history.replaceState(null, "", "/?onglet=standings")
+    const wrapper = await render()
+    expect(wrapper.findAll("table").length).toBeGreaterThan(0)
+  })
+
+  it("ignores a tab name that no longer exists", async () => {
+    history.replaceState(null, "", "/?onglet=inconnu")
+    const wrapper = await render()
+    expect(wrapper.findAll("section li")).toHaveLength(3)
   })
 })

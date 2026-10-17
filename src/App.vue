@@ -17,15 +17,17 @@ import {
 } from "@/lib/matches"
 import { fetchStandings, type Standings } from "@/lib/standings"
 
-type View = "upcoming" | "results" | "all" | "calendar" | "standings" | "summary"
+const VIEWS = ["upcoming", "results", "all", "calendar", "standings", "summary"] as const
+type View = (typeof VIEWS)[number]
 
 const FILTER_PARAM = "equipe"
+const VIEW_PARAM = "onglet"
 
 const calendar = ref<Calendar | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
 const picked = ref(rememberedCompetitions())
-const view = ref<View>("upcoming")
+const view = ref<View>(rememberedView())
 const now = ref(Date.now())
 const standings = ref<Standings | null>(null)
 const standingsError = ref<string | null>(null)
@@ -37,6 +39,14 @@ function rememberedCompetitions(): string[] {
   const fromLink = new URLSearchParams(location.search).get(FILTER_PARAM)
   const stored = fromLink ?? localStorage.getItem(FILTER_PARAM) ?? ""
   return stored.split(",").filter(Boolean)
+}
+
+// A reload, or a link sent to someone else, should land on the tab being read
+// rather than back on the upcoming matches.
+function rememberedView(): View {
+  const fromLink = new URLSearchParams(location.search).get(VIEW_PARAM)
+  const stored = fromLink ?? localStorage.getItem(VIEW_PARAM) ?? ""
+  return (VIEWS as readonly string[]).includes(stored) ? (stored as View) : "upcoming"
 }
 
 watch(picked, (keys) => {
@@ -73,6 +83,11 @@ async function loadStandings() {
 
 watch(view, (tab) => {
   if ((tab === "standings" || tab === "summary") && !standings.value) loadStandings()
+  localStorage.setItem(VIEW_PARAM, tab)
+  const url = new URL(location.href)
+  if (tab === "upcoming") url.searchParams.delete(VIEW_PARAM)
+  else url.searchParams.set(VIEW_PARAM, tab)
+  history.replaceState(null, "", url)
 })
 
 // The FFVB calendar changes when results are entered, so a tab left open all
@@ -85,6 +100,7 @@ function refreshWhenVisible() {
 
 onMounted(() => {
   load()
+  if (view.value === "standings" || view.value === "summary") loadStandings()
   document.addEventListener("visibilitychange", refreshWhenVisible)
 })
 onUnmounted(() => document.removeEventListener("visibilitychange", refreshWhenVisible))
@@ -400,7 +416,6 @@ function rankingLabel(key: string, fallback: string): string {
           :season="calendar?.season ?? ''"
           :teams="shownTeams"
           :matches="inCompetition"
-          :rankings="rankings"
         />
 
         <template v-else-if="view === 'standings'">

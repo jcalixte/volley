@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import type { Match } from "@/lib/matches"
-import type { Ranking } from "@/lib/standings"
 import { absenceOn } from "@/lib/absences"
 import { weekdayLabel } from "@/lib/format"
 
@@ -10,48 +9,25 @@ const props = defineProps<{
   season: string
   teams: { key: string; label: string; color: string }[]
   matches: Match[]
-  rankings: Ranking[]
 }>()
 
 const printedOn = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date())
 const SHORT = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit" })
 
-// One row per kickoff, so teams playing the same weekend sit side by side. A
-// youth plateau can hold several matches at once, hence a list per team.
+// One row per day: every team gets its own time column, so a weekend reads
+// across. A youth plateau can hold several matches at once, hence a list per team.
 const rows = computed(() => {
-  const slots = new Map<
-    string,
-    { date: string; time: string; kickoff: Date; byTeam: Record<string, Match[]> }
-  >()
-  const perDay = new Map<string, number>()
+  const days = new Map<string, { date: string; kickoff: Date; byTeam: Record<string, Match[]> }>()
   for (const match of props.matches) {
-    const id = `${match.date} ${match.time}`
-    let slot = slots.get(id)
-    if (!slot) {
-      slot = { date: match.date, time: match.time, kickoff: match.kickoff, byTeam: {} }
-      slots.set(id, slot)
-      perDay.set(match.date, (perDay.get(match.date) ?? 0) + 1)
+    let day = days.get(match.date)
+    if (!day) {
+      day = { date: match.date, kickoff: match.kickoff, byTeam: {} }
+      days.set(match.date, day)
     }
-    ;(slot.byTeam[match.competitionKey] ??= []).push(match)
+    ;(day.byTeam[match.competitionKey] ??= []).push(match)
   }
-  // The date cell spans every kickoff of its day, so only the day's first row draws it.
-  return [...slots.values()].map((slot, index, list) => ({
-    ...slot,
-    span: list[index - 1]?.date === slot.date ? 0 : perDay.get(slot.date)!,
-  }))
+  return [...days.values()]
 })
-
-const rankings = computed(() =>
-  props.teams.flatMap((team) => {
-    const ranking = props.rankings.find((table) => table.key === team.key)
-    if (!ranking) return []
-    const ours = ranking.rows.find((row) => row.ours)
-    const standing = ours
-      ? `${ours.rank}${ours.rank === 1 ? "er" : "e"} sur ${ranking.rows.length} · ${ours.points} pts`
-      : undefined
-    return [{ ...team, ranking, standing }]
-  }),
-)
 
 function print() {
   window.print()
@@ -85,96 +61,56 @@ function print() {
       <thead>
         <tr>
           <th class="w-16">Date</th>
-          <th class="w-12">Heure</th>
-          <th
-            v-for="team in teams"
-            :key="team.key"
-            class="border-t-4 align-bottom"
-            :style="{ borderTopColor: team.color }"
-          >
-            {{ team.label }}
-          </th>
+          <template v-for="team in teams" :key="team.key">
+            <th class="w-12 border-t-4 align-bottom" :style="{ borderTopColor: team.color }">
+              Heure
+            </th>
+            <th class="border-t-4 align-bottom" :style="{ borderTopColor: team.color }">
+              {{ team.label }}
+            </th>
+          </template>
         </tr>
       </thead>
       <tbody>
         <tr
           v-for="row in rows"
-          :key="`${row.date} ${row.time}`"
+          :key="row.date"
           class="break-inside-avoid align-top"
           data-testid="summary-row"
         >
-          <td
-            v-if="row.span"
-            :rowspan="row.span"
-            class="whitespace-nowrap font-medium tabular-nums"
-          >
+          <td class="whitespace-nowrap font-medium tabular-nums">
             {{ weekdayLabel(row.kickoff) }} {{ SHORT.format(row.kickoff) }}
             <template v-if="absenceOn(row.date)"> {{ absenceOn(row.date)!.flag }}</template>
           </td>
-          <td class="tabular-nums">{{ row.time }}</td>
-          <td v-for="team in teams" :key="team.key">
-            <div v-for="match in row.byTeam[team.key] ?? []" :key="match.code">
-              <div class="font-medium">
-                {{ match.opponent }}
-                <span
-                  v-if="match.played"
-                  class="tabular-nums"
-                  :class="match.won ? 'font-bold' : 'font-normal text-base-content/70'"
-                >
-                  {{ match.ourSets }}–{{ match.theirSets }}
-                </span>
+          <template v-for="team in teams" :key="team.key">
+            <td class="tabular-nums">
+              <!-- Same min height on both cells keeps a team's times level with
+                   its matches when a day holds more than one. -->
+              <div v-for="match in row.byTeam[team.key] ?? []" :key="match.code" class="min-h-8">
+                {{ match.time }}
               </div>
-              <div class="text-[0.65rem] text-base-content/60">
-                {{ match.atHome ? "Dom." : "Ext."
-                }}<template v-if="match.venue"> · {{ match.venue }}</template>
+            </td>
+            <td>
+              <div v-for="match in row.byTeam[team.key] ?? []" :key="match.code" class="min-h-8">
+                <div class="font-medium">
+                  {{ match.opponent }}
+                  <span
+                    v-if="match.played"
+                    class="tabular-nums"
+                    :class="match.won ? 'font-bold' : 'font-normal text-base-content/70'"
+                  >
+                    {{ match.ourSets }}–{{ match.theirSets }}
+                  </span>
+                </div>
+                <div class="text-[0.65rem] text-base-content/60">
+                  {{ match.atHome ? "Dom." : "Ext."
+                  }}<template v-if="match.venue"> · {{ match.venue }}</template>
+                </div>
               </div>
-            </div>
-          </td>
+            </td>
+          </template>
         </tr>
       </tbody>
     </table>
-
-    <div v-if="rankings.length" class="mt-6 grid gap-4 sm:grid-cols-2 print:grid-cols-2">
-      <section
-        v-for="team in rankings"
-        :key="team.key"
-        class="break-inside-avoid"
-        data-testid="summary-ranking"
-      >
-        <h3
-          class="mb-1 flex items-baseline justify-between gap-2 border-l-4 pl-2 text-xs font-semibold"
-          :style="{ borderColor: team.color }"
-        >
-          <span>{{ team.label }}</span>
-          <span v-if="team.standing" class="font-normal text-base-content/70">
-            {{ team.standing }}
-          </span>
-        </h3>
-        <table class="table table-xs">
-          <thead>
-            <tr>
-              <th class="w-6 text-right">#</th>
-              <th>Équipe</th>
-              <th class="text-right">Pts</th>
-              <th class="text-right">J</th>
-              <th class="text-right">Sets</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in team.ranking.rows"
-              :key="row.rank"
-              :class="row.ours && 'font-semibold'"
-            >
-              <td class="text-right tabular-nums">{{ row.rank }}</td>
-              <td>{{ row.team }}</td>
-              <td class="text-right tabular-nums">{{ row.points }}</td>
-              <td class="text-right tabular-nums">{{ row.played }}</td>
-              <td class="text-right tabular-nums">{{ row.setsWon }}–{{ row.setsLost }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
   </article>
 </template>
