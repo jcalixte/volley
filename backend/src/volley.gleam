@@ -12,6 +12,7 @@ import mist
 import volley/cache.{type Cache}
 import volley/ffvb.{type Match}
 import volley/ics
+import volley/incidents
 import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
@@ -65,7 +66,7 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
 }
 
 fn matches(store: Cache(List(Match))) -> wisp.Response {
-  case current(store, ffvb.fetch) {
+  case current("calendar", store, ffvb.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
       ffvb.to_json(fetched, fetched_at, stale)
@@ -78,7 +79,7 @@ fn matches(store: Cache(List(Match))) -> wisp.Response {
 /// from its own upstream page, so a ranking FFVB cannot serve does not take the
 /// calendar down with it.
 fn ranking(store: Cache(List(Table))) -> wisp.Response {
-  case current(store, standings.fetch) {
+  case current("standings", store, standings.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
       standings.to_json(fetched, fetched_at, stale)
@@ -91,7 +92,7 @@ fn ranking(store: Cache(List(Table))) -> wisp.Response {
 /// `?equipe=<key>,<key>`. Calendar clients re-read this on their own schedule,
 /// which is the point: a fixture FFVB moves in January reaches a subscriber's phone.
 fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
-  case current(store, ffvb.fetch) {
+  case current("calendar", store, ffvb.fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, _, _)) -> {
       let wanted = case wisp.get_query(req) |> list.key_find("equipe") {
@@ -135,6 +136,7 @@ fn feed_name(selected: List(Match), wanted: List(String)) -> String {
 /// refresh the previous copy is served rather than an error — better a calendar
 /// from an hour ago than an error page on match day.
 fn current(
+  document: String,
   store: Cache(value),
   fetch: fn() -> Result(value, String),
 ) -> Result(#(value, Int, Bool), String) {
@@ -145,13 +147,14 @@ fn current(
     Some(entry) ->
       case now - entry.fetched_at < ttl_seconds {
         True -> Ok(#(entry.value, entry.fetched_at, False))
-        False -> refresh(store, fetch, cached, now)
+        False -> refresh(document, store, fetch, cached, now)
       }
-    None -> refresh(store, fetch, None, now)
+    None -> refresh(document, store, fetch, None, now)
   }
 }
 
 fn refresh(
+  document: String,
   store: Cache(value),
   fetch: fn() -> Result(value, String),
   fallback: Option(cache.Entry(value)),
@@ -162,24 +165,27 @@ fn refresh(
       cache.write(store, fetched, now)
       Ok(#(fetched, now, False))
     }
-    Error(reason) ->
+    Error(reason) -> {
+      let served = case fallback {
+        Some(entry) ->
+          "a copy " <> int.to_string(now - entry.fetched_at) <> "s old"
+        None -> "no copy at all"
+      }
+      let message =
+        document <> " refresh failed, serving " <> served <> ": " <> reason
+      incidents.record(document:, served:, reason:)
+
       case fallback {
         Some(entry) -> {
-          wisp.log_warning(
-            "upstream refresh failed, serving a copy "
-            <> int.to_string(now - entry.fetched_at)
-            <> "s old: "
-            <> reason,
-          )
+          wisp.log_warning(message)
           Ok(#(entry.value, entry.fetched_at, True))
         }
         None -> {
-          wisp.log_error(
-            "upstream refresh failed with nothing cached: " <> reason,
-          )
+          wisp.log_error(message)
           Error(reason)
         }
       }
+    }
   }
 }
 

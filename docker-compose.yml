@@ -12,3 +12,10 @@ services:
     build: ./backend
     expose:
       - "8000"
+    # One line per failed FFVB refresh. Container logs die with the container,
+    # and a deploy replaces it; this volume is what keeps an outage on record.
+    volumes:
+      - incidents:/data
+
+volumes:
+  incidents:
