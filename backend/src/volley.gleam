@@ -17,7 +17,7 @@ import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
 
-const ttl_seconds = 900
+const ttl_seconds = 3600
 
 type Stores {
   Stores(matches: Cache(List(Match)), standings: Cache(List(Table)))
@@ -98,7 +98,10 @@ fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
 
       wisp.response(200)
       |> wisp.set_header("content-type", "text/calendar; charset=utf-8")
-      |> wisp.set_header("cache-control", "public, max-age=900")
+      |> wisp.set_header(
+        "cache-control",
+        "public, max-age=" <> int.to_string(ttl_seconds),
+      )
       |> wisp.string_body(ics.render(
         selected,
         feed_name(selected, wanted),
