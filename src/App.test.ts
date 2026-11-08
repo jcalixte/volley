@@ -109,7 +109,6 @@ const standings: Standings = {
   ],
 }
 
-// Two endpoints now answer the page, so the stub has to tell them apart.
 function stubFetch(body: Calendar, ok = true, tables: Standings = standings) {
   vi.stubGlobal(
     "fetch",
@@ -337,8 +336,6 @@ describe("remembering a team", () => {
     expect(wrapper.text()).toContain("ASV")
   })
 
-  // Poule codes change between seasons; a remembered one that no longer exists
-  // must not leave the page looking empty.
   it("falls back to every team when the remembered championship is gone", async () => {
     localStorage.setItem("equipe", "9XX")
     const wrapper = await render()
@@ -459,8 +456,6 @@ describe("the ranking view", () => {
     return wrapper
   }
 
-  // The table is a much bigger upstream document than the calendar, so nobody
-  // pays for it until they ask for it.
   it("leaves the ranking unfetched until the tab is opened", async () => {
     const wrapper = await render()
     expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).not.toContain("/api/standings")
@@ -502,7 +497,6 @@ describe("the ranking view", () => {
     expect(cards[0].attributes("style")).toContain("background-color")
   })
 
-  // FFVB publishes no table for the youth poules, which must not look like a bug.
   it("says so when the championship has no published table", async () => {
     const wrapper = await render()
     await pick(wrapper, "2MB")
@@ -591,7 +585,6 @@ describe("the summary view", () => {
     expect(wrapper.findAll('[data-testid="summary-row"]')).toHaveLength(2)
   })
 
-  // On paper a dark theme would print near-white text on an unprinted page.
   it("stays light whatever the screen's theme", async () => {
     const wrapper = await openSummary(await render())
     expect(wrapper.find('article[data-theme="light"]').exists()).toBe(true)

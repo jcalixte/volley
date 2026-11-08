@@ -65,7 +65,6 @@ describe("mapsUrl", () => {
     )
   })
 
-  // "PALAIS DES SPORTS" alone is worthless; the host club names the town.
   it("searches the hall together with the host club when away", () => {
     expect(
       query(raw({ venue: "PALAIS DES SPORTS", atHome: false, opponent: "BESANCON VOLLEY-BALL" })),

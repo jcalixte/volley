@@ -11,9 +11,8 @@ const props = defineProps<{ match: Match; color: string }>()
 const absence = computed(() => absenceOn(props.match.date))
 </script>
 
-<!-- The stripe repeats the team colour of the calendar and the ranking card, so
-     one team reads the same on every tab. The competition name sits next to it,
-     so the colour is never the only cue. -->
+<!-- The competition name beside the colour stripe keeps colour from being the
+     only cue. -->
 <template>
   <li
     class="relative flex items-center gap-4 overflow-hidden rounded-box bg-base-100 py-3 pr-4 pl-5 ring-1 ring-base-300/60"

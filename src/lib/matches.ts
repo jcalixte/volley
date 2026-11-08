@@ -33,10 +33,8 @@ export interface Match extends RawMatch {
   won: boolean | null
 }
 
-// FFVB gives the hall's name but not its address — that only exists inside the
-// per-match PDF. A search query carries enough to land on it: the hall name is
-// ambiguous alone ("PALAIS DES SPORTS", "GYMNASE MUNICIPAL"), but the host club
-// names its town, and every home game is played in Saint-Maur.
+// FFVB gives the hall's name but no address. The name alone is ambiguous
+// ("PALAIS DES SPORTS"); the host club's town disambiguates it.
 export function mapsUrl(match: Pick<RawMatch, "venue" | "opponent" | "atHome">): string {
   const host = match.atHome ? HOME_TOWN : hostTown(match.opponent)
   const query = new URLSearchParams({ api: "1", query: `${match.venue} ${host}` })
@@ -51,18 +49,13 @@ function hostTown(club: string): string {
 }
 
 export interface CalendarLinks {
-  /** Relative, for the download attribute. */
   file: string
-  /** Absolute https, the address a client subscribes to. */
   url: string
-  /** Apple Calendar, Outlook and the desktop clients register this scheme. */
   webcal: string
   /** Android has no webcal handler at all, so hand the feed to Google's importer. */
   google: string
 }
 
-// A subscription rather than a download: FFVB moves fixtures mid-season, and a
-// subscribed calendar picks that up where an imported file stays wrong.
 export function calendarLinks(competitions: string[]): CalendarLinks {
   const file =
     "/api/calendar.ics" +
@@ -76,8 +69,7 @@ export function calendarLinks(competitions: string[]): CalendarLinks {
   }
 }
 
-// One colour per championship so several teams can share the calendar. Each
-// carries white text at 4.9:1 or more, in both themes.
+// Each colour carries white text at 4.9:1 or more, in both themes.
 const TEAM_COLORS = [
   "#1d4ed8",
   "#be185d",

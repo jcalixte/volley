@@ -1,11 +1,5 @@
-//// Failed refreshes, appended one line each to a file on a Docker volume. The
-//// container's own stdout log dies with the container, and Coolify replaces
-//// the container on every deploy — so an outage seen in October would be gone
-//// by December. A volume outlives the container, which is what makes the
-//// question "how often is FFVB down, and when?" answerable at all.
-////
-//// One tab-separated line per failure: when, which document, what the visitor
-//// got, why.
+//// Failed upstream refreshes, one line each, on a Docker volume: Coolify
+//// replaces the container, and its stdout log, on every deploy.
 
 import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
@@ -31,8 +25,8 @@ pub fn line(
   <> "\n"
 }
 
-/// Appends a line, and swallows whatever goes wrong doing it: a volume that
-/// did not mount must not turn a served calendar into an error page.
+/// Ignores write errors: a volume that did not mount must not turn a served
+/// calendar into an error page.
 pub fn record(
   document document: String,
   served served: String,

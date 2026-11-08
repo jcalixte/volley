@@ -18,8 +18,6 @@ export function dateKey(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-// France reads a week Monday first, so Sunday closes the row instead of
-// opening it, and the weekend is the last two columns.
 function mondayIndex(date: Date): number {
   return (date.getDay() + 6) % 7
 }
@@ -32,7 +30,6 @@ export function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
-/** Full weeks covering the anchor's month, every day carrying its matches. */
 export function monthGrid(anchor: Date, matches: Match[], today = new Date()): CalendarDay[][] {
   const byDate = new Map<string, Match[]>()
   for (const match of matches) {
@@ -68,8 +65,7 @@ export function monthGrid(anchor: Date, matches: Match[], today = new Date()): C
   return weeks
 }
 
-// 2024-01-01 was a Monday, so a week read from it lands the labels in the same
-// order as the grid's columns.
+// 2024-01-01 was a Monday, so the labels follow the grid's column order.
 export const weekdayHeaders = Array.from({ length: 7 }, (_, index) =>
   weekdayLabel(new Date(2024, 0, 1 + index)),
 )

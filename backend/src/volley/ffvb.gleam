@@ -1,7 +1,5 @@
-//// The FFVB "export the club's full calendar" endpoint. One POST returns every
-//// match of every team of the club for the whole season, fixtures and results
-//// in the same file — the empty Set/Score columns fill in as matches are played.
-//// That is the entire reason this app needs no scraper, no cron and no database.
+//// FFVB's club calendar export: every match of every club team for the season,
+//// fixtures and results in one file. Set/Score stay empty until a match is played.
 
 import gleam/http
 import gleam/http/request

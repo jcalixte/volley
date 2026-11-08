@@ -1,12 +1,6 @@
-//// FFVB's "Classements des Equipes du Club" page. One GET returns the standing
-//// table of every poule the club plays in — the same bargain as the calendar
-//// export, one request for the whole club, so the ranking needs no extra
-//// scraping of the per-poule frameset.
-////
-//// The answer is a windows-1252 HTML page built by hand in PHP, so it is read
-//// positionally rather than with a DOM: a `<tr>` holding `titrepoule` opens a
-//// table, a `<tr>` holding the magnifier icon is one team's line, and the
-//// nineteen first `<td>`s of that line are the columns FFVB prints.
+//// FFVB's "Classements des Equipes du Club" page: hand-built windows-1252 HTML,
+//// read positionally rather than with a DOM. A `<tr>` holding `titrepoule`
+//// opens a table; a `<tr>` holding the magnifier icon is one team's line.
 
 import gleam/bool
 import gleam/http
@@ -34,9 +28,8 @@ pub type Row {
   Row(
     rank: Int,
     team: String,
-    /// FFVB stamps each line with the club it belongs to, so our own teams are
-    /// known exactly rather than guessed from a name — the departmental poule
-    /// calls us "VGA ST MAUR 3" where the national one spells the club out.
+    /// Matched on the club code FFVB stamps on each line, not the team name: the
+    /// departmental poule calls us "VGA ST MAUR 3".
     ours: Bool,
     points: Int,
     played: Int,
@@ -100,8 +93,6 @@ pub fn parse(html: String) -> List(Table) {
   |> list.map(fn(table) { Table(..table, rows: list.reverse(table.rows)) })
 }
 
-/// Rows belong to the table opened most recently, so the list is built head-first
-/// and turned around at the end.
 fn absorb(tables: List(Table), chunk: String) -> List(Table) {
   case string.contains(chunk, title_marker), tables {
     True, _ ->
@@ -136,8 +127,7 @@ fn header(chunk: String) -> Result(Table, Nil) {
   }
 }
 
-/// The entity code only exists on the team lines, inside the hidden form that
-/// links each one to its fixtures, so the table takes it from its first row.
+/// FFVB puts the entity code only on team lines, never on the poule title.
 fn extend(table: Table, chunk: String, row: Row) -> Table {
   let entity = case table.entity {
     "" -> hidden(chunk, "codent") |> result.unwrap("")
@@ -217,7 +207,6 @@ fn cell_text(cell: String) -> String {
   }
 }
 
-/// A poule title carries a gender icon, so the text is what survives the markup.
 fn strip_tags(html: String) -> String {
   case string.split_once(html, "<") {
     Error(_) -> html
@@ -238,7 +227,6 @@ fn hidden(chunk: String, name: String) -> Result(String, Nil) {
   Ok(value)
 }
 
-/// The FFVB page for the poule a table ranks.
 pub fn table_url(table: Table) -> String {
   "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?saison="
   <> string.replace(ffvb.season, "/", "%2F")

@@ -1,7 +1,6 @@
 export interface StandingRow {
   rank: number
   team: string
-  /** FFVB stamps each line with its club, so our own teams are known, not guessed. */
   ours: boolean
   points: number
   played: number

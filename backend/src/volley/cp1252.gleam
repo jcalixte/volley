@@ -1,10 +1,8 @@
-//// FFVB serves its exports as windows-1252, not UTF-8, so team names like
-//// "VANDENBEMDEN FRÉDÉRICK" arrive as raw bytes that no UTF-8 decoder accepts.
+//// FFVB serves its exports as windows-1252, not UTF-8.
 
 import gleam/list
 import gleam/string
 
-/// Decode a windows-1252 byte string into a Gleam String.
 pub fn decode(bits: BitArray) -> String {
   do_decode(bits, [])
 }

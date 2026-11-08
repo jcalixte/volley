@@ -1,7 +1,3 @@
-//// A single-slot cache with a TTL, and — the part that matters when the
-//// upstream is a PHP 5.3 server we do not control — a last-good value that
-//// outlives its TTL and is served when a refresh fails.
-
 import gleam/erlang/process.{type Subject}
 import gleam/option.{type Option, None, Some}
 import gleam/otp/actor

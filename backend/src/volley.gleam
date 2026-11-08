@@ -17,13 +17,8 @@ import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
 
-/// How long a fetched calendar is served before we go back to FFVB. Results are
-/// entered by hand on match day, so a quarter of an hour is as live as the
-/// source itself gets.
 const ttl_seconds = 900
 
-/// The two upstream documents the app reads, each behind its own TTL cache: the
-/// club's whole-season calendar and the club's standing tables.
 type Stores {
   Stores(matches: Cache(List(Match)), standings: Cache(List(Table)))
 }
@@ -46,8 +41,7 @@ pub fn main() {
   process.sleep_forever()
 }
 
-/// Nothing here signs a cookie or a session — this app is a read-only view of a
-/// public calendar — but wisp wants a key, so give it a fresh one per boot.
+/// Nothing signs a cookie or a session, so a fresh key per boot is safe.
 fn secret_key_base() -> String {
   crypto.strong_random_bytes(32) |> bit_array.base16_encode
 }
@@ -75,9 +69,6 @@ fn matches(store: Cache(List(Match))) -> wisp.Response {
   }
 }
 
-/// The standing of every poule the club plays in. Fetched on its own schedule
-/// from its own upstream page, so a ranking FFVB cannot serve does not take the
-/// calendar down with it.
 fn ranking(store: Cache(List(Table))) -> wisp.Response {
   case current("standings", store, standings.fetch) {
     Error(reason) -> failure(reason)
@@ -88,9 +79,6 @@ fn ranking(store: Cache(List(Table))) -> wisp.Response {
   }
 }
 
-/// An iCalendar subscription, optionally narrowed to some championships with
-/// `?equipe=<key>,<key>`. Calendar clients re-read this on their own schedule,
-/// which is the point: a fixture FFVB moves in January reaches a subscriber's phone.
 fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
   case current("calendar", store, ffvb.fetch) {
     Error(reason) -> failure(reason)
@@ -132,9 +120,6 @@ fn feed_name(selected: List(Match), wanted: List(String)) -> String {
   }
 }
 
-/// The cached calendar, refreshed when it has aged past the TTL. On a failed
-/// refresh the previous copy is served rather than an error — better a calendar
-/// from an hour ago than an error page on match day.
 fn current(
   document: String,
   store: Cache(value),

@@ -9,8 +9,6 @@ pub fn main() {
   gleeunit.main()
 }
 
-/// A verbatim slice of what the FFVB export returns, including the header row it
-/// prefixes every file with.
 const sample = "Entit\u{00E9};Jo;Match;Date;Heure;EQA_no;EQA_nom;EQB_no;EQB_nom;Set;Score;Total;Salle;Arb1;Arb2;
 ABCCS;01;2FC004;2026-09-27;13:30;0941410;VIE AU GRAND AIR DE ST MAUR;0929372;PLESSIS-ROBINSON VOLLEY-BALL;;;;BROSSOLETTE;;GARRAUT LORENZO;
 ABCCS;02;2FC009;2026-10-04;14:00;0686625;AS SP ENTREMONT RIXHEIM;0941410;VIE AU GRAND AIR DE ST MAUR; 3/1;25-20,25-18,22-25,25-19;4;CITE DES SPORTS;LI09;;
@@ -40,8 +38,6 @@ pub fn parse_flips_the_sides_when_away_test() {
   away.opponent |> should.equal("AS SP ENTREMONT RIXHEIM")
 }
 
-/// The same file carries fixtures and results — a played match is one with a score.
-/// FFVB writes the sets as " 3/1"; they come out as "3-1".
 pub fn parse_keeps_the_result_of_a_played_match_test() {
   let assert [_, played, ..] = ffvb.parse(sample)
 
@@ -53,7 +49,6 @@ pub fn parse_drops_the_header_row_test() {
   ffvb.parse(sample) |> list.length |> should.equal(3)
 }
 
-/// A four-letter regional poule must not lose a letter to the fixed-width trim.
 pub fn parse_reads_a_four_letter_poule_test() {
   let assert [_, _, regional] = ffvb.parse(sample)
 
@@ -76,8 +71,7 @@ pub fn cp1252_decodes_accents_test() {
   |> should.equal("FRÉDÉRICK")
 }
 
-/// 0x92 is a control character in latin-1 but a right single quote in
-/// windows-1252 — decoding as latin-1 would silently produce the wrong glyph.
+/// 0x92: a right single quote in windows-1252, a control character in latin-1.
 pub fn cp1252_decodes_the_windows_only_range_test() {
   <<"L":utf8, 0x92, "AS":utf8>>
   |> cp1252.decode
@@ -95,7 +89,6 @@ pub fn competition_key_keeps_a_national_poule_whole_test() {
   ffvb.competition_key(national) |> should.equal("2FC")
 }
 
-/// The aller and retour halves of a regional poule are one championship.
 pub fn competition_key_folds_the_two_regional_phases_test() {
   let assert [_, _, regional] = ffvb.parse(sample)
   ffvb.competition_key(regional) |> should.equal("PFA")
@@ -107,8 +100,6 @@ pub fn competition_label_reproduces_the_ffvb_title_test() {
   |> should.equal("Nationale 2 Féminine · Poule C")
 }
 
-/// FFVB publishes no name for its regional poules, so the code stands in rather
-/// than an invented label.
 pub fn competition_label_keeps_the_code_for_a_regional_poule_test() {
   let assert [_, _, regional] = ffvb.parse(sample)
   ffvb.competition_label(regional)

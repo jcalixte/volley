@@ -8,9 +8,7 @@ import HomeIcon from "@/components/HomeIcon.vue"
 
 const props = defineProps<{
   matches: Match[]
-  /** Championship key to its colour. */
   colors: Record<string, string>
-  /** The championships on show, for the legend. */
   teams: { key: string; label: string; color: string }[]
 }>()
 
@@ -30,8 +28,8 @@ function shift(delta: number) {
   anchor.value = addMonths(anchor.value, delta)
 }
 
-// Colour alone cannot tell two championships apart, so once several share the
-// grid each chip also carries its poule code.
+// With several teams on the grid, chips add the poule code so colour is not the
+// only cue.
 const severalTeams = computed(() => props.teams.length > 1)
 
 function chipLabel(match: Match): string {
@@ -86,8 +84,6 @@ function chipLabel(match: Match): string {
       </button>
     </div>
 
-    <!-- Nearly every match falls on a Saturday or a Sunday, so those two
-         columns take most of the width and the weekdays shrink to rails. -->
     <div
       class="grid grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,3fr)_minmax(0,3fr)] gap-px overflow-hidden rounded-box bg-base-300/60 ring-1 ring-base-300/60"
     >

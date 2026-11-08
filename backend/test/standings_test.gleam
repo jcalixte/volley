@@ -2,10 +2,8 @@ import gleam/list
 import gleeunit/should
 import volley/standings
 
-/// A trimmed but faithful slice of planning_club_class.php: one national table
-/// and one departmental one. The hidden inputs are kept verbatim — they are what
-/// identifies the entity and our own lines — while the printer and calendar
-/// forms that follow them on the real page are dropped.
+/// Trimmed slice of planning_club_class.php. Keep the hidden inputs verbatim:
+/// the parser reads the entity and our own lines from them.
 const sample = "<TABLE>
 <tr><td bgcolor='#33CCCC' class='lienblanc' align='center'>NAT</td><td class='titrepoule' align='left' colspan='7'><IMG SRC='../images/masculin.png' WIDTH=18 HEIGHT=18 align='absmiddle'>2MB - NATIONALE 2 MASCULINE - POULE B</td></tr>
 <tr bgcolor='#EEEEF8'><td class='liengris_pt' align='right'>1.</td><td class='lienquestion_pt' align='left'>EPINAL GOLBEY VOLLEY-BALL (EGVB)</td><td class='lienblanc_pt' align='center'>9</td><td class='liengris_pt' align='right'>3</td><td class='liengris_pt' align='right'>3</td><td></td><td></td><td class='liengris_pt' align='right'>2</td><td class='liengris_pt' align='right'>1</td><td></td><td></td><td></td><td></td><td class='liengris_pt' align='right'>9</td><td class='liengris_pt' align='right'>1</td><td class='liengris_pt' align='right'>9.000</td><td class='liengris_pt' align='right'>254</td><td class='liengris_pt' align='right'>206</td><td class='liengris_pt' align='right'>1.233</td><form name=divers method=get action='vbspo_calendrier.php'><td align='left' class='lienquestion'><input type=hidden name=saison value='2026/2027'><input type=hidden name=codent value='ABCCS'><input type=hidden name=poule value='2MB'><input type=image src='ico_spo_loupe.png'></td></form><form name=divers method=get action='planning_club.php'><td align='center'><input type=hidden name=cnclub value=0885362></td></form></tr>
@@ -21,8 +19,6 @@ pub fn parse_finds_every_table_test() {
   |> should.equal(["2MB", "ARM"])
 }
 
-/// The code belongs to the app's own competition key, so the title it carries is
-/// only the name FFVB prints after it.
 pub fn parse_splits_the_code_off_the_title_test() {
   let assert [national, ..] = standings.parse(sample)
 
@@ -48,7 +44,6 @@ pub fn parse_reads_a_whole_line_test() {
   leader.point_ratio |> should.equal("1.233")
 }
 
-/// An empty cell is FFVB's way of printing a zero.
 pub fn parse_reads_an_empty_cell_as_zero_test() {
   let assert [national, ..] = standings.parse(sample)
   let assert [leader, ..] = national.rows
@@ -57,8 +52,6 @@ pub fn parse_reads_an_empty_cell_as_zero_test() {
   leader.forfeits |> should.equal(0)
 }
 
-/// Our own lines are found by the club code FFVB stamps on them — the name alone
-/// would miss "VGA ST MAUR 3", which is the same club under another spelling.
 pub fn parse_marks_our_own_lines_test() {
   let assert [national, departmental] = standings.parse(sample)
 
@@ -74,7 +67,6 @@ pub fn parse_marks_our_own_lines_test() {
   theirs.team |> should.equal("VGA ST MAUR 3")
 }
 
-/// No set conceded leaves FFVB with no ratio to print, so it prints "MAX".
 pub fn parse_keeps_an_unbeaten_ratio_test() {
   let assert [_, departmental] = standings.parse(sample)
   let assert [leader] = departmental.rows

@@ -26,14 +26,11 @@ pub fn wraps_the_events_in_a_calendar_test() {
   output |> list.count(fn(l) { l == "BEGIN:VEVENT" }) |> should.equal(2)
 }
 
-/// Every line must end CRLF, including the last one.
 pub fn ends_every_line_with_crlf_test() {
   render() |> string.ends_with("END:VCALENDAR\r\n") |> should.be_true
   render() |> string.contains("\n\n") |> should.be_false
 }
 
-/// Times are French local. Shipping a bare UTC offset would be an hour wrong for
-/// half the season, so the feed carries the Europe/Paris rules.
 pub fn anchors_times_to_the_paris_timezone_test() {
   let output = lines()
   output |> list.contains("BEGIN:VTIMEZONE") |> should.be_true
@@ -65,14 +62,10 @@ pub fn carries_the_venue_as_the_location_test() {
   lines() |> list.contains("LOCATION:BROSSOLETTE") |> should.be_true
 }
 
-/// A duration avoids the date arithmetic an explicit DTEND would need for a
-/// fixture that runs past midnight.
 pub fn gives_each_match_a_duration_test() {
   lines() |> list.contains("DURATION:PT2H") |> should.be_true
 }
 
-/// Commas separate values in RFC 5545, so a set-by-set score must be escaped or
-/// the description silently truncates.
 pub fn escapes_reserved_characters_test() {
   let commas =
     lines()
@@ -83,16 +76,12 @@ pub fn escapes_reserved_characters_test() {
   |> should.be_true
 }
 
-/// Content lines are capped at 75 octets; longer ones continue with a leading
-/// space. Octets, not characters: the description carries "Journée" and "·",
-/// which cost two bytes each, so a grapheme count silently overruns.
 pub fn folds_long_lines_to_75_octets_test() {
   lines()
   |> list.all(fn(l) { bit_array.byte_size(bit_array.from_string(l)) <= 75 })
   |> should.be_true
 }
 
-/// Folding must never split a character in half.
 pub fn folding_keeps_multibyte_characters_whole_test() {
   render() |> string.contains("Journée") |> should.be_true
   render() |> string.contains("\u{FFFD}") |> should.be_false

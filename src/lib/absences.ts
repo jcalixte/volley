@@ -1,6 +1,5 @@
-// A player away for part of the season. The window is stored as the same
-// `YYYY-MM-DD` string FFVB publishes, so the comparison is lexicographic and
-// never crosses a timezone.
+// `from`/`to` are `YYYY-MM-DD` strings, compared lexicographically so no
+// timezone is involved.
 export interface Absence {
   flag: string
   reason: string

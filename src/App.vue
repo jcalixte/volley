@@ -34,17 +34,13 @@ const now = ref(Date.now())
 const standings = ref<Standings | null>(null)
 const standingsError = ref<string | null>(null)
 
-// Most people open this page for one or two teams. `?equipe=2MB,2FA` makes that
-// shareable, and the last choice is remembered so the regulars land on their own
-// list. No pick at all means every team.
+// No pick at all means every team.
 function rememberedCompetitions(): string[] {
   const fromLink = new URLSearchParams(location.search).get(FILTER_PARAM)
   const stored = fromLink ?? localStorage.getItem(FILTER_PARAM) ?? ""
   return stored.split(",").filter(Boolean)
 }
 
-// A reload, or a link sent to someone else, should land on the tab being read
-// rather than back on the upcoming matches.
 function rememberedView(): View {
   const fromLink = new URLSearchParams(location.search).get(VIEW_PARAM)
   const stored = fromLink ?? localStorage.getItem(VIEW_PARAM) ?? ""
@@ -72,8 +68,6 @@ async function load() {
   }
 }
 
-// The ranking sits behind its own upstream page, which is a far bigger document
-// than the calendar export, so it is only fetched once someone asks for it.
 async function loadStandings() {
   try {
     standings.value = await fetchStandings()
@@ -92,8 +86,6 @@ watch(view, (tab) => {
   history.replaceState(null, "", url)
 })
 
-// The FFVB calendar changes when results are entered, so a tab left open all
-// weekend should not keep showing Saturday morning's version.
 function refreshWhenVisible() {
   if (document.visibilityState !== "visible") return
   load()
@@ -127,8 +119,7 @@ const competitions = computed(() => {
   return [...seen.values()]
 })
 
-// Poule codes change between seasons, so a remembered one that has disappeared
-// is ignored rather than leaving the page empty.
+// Drops remembered poule codes that no longer exist, e.g. from a past season.
 const activeCompetitions = computed(() =>
   competitions.value.filter((entry) => picked.value.includes(entry.key)).map((entry) => entry.key),
 )
@@ -223,16 +214,12 @@ const emptyMessage = computed(() =>
       : "Aucun match à afficher ici.",
 )
 
-// FFVB ranks a poule under its own code, which is the key the matches already
-// carry — so one championship lines up with one table, and a youth poule FFVB
-// publishes no table for simply has none.
 const rankings = computed(() => {
   const tables = standings.value?.tables ?? []
   if (!activeCompetitions.value.length) return tables
   return tables.filter((table) => activeCompetitions.value.includes(table.key))
 })
 
-// The app's own wording wherever it has one; FFVB's all-caps title otherwise.
 function rankingLabel(key: string, fallback: string): string {
   return competitions.value.find((entry) => entry.key === key)?.label ?? fallback
 }
@@ -432,8 +419,6 @@ function rankingLabel(key: string, fallback: string): string {
             {{ emptyMessage }}
           </p>
 
-          <!-- Colour stays off this strip: wins and losses are told apart by
-               their label, and the numerals carry the weight. -->
           <dl
             v-if="view === 'results' && playedCount"
             class="mb-6 grid grid-cols-3 divide-x divide-base-300 rounded-box bg-base-100 py-3 text-center ring-1 ring-base-300/60"

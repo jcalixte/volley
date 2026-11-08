@@ -29,7 +29,6 @@ pub fn record_appends_rather_than_overwrites_test() {
   let _ = simplifile.delete(path)
 }
 
-/// A missing volume must cost a log line, not the response.
 pub fn record_survives_an_unwritable_path_test() {
   incidents.record(
     document: "standings",

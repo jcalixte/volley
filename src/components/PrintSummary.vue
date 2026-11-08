@@ -22,8 +22,7 @@ interface Day {
   byTeam: Record<string, Match[]>
 }
 
-// One row per day: every team gets its own time column, so a weekend reads
-// across. A youth plateau can hold several matches at once, hence a list per team.
+// A youth plateau can hold several matches per team on one day.
 const rows = computed(() => {
   const days = new Map<string, Day>()
   for (const match of props.matches) {

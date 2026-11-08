@@ -1,6 +1,4 @@
-//// An iCalendar feed (RFC 5545) of the club's fixtures, meant to be *subscribed*
-//// to rather than downloaded once: FFVB moves matches during the season, and a
-//// subscription picks that up while an imported file does not.
+//// iCalendar feed (RFC 5545) of the club's fixtures.
 
 import gleam/bit_array
 import gleam/int
@@ -12,8 +10,8 @@ import volley/ffvb.{type Match}
 
 const domain = "volley.apoena.dev"
 
-/// Matches are given in French local time, so the feed ships the Europe/Paris
-/// rules rather than guessing an offset that breaks at the March changeover.
+/// Match times are French local time: ship the Europe/Paris rules, not a fixed
+/// offset that breaks at the DST changeover.
 const paris_timezone = "BEGIN:VTIMEZONE
 TZID:Europe/Paris
 BEGIN:DAYLIGHT
@@ -62,8 +60,6 @@ fn event(match: Match, stamp: String) -> List(String) {
     "UID:" <> match.code <> "@" <> domain,
     "DTSTAMP:" <> stamp,
     "DTSTART;TZID=Europe/Paris:" <> start(match),
-    // A duration dodges the date arithmetic an explicit DTEND would need for a
-    // late fixture that runs past midnight.
     "DURATION:PT2H",
     "SUMMARY:" <> escape(summary(match)),
     "LOCATION:" <> escape(match.venue),
@@ -145,16 +141,17 @@ fn escape(value: String) -> String {
   |> string.replace("\n", "\\n")
 }
 
-/// Content lines are capped at 75 **octets**, not characters. Folding on
-/// character count lets a line of accented venue names overrun — "Journée" and
-/// "À domicile" cost two bytes each — so this counts UTF-8 bytes while breaking
-/// only between whole characters. Segments are capped at 73 so a continuation,
-/// which the fold prefixes with a space, still lands under the limit.
+/// RFC 5545 caps content lines at 75 octets, not characters, so this counts
+/// UTF-8 bytes and breaks only between whole characters. A continuation line
+/// starts with a space, so segments stay under the limit with room for it.
+const max_segment_bytes = 73
+
 fn fold(line: String) -> String {
-  case byte_size(line) <= 73 {
+  case byte_size(line) <= max_segment_bytes {
     True -> line
     False -> {
-      let #(head, rest) = take_bytes(string.to_graphemes(line), 73, "")
+      let #(head, rest) =
+        take_bytes(string.to_graphemes(line), max_segment_bytes, "")
       head <> "\r\n " <> fold(rest)
     }
   }
