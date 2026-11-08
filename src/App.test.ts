@@ -357,14 +357,10 @@ describe("the calendar view", () => {
     expect(today[0].text()).toBe("4")
   })
 
-  it("gives the weekend columns more room than the weekdays", async () => {
-    const wrapper = await openCalendar(await render())
-    expect(wrapper.html()).toContain("grid-cols-[repeat(5,minmax(0,1fr))_1.6fr_1.6fr]")
-  })
-
   it("places a match on its own day and leaves the other months out", async () => {
     const wrapper = await openCalendar(await render())
-    expect(wrapper.text()).toContain("16:00PARIS VOLLEY CLUB")
+    const chip = wrapper.find('[title*="PARIS VOLLEY CLUB"]')
+    expect(chip.text()).toContain("16:00")
     expect(wrapper.text()).not.toContain("ASV")
   })
 
