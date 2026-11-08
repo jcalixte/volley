@@ -20,9 +20,9 @@ fixtures and results in the same shape: the `Set` and `Score` columns are empty 
 match is played, then filled in. Re-fetching that one file is the whole update mechanism.
 There is no scraper, no scheduled job and no database.
 
-The backend fetches it at most once an hour, and keeps the last good response
-indefinitely so that an FFVB outage degrades to a slightly old calendar rather than an
-error page.
+The backend fetches it at most every 15 minutes on weekends, when nearly every match is
+played, and every 6 hours on weekdays. It keeps the last good response indefinitely so that
+an FFVB outage degrades to a slightly old calendar rather than an error page.
 
 ## Layout
 

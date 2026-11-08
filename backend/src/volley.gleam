@@ -17,7 +17,19 @@ import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
 
-const ttl_seconds = 3600
+const weekend_ttl_seconds = 900
+
+const weekday_ttl_seconds = 21_600
+
+/// Scores come in on weekends, when nearly every match is played.
+pub fn ttl_seconds(now: Int) -> Int {
+  // Paris is UTC+1 (UTC+2 in summer); an hour off at midnight does not matter.
+  // 1970-01-01, day 0, was a Thursday, so 2 is a Saturday and 3 a Sunday.
+  case { now + 3600 } / 86_400 % 7 {
+    2 | 3 -> weekend_ttl_seconds
+    _ -> weekday_ttl_seconds
+  }
+}
 
 type Stores {
   Stores(matches: Cache(List(Match)), standings: Cache(List(Table)))
@@ -100,7 +112,7 @@ fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
       |> wisp.set_header("content-type", "text/calendar; charset=utf-8")
       |> wisp.set_header(
         "cache-control",
-        "public, max-age=" <> int.to_string(ttl_seconds),
+        "public, max-age=" <> int.to_string(ttl_seconds(now_seconds())),
       )
       |> wisp.string_body(ics.render(
         selected,
@@ -133,7 +145,7 @@ fn current(
 
   case cached {
     Some(entry) ->
-      case now - entry.fetched_at < ttl_seconds {
+      case now - entry.fetched_at < ttl_seconds(now) {
         True -> Ok(#(entry.value, entry.fetched_at, False))
         False -> refresh(document, store, fetch, cached, now)
       }

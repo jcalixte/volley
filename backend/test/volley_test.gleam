@@ -2,6 +2,7 @@ import gleam/list
 import gleam/string
 import gleeunit
 import gleeunit/should
+import volley
 import volley/cp1252
 import volley/ffvb
 
@@ -9,7 +10,8 @@ pub fn main() {
   gleeunit.main()
 }
 
-const sample = "Entit\u{00E9};Jo;Match;Date;Heure;EQA_no;EQA_nom;EQB_no;EQB_nom;Set;Score;Total;Salle;Arb1;Arb2;
+const sample =
+  "Entit\u{00E9};Jo;Match;Date;Heure;EQA_no;EQA_nom;EQB_no;EQB_nom;Set;Score;Total;Salle;Arb1;Arb2;
 ABCCS;01;2FC004;2026-09-27;13:30;0941410;VIE AU GRAND AIR DE ST MAUR;0929372;PLESSIS-ROBINSON VOLLEY-BALL;;;;BROSSOLETTE;;GARRAUT LORENZO;
 ABCCS;02;2FC009;2026-10-04;14:00;0686625;AS SP ENTREMONT RIXHEIM;0941410;VIE AU GRAND AIR DE ST MAUR; 3/1;25-20,25-18,22-25,25-19;4;CITE DES SPORTS;LI09;;
 LIIDF;14;PFAR069;2027-03-07;13:00;0757777;PUC VOLLEY-BALL 1;0941410;VIE AU GRAND AIR DE ST MAUR 2;;;;CHARPY;;;
@@ -112,4 +114,16 @@ pub fn poule_url_points_at_the_official_calendar_test() {
   url |> string.contains("poule=2FC") |> should.be_true
   url |> string.contains("codent=ABCCS") |> should.be_true
   url |> string.contains("saison=2026%2F2027") |> should.be_true
+}
+
+pub fn ttl_is_short_on_weekends_test() {
+  // Saturday 2026-11-07 00:30 and Sunday 2026-11-08 23:30, Paris time.
+  volley.ttl_seconds(1_794_007_800) |> should.equal(900)
+  volley.ttl_seconds(1_794_177_000) |> should.equal(900)
+}
+
+pub fn ttl_is_long_on_weekdays_test() {
+  // Friday 2026-11-06 23:30 and Monday 2026-11-09 00:30, Paris time.
+  volley.ttl_seconds(1_794_004_200) |> should.equal(21_600)
+  volley.ttl_seconds(1_794_180_600) |> should.equal(21_600)
 }
