@@ -254,6 +254,30 @@ describe("App", () => {
     expect(wrapper.text()).toContain("25-20 · 25-18 · 22-25 · 25-19")
   })
 
+  it("sums the season record above the results", async () => {
+    stubFetch({
+      ...calendar,
+      matches: [
+        ...calendar.matches,
+        match({
+          code: "2MB013",
+          date: "2026-10-18",
+          sets: "1-3",
+          score: "20-25,25-22,18-25,21-25",
+        }),
+      ],
+    })
+    const wrapper = mount(App)
+    await flushPromises()
+    const results = wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
+    await results.trigger("click")
+    const record = wrapper
+      .find('[data-testid="season-record"]')
+      .findAll("dd")
+      .map((d) => d.text())
+    expect(record).toEqual(["1", "1", "4–4"])
+  })
+
   it("counts only the results of the picked championship", async () => {
     const wrapper = await render()
     const tab = () => wrapper.findAll("button").find((b) => b.text().startsWith("Résultats"))!
@@ -550,6 +574,12 @@ describe("the summary view", () => {
     expect(first[2].text()).toContain("RAMBOUILLET")
     expect(first[3].text()).toBe("16:00")
     expect(first[4].text()).toContain("PARIS VOLLEY CLUB")
+  })
+
+  it("opens each month with a divider row", async () => {
+    const wrapper = await openSummary(await render())
+    const months = wrapper.findAll('[data-testid="summary-month"]').map((tr) => tr.text())
+    expect(months).toEqual(["septembre 2026", "octobre 2026", "février 2027"])
   })
 
   it("keeps to the picked teams", async () => {

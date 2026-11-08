@@ -4,40 +4,58 @@ import type { Match } from "@/lib/matches"
 import { mapsUrl } from "@/lib/matches"
 import { absenceOn } from "@/lib/absences"
 import { weekdayLabel } from "@/lib/format"
+import HomeIcon from "@/components/HomeIcon.vue"
 
-const props = defineProps<{ match: Match }>()
+const props = defineProps<{ match: Match; color: string }>()
 
 const absence = computed(() => absenceOn(props.match.date))
 </script>
 
+<!-- The stripe repeats the team colour of the calendar and the ranking card, so
+     one team reads the same on every tab. The competition name sits next to it,
+     so the colour is never the only cue. -->
 <template>
-  <li class="flex items-center gap-4 rounded-box bg-base-100 px-4 py-3 ring-1 ring-base-300/60">
-    <div class="flex w-12 shrink-0 flex-col items-center leading-none">
-      <span class="text-[0.65rem] uppercase text-base-content/60">
+  <li
+    class="relative flex items-center gap-4 overflow-hidden rounded-box bg-base-100 py-3 pr-4 pl-5 ring-1 ring-base-300/60"
+  >
+    <span
+      class="absolute inset-y-0 left-0 w-1.5"
+      :style="{ backgroundColor: color }"
+      aria-hidden="true"
+    />
+
+    <div class="flex w-11 shrink-0 flex-col items-center leading-none">
+      <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">
         {{ weekdayLabel(match.kickoff) }}
       </span>
-      <span class="font-display text-3xl font-bold tabular-nums">{{
+      <span class="font-display text-4xl font-bold tabular-nums">{{
         match.kickoff.getDate()
       }}</span>
     </div>
 
     <div class="min-w-0 flex-1">
-      <div class="flex items-center gap-2">
-        <span
-          class="badge badge-xs shrink-0"
-          :class="match.atHome ? 'badge-primary' : 'badge-ghost'"
-        >
-          {{ match.atHome ? "Domicile" : "Extérieur" }}
-        </span>
-        <span class="truncate font-medium">{{ match.opponent }}</span>
-      </div>
-      <div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-base-content/60">
+      <span
+        v-if="match.atHome"
+        class="badge badge-sm gap-1 badge-primary font-semibold uppercase tracking-wide"
+      >
+        <HomeIcon class="size-3" aria-hidden="true" />
+        Domicile
+      </span>
+      <span v-else class="badge badge-sm badge-ghost font-semibold uppercase tracking-wide">
+        Extérieur
+      </span>
+
+      <p class="mt-1 font-display text-xl font-bold uppercase leading-tight break-words">
+        {{ match.opponent }}
+      </p>
+
+      <div class="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-base-content/70">
         <a class="link-hover link" :href="match.ffvbUrl" target="_blank" rel="noopener">{{
           match.competition
         }}</a>
         <a
           v-if="match.venue"
-          class="link-hover link inline-flex items-center gap-1 truncate"
+          class="link-hover link inline-flex min-w-0 items-center gap-1"
           :href="mapsUrl(match)"
           target="_blank"
           rel="noopener"
@@ -60,28 +78,35 @@ const absence = computed(() => absenceOn(props.match.date))
           </svg>
           <span class="truncate">{{ match.venue }}</span>
         </a>
+        <span v-if="absence" role="img" :title="absence.reason" :aria-label="absence.reason">{{
+          absence.flag
+        }}</span>
       </div>
-    </div>
-
-    <div class="w-5 shrink-0 text-center text-sm leading-none">
-      <span v-if="absence" role="img" :title="absence.reason" :aria-label="absence.reason">{{
-        absence.flag
-      }}</span>
+      <p
+        v-if="match.played && match.score"
+        class="mt-0.5 text-xs text-base-content/70 tabular-nums"
+      >
+        {{ match.score.replaceAll(",", " · ") }}
+      </p>
     </div>
 
     <div class="shrink-0 text-right">
       <template v-if="match.played">
-        <div
-          class="font-display text-2xl font-bold leading-none tabular-nums"
-          :class="match.won ? 'text-success' : 'text-base-content/60'"
-        >
-          {{ match.ourSets }}–{{ match.theirSets }}
-        </div>
-        <div v-if="match.score" class="text-[0.65rem] text-base-content/60">
-          {{ match.score.replaceAll(",", " · ") }}
+        <div class="flex items-center justify-end gap-2">
+          <span
+            class="grid size-6 place-items-center rounded-full text-xs font-bold"
+            :class="match.won ? 'bg-success text-success-content' : 'bg-base-300 text-base-content'"
+            :title="match.won ? 'Victoire' : 'Défaite'"
+          >
+            <span aria-hidden="true">{{ match.won ? "V" : "D" }}</span>
+            <span class="sr-only">{{ match.won ? "Victoire" : "Défaite" }}</span>
+          </span>
+          <span class="font-display text-3xl font-bold leading-none tabular-nums">
+            {{ match.ourSets }}–{{ match.theirSets }}
+          </span>
         </div>
       </template>
-      <div v-else class="font-display text-2xl font-semibold tabular-nums text-base-content/70">
+      <div v-else class="font-display text-2xl font-semibold leading-none tabular-nums">
         {{ match.time }}
       </div>
     </div>

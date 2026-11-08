@@ -205,6 +205,26 @@ const played = computed(() => inCompetition.value.filter((m) => m.played))
 const playedCount = computed(() => played.value.length)
 const lastResult = computed(() => played.value.at(-1))
 
+const record = computed(() => {
+  const won = played.value.filter((m) => m.won).length
+  const sum = (pick: (m: Match) => number | null) =>
+    played.value.reduce((total, m) => total + (pick(m) ?? 0), 0)
+  return {
+    won,
+    lost: played.value.length - won,
+    setsWon: sum((m) => m.ourSets),
+    setsLost: sum((m) => m.theirSets),
+  }
+})
+
+const emptyMessage = computed(() =>
+  view.value === "results"
+    ? "Aucun résultat pour l'instant : le premier match n'est pas encore joué."
+    : view.value === "upcoming"
+      ? "Plus aucun match à venir cette saison pour cette sélection."
+      : "Aucun match à afficher ici.",
+)
+
 // FFVB ranks a poule under its own code, which is the key the matches already
 // carry — so one championship lines up with one table, and a youth poule FFVB
 // publishes no table for simply has none.
@@ -413,7 +433,7 @@ function rankingLabel(key: string, fallback: string): string {
             ]"
             :key="tab.id"
             role="tab"
-            class="tab shrink-0 whitespace-nowrap"
+            class="tab h-11 shrink-0 whitespace-nowrap"
             :class="{ 'tab-active': view === tab.id }"
             :aria-selected="view === tab.id"
             @click="view = tab.id"
@@ -463,16 +483,59 @@ function rankingLabel(key: string, fallback: string): string {
         </template>
 
         <template v-else>
-          <p v-if="!visible.length" class="py-12 text-center text-base-content/60">
-            Aucun match à afficher ici.
+          <p v-if="!visible.length" class="py-12 text-center text-base-content/70">
+            {{ emptyMessage }}
           </p>
 
+          <!-- Colour stays off this strip: wins and losses are told apart by
+               their label, and the numerals carry the weight. -->
+          <dl
+            v-if="view === 'results' && playedCount"
+            class="mb-6 grid grid-cols-3 divide-x divide-base-300 rounded-box bg-base-100 py-3 text-center ring-1 ring-base-300/60"
+            data-testid="season-record"
+          >
+            <div class="flex flex-col-reverse">
+              <dt class="text-xs font-semibold uppercase tracking-wider text-base-content/70">
+                {{ record.won > 1 ? "Victoires" : "Victoire" }}
+              </dt>
+              <dd class="font-display text-4xl font-bold leading-none tabular-nums">
+                {{ record.won }}
+              </dd>
+            </div>
+            <div class="flex flex-col-reverse">
+              <dt class="text-xs font-semibold uppercase tracking-wider text-base-content/70">
+                {{ record.lost > 1 ? "Défaites" : "Défaite" }}
+              </dt>
+              <dd class="font-display text-4xl font-bold leading-none tabular-nums">
+                {{ record.lost }}
+              </dd>
+            </div>
+            <div class="flex flex-col-reverse">
+              <dt class="text-xs font-semibold uppercase tracking-wider text-base-content/70">
+                Sets
+              </dt>
+              <dd class="font-display text-4xl font-bold leading-none tabular-nums">
+                {{ record.setsWon }}–{{ record.setsLost }}
+              </dd>
+            </div>
+          </dl>
+
           <section v-for="month in months" :key="month.label" class="mb-6">
-            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-              {{ month.label }}
+            <h2
+              class="mb-2 flex items-baseline gap-2 font-display text-lg font-bold uppercase tracking-wide"
+            >
+              <span>{{ month.label }}</span>
+              <span class="font-sans text-xs font-medium normal-case text-base-content/70">
+                {{ month.matches.length }} {{ month.matches.length > 1 ? "matchs" : "match" }}
+              </span>
             </h2>
             <ul class="flex flex-col gap-2">
-              <MatchRow v-for="match in month.matches" :key="match.code" :match="match" />
+              <MatchRow
+                v-for="match in month.matches"
+                :key="match.code"
+                :match="match"
+                :color="teamColors[match.competitionKey] ?? teamColor(0)"
+              />
             </ul>
           </section>
         </template>
