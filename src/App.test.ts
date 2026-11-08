@@ -470,6 +470,14 @@ describe("the ranking view", () => {
     expect(ours).toHaveLength(2)
   })
 
+  it("puts our position above each table, in the championship's colour", async () => {
+    const wrapper = await openRanking(await render())
+    const cards = wrapper.findAll('[data-testid="our-rank"]')
+    expect(cards.map((card) => card.find("p").text())).toEqual(["2e", "1er"])
+    expect(cards[0].text()).toContain("sur 2")
+    expect(cards[0].attributes("style")).toContain("background-color")
+  })
+
   // FFVB publishes no table for the youth poules, which must not look like a bug.
   it("says so when the championship has no published table", async () => {
     const wrapper = await render()

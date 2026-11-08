@@ -456,6 +456,7 @@ function rankingLabel(key: string, fallback: string): string {
               :key="ranking.key"
               :ranking="ranking"
               :label="rankingLabel(ranking.key, ranking.title)"
+              :color="teamColors[ranking.key] ?? teamColor(0)"
             />
           </template>
         </template>
