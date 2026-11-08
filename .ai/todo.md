@@ -1,12 +1,14 @@
-# Calendar view redesign (from screenshot)
+# Homepage redesign (header + match list)
 
-- [x] Fix jammed chip text ("16:00REIMS", "ACBB 2🇯🇵"): flex + gap instead of literal spaces
-- [x] Weekend columns 3fr, weekdays 1fr rails (274 Sat + 97 Sun vs 13 weekday matches/season)
-- [x] Home/away not by colour only: home icon on home chips, legend explains it
-- [x] Several teams: poule code on chip + legend (colour no longer the only cue)
-- [x] Flag pinned at chip end, never truncated
-- [x] Header: month title as focal point, 44px chevron nav buttons, "Aujourd'hui" next to title
-- [x] Tests updated (dropped class-string test, fixed jammed-text assertion)
+- [x] Hero: next match as a ticket — white date stub with condensed numerals, opponent as focal point
+- [x] Countdown chip (Aujourd'hui / Demain / Dans N jours), calendar days, DST-safe + unit test
+- [x] Last result line (Victoire/Défaite in words, not colour only)
+- [x] Loading skeleton (no layout shift) and empty state when season is over
+- [x] Contrast measured: dark tint bg-black/20 keeps /80 text ≥ 6.3:1 (old /15 white tint + /75 text was 3.8:1)
+- [x] Barlow Condensed as display face (own @import: coollabs drops 2nd family in one URL)
+- [x] Match rows: day, time, score in display numerals
+- [x] Tabs scroll inside their box on 360px instead of wrapping; aria-selected
+- [x] Tests: header follows team pick, empty state
 
 ## Review
-vitest 75/75, vue-tsc, oxlint, oxfmt pass. Not tested in browser.
+vitest 79/79, vue-tsc, oxlint, oxfmt, vite build pass. Not tested in browser.
