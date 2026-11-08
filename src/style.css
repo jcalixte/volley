@@ -4,6 +4,8 @@
    warns ("@import must precede all rules…") and browsers silently DROP the
    font import, so the custom font never loads. */
 @import url("https://api.fonts.coollabs.io/css2?family=Inter:wght@400;500;600;700&display=swap");
+/* One family per URL: the coollabs mirror ignores every family after the first. */
+@import url("https://api.fonts.coollabs.io/css2?family=Barlow+Condensed:wght@600;700&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
 
@@ -35,6 +37,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* A surface whose background is the same under both themes must set its own

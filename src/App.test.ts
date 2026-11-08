@@ -167,8 +167,26 @@ describe("App", () => {
 
   it("announces the next match at the top", async () => {
     const wrapper = await render()
-    expect(wrapper.text()).toContain("Prochain match")
-    expect(wrapper.text()).toContain("Réception de PARIS VOLLEY CLUB")
+    const header = wrapper.find("header")
+    expect(header.text()).toContain("Prochain match")
+    expect(header.text()).toContain("Dans 23 jours")
+    expect(header.text()).toContain("Réception de")
+    expect(wrapper.find('[data-testid="next-opponent"]').text()).toBe("PARIS VOLLEY CLUB")
+  })
+
+  it("follows the picked team in the header", async () => {
+    const wrapper = await render()
+    await pick(wrapper, "1MA")
+    expect(wrapper.find('[data-testid="next-opponent"]').text()).toBe("ASV")
+    expect(wrapper.find('[data-testid="last-result"]').text()).toContain("Victoire 3–1")
+    expect(wrapper.find('[data-testid="last-result"]').text()).toContain("VOLLEY 6")
+  })
+
+  it("says so when the season has no match left", async () => {
+    vi.setSystemTime(new Date(2027, 5, 1))
+    const wrapper = await render()
+    expect(wrapper.find('[data-testid="next-opponent"]').exists()).toBe(false)
+    expect(wrapper.find("header").text()).toContain("Plus aucun match à venir")
   })
 
   it("marks home and away", async () => {

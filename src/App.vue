@@ -4,8 +4,8 @@ import MatchRow from "@/components/MatchRow.vue"
 import MatchCalendar from "@/components/MatchCalendar.vue"
 import RankingTable from "@/components/RankingTable.vue"
 import PrintSummary from "@/components/PrintSummary.vue"
-import { fullDate, monthLabel, relativeTime } from "@/lib/format"
-import { absenceOn } from "@/lib/absences"
+import NextMatchCard from "@/components/NextMatchCard.vue"
+import { monthLabel, relativeTime, shortDate } from "@/lib/format"
 import {
   byKickoff,
   calendarLinks,
@@ -200,9 +200,9 @@ const pickerLabel = computed(() => {
   return `${labels.length} équipes`
 })
 
-const nextAbsence = computed(() => (nextMatch.value ? absenceOn(nextMatch.value.date) : undefined))
-
-const playedCount = computed(() => inCompetition.value.filter((m) => m.played).length)
+const played = computed(() => inCompetition.value.filter((m) => m.played))
+const playedCount = computed(() => played.value.length)
+const lastResult = computed(() => played.value.at(-1))
 
 // FFVB ranks a poule under its own code, which is the key the matches already
 // carry — so one championship lines up with one table, and a youth poule FFVB
@@ -222,29 +222,46 @@ function rankingLabel(key: string, fallback: string): string {
 <template>
   <div class="min-h-dvh bg-base-200 print:bg-white">
     <header class="bg-primary text-primary-content print:hidden">
-      <div class="mx-auto max-w-3xl px-4 py-8">
-        <p class="text-xs uppercase tracking-widest opacity-80">
-          Saison {{ calendar?.season ?? "" }}
-        </p>
-        <h1 class="mt-1 text-2xl font-bold sm:text-3xl">
-          {{ calendar?.club ?? "Vie au Grand Air de Saint-Maur" }}
-        </h1>
-        <div v-if="nextMatch" class="mt-6 rounded-box bg-primary-content/15 p-4 backdrop-blur-sm">
-          <p class="text-xs uppercase tracking-wider opacity-80">Prochain match</p>
-          <p class="mt-1 text-lg font-semibold">
-            {{ nextMatch.atHome ? "Réception de" : "Déplacement à" }} {{ nextMatch.opponent }}
-          </p>
-          <p class="mt-0.5 text-sm opacity-90">
-            {{ fullDate(nextMatch.kickoff) }} à {{ nextMatch.time }}
-            <template v-if="nextMatch.venue"> · {{ nextMatch.venue }}</template>
-          </p>
-          <p class="mt-1 text-xs opacity-75">
-            {{ nextMatch.competition }}
-            <template v-if="nextAbsence">
-              · {{ nextAbsence.flag }} {{ nextAbsence.reason }}</template
-            >
+      <div class="mx-auto max-w-3xl px-4 pt-6 pb-6 sm:pt-8 sm:pb-8">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h1
+            class="font-display text-2xl font-bold uppercase leading-tight tracking-wide sm:text-3xl"
+          >
+            {{ calendar?.club ?? "Vie au Grand Air de Saint-Maur" }}
+          </h1>
+          <p
+            v-if="calendar"
+            class="text-xs font-medium uppercase tracking-widest text-primary-content/85"
+          >
+            Saison {{ calendar.season }}
           </p>
         </div>
+
+        <div class="mt-5">
+          <div
+            v-if="loading && !calendar"
+            class="h-40 rounded-box bg-black/20 motion-safe:animate-pulse"
+            aria-hidden="true"
+          />
+          <NextMatchCard v-else-if="nextMatch" :match="nextMatch" :now="now" />
+          <p v-else-if="calendar" class="rounded-box bg-black/20 p-4 text-sm">
+            Plus aucun match à venir cette saison pour cette sélection.
+          </p>
+        </div>
+
+        <p
+          v-if="lastResult"
+          class="mt-3 flex flex-wrap items-baseline gap-x-2 text-sm text-primary-content/85"
+          data-testid="last-result"
+        >
+          <span class="text-xs uppercase tracking-wider">Dernier résultat</span>
+          <span class="font-semibold text-primary-content">
+            {{ lastResult.won ? "Victoire" : "Défaite" }}
+            {{ lastResult.ourSets }}–{{ lastResult.theirSets }}
+          </span>
+          <span>contre {{ lastResult.opponent }}</span>
+          <span>{{ shortDate(lastResult.kickoff) }}</span>
+        </p>
       </div>
     </header>
 
@@ -383,7 +400,7 @@ function rankingLabel(key: string, fallback: string): string {
           </div>
         </div>
 
-        <div role="tablist" class="tabs-box tabs mb-4 print:hidden">
+        <div role="tablist" class="tabs-box tabs mb-4 flex-nowrap overflow-x-auto print:hidden">
           <button
             v-for="tab in [
               { id: 'upcoming' as View, label: 'À venir' },
@@ -395,8 +412,9 @@ function rankingLabel(key: string, fallback: string): string {
             ]"
             :key="tab.id"
             role="tab"
-            class="tab"
+            class="tab shrink-0 whitespace-nowrap"
             :class="{ 'tab-active': view === tab.id }"
+            :aria-selected="view === tab.id"
             @click="view = tab.id"
           >
             {{ tab.label }}
