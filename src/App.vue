@@ -6,10 +6,11 @@ import RankingTable from "@/components/RankingTable.vue"
 import PrintSummary from "@/components/PrintSummary.vue"
 import NextMatchCard from "@/components/NextMatchCard.vue"
 import ThemeToggle from "@/components/ThemeToggle.vue"
+import AgendaMenu from "@/components/AgendaMenu.vue"
+import TablerIcon from "@/components/TablerIcon.vue"
 import { monthLabel, relativeTime, shortDate } from "@/lib/format"
 import {
   byKickoff,
-  calendarLinks,
   decorate,
   fetchCalendar,
   teamColor,
@@ -174,17 +175,14 @@ const months = computed(() => {
   return groups
 })
 
-const agenda = computed(() => calendarLinks(activeCompetitions.value))
+const USERS_ICON = [
+  "M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0",
+  "M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2",
+  "M16 3.13a4 4 0 0 1 0 7.75",
+  "M21 21v-2a4 4 0 0 0 -3 -3.85",
+]
 
-const copied = ref(false)
-
-// Firefox on Android opens neither webcal: nor Google's importer for everyone,
-// so the raw feed address stays reachable by hand.
-async function copyFeed() {
-  await navigator.clipboard.writeText(agenda.value.url)
-  copied.value = true
-  setTimeout(() => (copied.value = false), 3000)
-}
+const matchCount = (count: number) => `${count} ${count > 1 ? "matchs" : "match"}`
 
 const pickedLabels = computed(() =>
   competitions.value
@@ -309,18 +307,23 @@ function rankingLabel(key: string, fallback: string): string {
             <div
               tabindex="0"
               role="button"
-              class="select select-bordered w-full"
+              class="select h-11 w-full gap-2"
               aria-label="Équipes"
               data-testid="team-picker"
             >
-              <span class="flex min-w-0 items-center gap-1.5">
+              <TablerIcon class="size-5 shrink-0 text-base-content/70" :paths="USERS_ICON" />
+              <span class="flex min-w-0 flex-1 items-center gap-1.5">
                 <span
                   v-for="key in activeCompetitions"
                   :key="key"
                   class="size-2.5 shrink-0 rounded-full"
                   :style="{ backgroundColor: teamColors[key] }"
+                  aria-hidden="true"
                 />
-                <span class="truncate">{{ pickerLabel }}</span>
+                <span class="truncate font-medium">{{ pickerLabel }}</span>
+              </span>
+              <span class="shrink-0 text-xs text-base-content/70 tabular-nums">
+                {{ matchCount(inCompetition.length) }}
               </span>
             </div>
             <ul
@@ -330,6 +333,7 @@ function rankingLabel(key: string, fallback: string): string {
               <li>
                 <button
                   type="button"
+                  class="min-h-11"
                   :class="{ 'menu-active': !activeCompetitions.length }"
                   @click="picked = []"
                 >
@@ -337,7 +341,7 @@ function rankingLabel(key: string, fallback: string): string {
                 </button>
               </li>
               <li v-for="entry in competitions" :key="entry.key">
-                <label>
+                <label class="min-h-11">
                   <input
                     type="checkbox"
                     class="checkbox checkbox-sm"
@@ -347,78 +351,19 @@ function rankingLabel(key: string, fallback: string): string {
                     @change="toggle(entry.key)"
                   />
                   <span class="flex-1">{{ entry.label }}</span>
-                  <span class="text-xs opacity-60">{{ entry.count }}</span>
+                  <span class="text-xs text-base-content/70 tabular-nums">
+                    {{ matchCount(entry.count) }}
+                  </span>
                 </label>
               </li>
             </ul>
           </div>
 
-          <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-outline">
-              <svg
-                class="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
-                />
-                <path d="M16 3v4M8 3v4M4 11h16M8 15h2v2h-2z" />
-              </svg>
-              Ajouter à mon agenda
-            </div>
-            <ul
-              tabindex="0"
-              class="dropdown-content menu z-10 w-80 rounded-box bg-base-100 p-2 shadow-lg ring-1 ring-base-300"
-            >
-              <li class="menu-title text-xs">{{ agendaLabel }}</li>
-              <li>
-                <a :href="agenda.google" target="_blank" rel="noopener">
-                  <span>
-                    S'abonner avec Google Agenda
-                    <span class="block text-xs font-normal opacity-60">
-                      Android et web · se met à jour quand la FFVB change une date
-                    </span>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a :href="agenda.webcal">
-                  <span>
-                    S'abonner avec Apple Agenda
-                    <span class="block text-xs font-normal opacity-60">
-                      iPhone, iPad, Mac et Outlook
-                    </span>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <button type="button" @click="copyFeed">
-                  <span>
-                    {{ copied ? "Lien copié" : "Copier le lien du calendrier" }}
-                    <span class="block text-xs font-normal opacity-60">
-                      À coller dans « ajouter par URL » de n'importe quelle app
-                    </span>
-                  </span>
-                </button>
-              </li>
-              <li>
-                <a :href="agenda.file" download="volley-st-maur.ics">
-                  <span>
-                    Télécharger le fichier .ics
-                    <span class="block text-xs font-normal opacity-60">
-                      Copie figée, à réimporter après chaque changement
-                    </span>
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </div>
+          <AgendaMenu
+            :competitions="activeCompetitions"
+            :label="agendaLabel"
+            :colors="activeCompetitions.map((key) => teamColors[key])"
+          />
         </div>
 
         <div role="tablist" class="tabs-box tabs mb-4 flex-nowrap overflow-x-auto print:hidden">
@@ -526,7 +471,7 @@ function rankingLabel(key: string, fallback: string): string {
             >
               <span>{{ month.label }}</span>
               <span class="font-sans text-xs font-medium normal-case text-base-content/70">
-                {{ month.matches.length }} {{ month.matches.length > 1 ? "matchs" : "match" }}
+                {{ matchCount(month.matches.length) }}
               </span>
             </h2>
             <ul class="flex flex-col gap-2">
