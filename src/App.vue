@@ -5,6 +5,7 @@ import MatchCalendar from "@/components/MatchCalendar.vue"
 import RankingTable from "@/components/RankingTable.vue"
 import PrintSummary from "@/components/PrintSummary.vue"
 import NextMatchCard from "@/components/NextMatchCard.vue"
+import ThemeToggle from "@/components/ThemeToggle.vue"
 import { monthLabel, relativeTime, shortDate } from "@/lib/format"
 import {
   byKickoff,
@@ -479,7 +480,7 @@ function rankingLabel(key: string, fallback: string): string {
     </main>
 
     <footer
-      class="mx-auto max-w-3xl px-4 pb-10 text-center text-xs text-base-content/50 print:hidden"
+      class="mx-auto max-w-3xl px-4 pb-10 text-center text-xs text-base-content/60 print:hidden"
     >
       <p v-if="calendar">
         Données FFVB, mises à jour {{ relativeTime(calendar.fetchedAt) }}.
@@ -496,6 +497,7 @@ function rankingLabel(key: string, fallback: string): string {
         >
         · <a class="link" href="/comment-ca-marche.html">Comment ça marche ?</a>
       </p>
+      <ThemeToggle class="mt-4" />
     </footer>
   </div>
 </template>

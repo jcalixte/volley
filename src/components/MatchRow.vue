@@ -13,7 +13,7 @@ const absence = computed(() => absenceOn(props.match.date))
 <template>
   <li class="flex items-center gap-4 rounded-box bg-base-100 px-4 py-3 ring-1 ring-base-300/60">
     <div class="flex w-12 shrink-0 flex-col items-center leading-none">
-      <span class="text-[0.65rem] uppercase text-base-content/50">
+      <span class="text-[0.65rem] uppercase text-base-content/60">
         {{ weekdayLabel(match.kickoff) }}
       </span>
       <span class="font-display text-3xl font-bold tabular-nums">{{
@@ -73,11 +73,11 @@ const absence = computed(() => absenceOn(props.match.date))
       <template v-if="match.played">
         <div
           class="font-display text-2xl font-bold leading-none tabular-nums"
-          :class="match.won ? 'text-success' : 'text-base-content/50'"
+          :class="match.won ? 'text-success' : 'text-base-content/60'"
         >
           {{ match.ourSets }}–{{ match.theirSets }}
         </div>
-        <div v-if="match.score" class="text-[0.65rem] text-base-content/50">
+        <div v-if="match.score" class="text-[0.65rem] text-base-content/60">
           {{ match.score.replaceAll(",", " · ") }}
         </div>
       </template>

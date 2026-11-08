@@ -95,7 +95,7 @@ function chipLabel(match: Match): string {
         v-for="(day, column) in weekdayHeaders"
         :key="day"
         class="bg-base-100 py-1.5 text-center text-[0.65rem] uppercase tracking-wide"
-        :class="column >= 5 ? 'font-semibold text-base-content/80' : 'text-base-content/50'"
+        :class="column >= 5 ? 'font-semibold text-base-content/80' : 'text-base-content/60'"
       >
         {{ day }}
       </div>
@@ -112,7 +112,7 @@ function chipLabel(match: Match): string {
             day.weekend ? 'text-sm font-semibold' : 'text-[0.7rem]',
             day.today
               ? 'bg-primary font-bold text-primary-content'
-              : !day.weekend && 'text-base-content/50',
+              : !day.weekend && 'text-base-content/60',
           ]"
         >
           {{ day.date.getDate() }}
