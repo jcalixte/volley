@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import type { Match } from "@/lib/matches"
-import { mapsUrl } from "@/lib/matches"
+import { directionsUrl, mapsUrl } from "@/lib/matches"
 import { absenceOn } from "@/lib/absences"
 import { weekdayLabel } from "@/lib/format"
 import HomeIcon from "@/components/HomeIcon.vue"
+import TablerIcon from "@/components/TablerIcon.vue"
 
 const props = defineProps<{ match: Match; color: string }>()
+
+const ROUTE_ICON = [
+  "M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+  "M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4z",
+  "M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5",
+]
 
 const absence = computed(() => absenceOn(props.match.date))
 </script>
@@ -76,6 +83,17 @@ const absence = computed(() => absenceOn(props.match.date))
             />
           </svg>
           <span class="truncate">{{ match.venue }}</span>
+        </a>
+        <a
+          v-if="match.venue && !match.played"
+          class="link-hover link inline-flex items-center gap-1"
+          :href="directionsUrl(match)"
+          target="_blank"
+          rel="noopener"
+          :title="`Itinéraire vers ${match.venue} dans Google Maps`"
+        >
+          <TablerIcon class="size-3 shrink-0" :paths="ROUTE_ICON" />
+          Itinéraire
         </a>
         <span v-if="absence" role="img" :title="absence.reason" :aria-label="absence.reason">{{
           absence.flag

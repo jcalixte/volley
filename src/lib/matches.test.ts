@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { calendarLinks, decorate, mapsUrl, type RawMatch } from "./matches"
+import { calendarLinks, decorate, directionsUrl, mapsUrl, type RawMatch } from "./matches"
 
 function raw(overrides: Partial<RawMatch> = {}): RawMatch {
   return {
@@ -81,6 +81,18 @@ describe("mapsUrl", () => {
     expect(query(raw({ venue: "GYMNASE ELISABETH", atHome: false, opponent: "V.B. 14" }))).toBe(
       "GYMNASE ELISABETH V.B. 14",
     )
+  })
+})
+
+describe("directionsUrl", () => {
+  it("routes to the hall and its host town from the user's position", () => {
+    const url = new URL(
+      directionsUrl(raw({ venue: "HUNEBELLE", atHome: false, opponent: "C S M CLAMART 2" })),
+    )
+    expect(url.pathname).toBe("/maps/dir/")
+    expect(url.searchParams.get("api")).toBe("1")
+    expect(url.searchParams.get("destination")).toBe("HUNEBELLE C S M CLAMART")
+    expect(url.searchParams.has("origin")).toBe(false)
   })
 })
 

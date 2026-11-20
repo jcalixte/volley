@@ -35,10 +35,22 @@ export interface Match extends RawMatch {
 
 // FFVB gives the hall's name but no address. The name alone is ambiguous
 // ("PALAIS DES SPORTS"); the host club's town disambiguates it.
-export function mapsUrl(match: Pick<RawMatch, "venue" | "opponent" | "atHome">): string {
-  const host = match.atHome ? HOME_TOWN : hostTown(match.opponent)
-  const query = new URLSearchParams({ api: "1", query: `${match.venue} ${host}` })
+type Place = Pick<RawMatch, "venue" | "opponent" | "atHome">
+
+export function mapsUrl(match: Place): string {
+  const query = new URLSearchParams({ api: "1", query: venueQuery(match) })
   return `https://www.google.com/maps/search/?${query}`
+}
+
+// With no origin, Google Maps routes from the user's current position.
+export function directionsUrl(match: Place): string {
+  const query = new URLSearchParams({ api: "1", destination: venueQuery(match) })
+  return `https://www.google.com/maps/dir/?${query}`
+}
+
+function venueQuery(match: Place): string {
+  const host = match.atHome ? HOME_TOWN : hostTown(match.opponent)
+  return `${match.venue} ${host}`
 }
 
 const HOME_TOWN = "Saint-Maur-des-Fossés"

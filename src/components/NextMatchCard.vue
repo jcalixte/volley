@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import type { Match } from "@/lib/matches"
-import { mapsUrl } from "@/lib/matches"
+import { directionsUrl, mapsUrl } from "@/lib/matches"
 import { absenceOn } from "@/lib/absences"
 import { countdown, monthShortLabel, weekdayLabel } from "@/lib/format"
+import TablerIcon from "@/components/TablerIcon.vue"
 
 const props = defineProps<{ match: Match; now: number }>()
 
 const absence = computed(() => absenceOn(props.match.date))
+const ROUTE_ICON = [
+  "M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+  "M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4z",
+  "M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5",
+]
+
 const when = computed(() => countdown(props.match.kickoff, new Date(props.now)))
 </script>
 
@@ -86,6 +93,18 @@ const when = computed(() => countdown(props.match.kickoff, new Date(props.now)))
             />
           </svg>
           <span class="truncate">{{ match.venue }}</span>
+        </a>
+        <a
+          v-if="match.venue"
+          class="inline-flex items-center gap-1 rounded-full bg-primary-content px-2.5 py-0.5 text-xs font-semibold text-primary hover:underline focus-visible:underline"
+          :href="directionsUrl(match)"
+          target="_blank"
+          rel="noopener"
+          :title="`Itinéraire vers ${match.venue} dans Google Maps`"
+          data-testid="next-directions"
+        >
+          <TablerIcon class="size-3.5 shrink-0" :paths="ROUTE_ICON" />
+          Itinéraire
         </a>
       </div>
 
