@@ -1,11 +1,15 @@
 //// FFVB's club calendar export: every match of every club team for the season,
 //// fixtures and results in one file. Set/Score stay empty until a match is played.
 
+import gleam/bool
+import gleam/dict
 import gleam/http
 import gleam/http/request
 import gleam/httpc
+import gleam/int
 import gleam/json.{type Json}
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/string
 import volley/cp1252
@@ -30,6 +34,8 @@ pub type Match {
     time: String,
     team: String,
     opponent: String,
+    /// FFVB's 7-digit club code; empty when the slot has no opponent (a bye).
+    opponent_code: String,
     at_home: Bool,
     venue: String,
     sets: String,
@@ -38,13 +44,17 @@ pub type Match {
   )
 }
 
-pub fn fetch() -> Result(List(Match), String) {
+/// FFVB club codes are 7 digits, e.g. "0941410".
+pub fn is_club_code(text: String) -> Bool {
+  string.length(text) == 7
+  && list.all(string.to_graphemes(text), fn(char) {
+    string.contains("0123456789", char)
+  })
+}
+
+pub fn fetch(club: String) -> Result(List(Match), String) {
   let form =
-    "cnclub="
-    <> club_code
-    <> "&cal_saison="
-    <> season
-    <> "&typ_edition=E&type=RES"
+    "cnclub=" <> club <> "&cal_saison=" <> season <> "&typ_edition=E&type=RES"
 
   let req =
     request.new()
@@ -67,7 +77,7 @@ pub fn fetch() -> Result(List(Match), String) {
 
   case response.status {
     200 ->
-      case parse(cp1252.decode(response.body)) {
+      case parse(cp1252.decode(response.body), club) {
         [] -> Error("upstream returned no matches")
         matches -> Ok(matches)
       }
@@ -75,14 +85,14 @@ pub fn fetch() -> Result(List(Match), String) {
   }
 }
 
-pub fn parse(csv: String) -> List(Match) {
+pub fn parse(csv: String, club: String) -> List(Match) {
   csv
   |> string.split("\n")
   |> list.drop(1)
-  |> list.filter_map(parse_row)
+  |> list.filter_map(parse_row(_, club))
 }
 
-fn parse_row(line: String) -> Result(Match, Nil) {
+fn parse_row(line: String, club: String) -> Result(Match, Nil) {
   case line |> string.trim |> string.split(";") {
     [
       entity,
@@ -102,11 +112,11 @@ fn parse_row(line: String) -> Result(Match, Nil) {
       referee_b,
       ..
     ] -> {
-      let at_home = home_code == club_code
-      use <- guard_ours(at_home || away_code == club_code)
-      let #(team, opponent) = case at_home {
-        True -> #(home, away)
-        False -> #(away, home)
+      let at_home = home_code == club
+      use <- guard_ours(at_home || away_code == club)
+      let #(team, opponent, opponent_code) = case at_home {
+        True -> #(home, away, away_code)
+        False -> #(away, home, home_code)
       }
       Ok(Match(
         code:,
@@ -117,6 +127,7 @@ fn parse_row(line: String) -> Result(Match, Nil) {
         time:,
         team:,
         opponent:,
+        opponent_code:,
         at_home:,
         venue:,
         sets: sets |> string.trim |> string.replace("/", "-"),
@@ -128,7 +139,10 @@ fn parse_row(line: String) -> Result(Match, Nil) {
   }
 }
 
-fn guard_ours(ours: Bool, next: fn() -> Result(Match, Nil)) -> Result(Match, Nil) {
+fn guard_ours(
+  ours: Bool,
+  next: fn() -> Result(Match, Nil),
+) -> Result(Match, Nil) {
   case ours {
     True -> next()
     False -> Error(Nil)
@@ -174,9 +188,34 @@ pub fn poule_url(match: Match) -> String {
   <> match.poule
 }
 
-pub fn to_json(matches: List(Match), fetched_at: Int, stale: Bool) -> String {
+/// FFVB's export carries no club name, only each team's: the national poule
+/// says "EPINAL GOLBEY VOLLEY-BALL (EGVB)", a regional one "EPINAL GOLBEY 3".
+/// The name the club plays under most often is the best stand-in.
+pub fn club_label(club: String, matches: List(Match)) -> String {
+  use <- bool.guard(club == club_code, club_name)
+  matches
+  |> list.fold(dict.new(), fn(counts, match) {
+    dict.upsert(counts, match.team, fn(count) { option.unwrap(count, 0) + 1 })
+  })
+  |> dict.to_list
+  |> list.sort(fn(a, b) {
+    let #(_, first) = a
+    let #(_, second) = b
+    int.compare(second, first)
+  })
+  |> list.first
+  |> result.map(fn(pair) { pair.0 })
+  |> result.unwrap(club)
+}
+
+pub fn to_json(
+  club: String,
+  matches: List(Match),
+  fetched_at: Int,
+  stale: Bool,
+) -> String {
   json.object([
-    #("club", json.string(club_name)),
+    #("club", json.string(club)),
     #("season", json.string(season)),
     #("fetchedAt", json.int(fetched_at)),
     #("stale", json.bool(stale)),
@@ -198,6 +237,7 @@ fn match_json(match: Match) -> Json {
     #("time", json.string(match.time)),
     #("team", json.string(match.team)),
     #("opponent", json.string(match.opponent)),
+    #("opponentCode", json.string(match.opponent_code)),
     #("atHome", json.bool(match.at_home)),
     #("venue", json.string(match.venue)),
     #("sets", json.string(match.sets)),

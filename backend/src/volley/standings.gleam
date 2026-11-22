@@ -28,8 +28,10 @@ pub type Row {
   Row(
     rank: Int,
     team: String,
-    /// Matched on the club code FFVB stamps on each line, not the team name: the
-    /// departmental poule calls us "VGA ST MAUR 3".
+    /// The club code FFVB stamps on each line; empty if the line has none.
+    club_code: String,
+    /// Matched on that club code, not the team name: the departmental poule
+    /// calls us "VGA ST MAUR 3".
     ours: Bool,
     points: Int,
     played: Int,
@@ -56,14 +58,14 @@ pub type Table {
   )
 }
 
-pub fn fetch() -> Result(List(Table), String) {
+pub fn fetch(club: String) -> Result(List(Table), String) {
   let req =
     request.new()
     |> request.set_method(http.Get)
     |> request.set_scheme(http.Https)
     |> request.set_host(host)
     |> request.set_path(standings_path)
-    |> request.set_query([#("cnclub", ffvb.club_code)])
+    |> request.set_query([#("cnclub", club)])
     |> request.set_body(<<>>)
 
   let config =
@@ -78,7 +80,7 @@ pub fn fetch() -> Result(List(Table), String) {
 
   case response.status {
     200 ->
-      case parse(cp1252.decode(response.body)) {
+      case parse(cp1252.decode(response.body), club) {
         [] -> Error("upstream returned no standings")
         tables -> Ok(tables)
       }
@@ -86,14 +88,14 @@ pub fn fetch() -> Result(List(Table), String) {
   }
 }
 
-pub fn parse(html: String) -> List(Table) {
+pub fn parse(html: String, club: String) -> List(Table) {
   string.split(html, "<tr")
-  |> list.fold([], absorb)
+  |> list.fold([], fn(tables, chunk) { absorb(tables, chunk, club) })
   |> list.reverse
   |> list.map(fn(table) { Table(..table, rows: list.reverse(table.rows)) })
 }
 
-fn absorb(tables: List(Table), chunk: String) -> List(Table) {
+fn absorb(tables: List(Table), chunk: String, club: String) -> List(Table) {
   case string.contains(chunk, title_marker), tables {
     True, _ ->
       case header(chunk) {
@@ -101,7 +103,7 @@ fn absorb(tables: List(Table), chunk: String) -> List(Table) {
         Error(_) -> tables
       }
     False, [current, ..rest] ->
-      case row(chunk) {
+      case row(chunk, club) {
         Ok(row) -> [extend(current, chunk, row), ..rest]
         Error(_) -> tables
       }
@@ -136,7 +138,7 @@ fn extend(table: Table, chunk: String, row: Row) -> Table {
   Table(..table, entity:, rows: [row, ..table.rows])
 }
 
-fn row(chunk: String) -> Result(Row, Nil) {
+fn row(chunk: String, club: String) -> Result(Row, Nil) {
   use <- bool.guard(!string.contains(chunk, row_marker), Error(Nil))
 
   case cells(chunk) {
@@ -164,10 +166,12 @@ fn row(chunk: String) -> Result(Row, Nil) {
     ] -> {
       // FFVB numbers the rank "1.", "2." …
       use position <- result.try(int.parse(string.drop_end(rank, 1)))
+      let club_code = club_on(chunk)
       Ok(Row(
         rank: position,
         team:,
-        ours: string.contains(chunk, "name=cnclub value=" <> ffvb.club_code),
+        club_code:,
+        ours: club_code == club,
         points: tally(points),
         played: tally(played),
         won: tally(won),
@@ -218,6 +222,14 @@ fn strip_tags(html: String) -> String {
   }
 }
 
+/// Unlike the other hidden inputs, FFVB leaves this value unquoted.
+fn club_on(chunk: String) -> String {
+  case string.split_once(chunk, "name=cnclub value=") {
+    Ok(#(_, rest)) -> string.slice(rest, 0, 7)
+    Error(_) -> ""
+  }
+}
+
 fn hidden(chunk: String, name: String) -> Result(String, Nil) {
   use #(_, rest) <- result.try(string.split_once(
     chunk,
@@ -238,7 +250,6 @@ pub fn table_url(table: Table) -> String {
 
 pub fn to_json(tables: List(Table), fetched_at: Int, stale: Bool) -> String {
   json.object([
-    #("club", json.string(ffvb.club_name)),
     #("season", json.string(ffvb.season)),
     #("fetchedAt", json.int(fetched_at)),
     #("stale", json.bool(stale)),
@@ -262,6 +273,7 @@ fn row_json(row: Row) -> Json {
   json.object([
     #("rank", json.int(row.rank)),
     #("team", json.string(row.team)),
+    #("clubCode", json.string(row.club_code)),
     #("ours", json.bool(row.ours)),
     #("points", json.int(row.points)),
     #("played", json.int(row.played)),

@@ -1,7 +1,6 @@
 import gleam/bit_array
 import gleam/bool
 import gleam/crypto
-import gleam/dict.{type Dict}
 import gleam/erlang/process
 import gleam/int
 import gleam/json
@@ -34,20 +33,26 @@ pub fn ttl_seconds(now: Int) -> Int {
   }
 }
 
+/// Matches and standings are kept per club code; addresses per match sheet.
 type Stores {
   Stores(
     matches: Cache(List(Match)),
     standings: Cache(List(Table)),
-    addresses: Cache(Dict(String, cache.Entry(String))),
+    addresses: Cache(String),
   )
 }
+
+/// Our own club plus the opponents people click through to.
+const clubs_kept = 100
+
+const addresses_kept = 1000
 
 pub fn main() {
   wisp.configure_logger()
 
-  let assert Ok(matches) = cache.start()
-  let assert Ok(tables) = cache.start()
-  let assert Ok(addresses) = cache.start()
+  let assert Ok(matches) = cache.start(clubs_kept)
+  let assert Ok(tables) = cache.start(clubs_kept)
+  let assert Ok(addresses) = cache.start(addresses_kept)
   let stores = Stores(matches:, standings: tables, addresses:)
 
   let assert Ok(_) =
@@ -72,8 +77,8 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
 
   case wisp.path_segments(req) {
     ["api", "health"] -> wisp.ok()
-    ["api", "matches"] -> matches(stores.matches)
-    ["api", "standings"] -> ranking(stores.standings)
+    ["api", "matches"] -> matches(stores.matches, req)
+    ["api", "standings"] -> ranking(stores.standings, req)
     ["api", "calendar.ics"] -> feed(stores.matches, req)
     ["api", "salle", entity, code] ->
       hall(stores.addresses, req, entity, code, False)
@@ -83,18 +88,34 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
   }
 }
 
-fn matches(store: Cache(List(Match))) -> wisp.Response {
-  case current("calendar", store, ffvb.fetch) {
+/// `?club=<FFVB code>` picks another club; without it, ours.
+fn club(req: wisp.Request, next: fn(String) -> wisp.Response) -> wisp.Response {
+  case wisp.get_query(req) |> list.key_find("club") {
+    Error(_) -> next(ffvb.club_code)
+    Ok(code) ->
+      case ffvb.is_club_code(code) {
+        True -> next(code)
+        False -> wisp.response(400)
+      }
+  }
+}
+
+fn matches(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
+  use code <- club(req)
+  case current("calendar " <> code, store, code, fn() { ffvb.fetch(code) }) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
-      ffvb.to_json(fetched, fetched_at, stale)
+      ffvb.to_json(ffvb.club_label(code, fetched), fetched, fetched_at, stale)
       |> wisp.json_response(200)
       |> wisp.set_header("cache-control", "public, max-age=60")
   }
 }
 
-fn ranking(store: Cache(List(Table))) -> wisp.Response {
-  case current("standings", store, standings.fetch) {
+fn ranking(store: Cache(List(Table)), req: wisp.Request) -> wisp.Response {
+  use code <- club(req)
+  case
+    current("standings " <> code, store, code, fn() { standings.fetch(code) })
+  {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
       standings.to_json(fetched, fetched_at, stale)
@@ -104,7 +125,8 @@ fn ranking(store: Cache(List(Table))) -> wisp.Response {
 }
 
 fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
-  case current("calendar", store, ffvb.fetch) {
+  let fetch = fn() { ffvb.fetch(ffvb.club_code) }
+  case current("calendar " <> ffvb.club_code, store, ffvb.club_code, fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, _, _)) -> {
       let wanted = case wisp.get_query(req) |> list.key_find("equipe") {
@@ -140,7 +162,7 @@ const address_ttl_seconds = 86_400
 /// Redirects to Google Maps at the hall's postal address, or at the page's own
 /// `q` guess when FFVB has no address for this match.
 fn hall(
-  store: Cache(Dict(String, cache.Entry(String))),
+  store: Cache(String),
   req: wisp.Request,
   entity: String,
   code: String,
@@ -155,31 +177,25 @@ fn hall(
 }
 
 fn hall_address(
-  store: Cache(Dict(String, cache.Entry(String))),
+  store: Cache(String),
   entity: String,
   code: String,
 ) -> Result(String, Nil) {
   let key = entity <> "/" <> code
   let now = now_seconds()
-  let known = cache.read(store) |> option.map(fn(entry) { entry.value })
-  let fresh =
-    known
-    |> option.to_result(Nil)
-    |> result.try(dict.get(_, key))
-    |> result.try(fn(entry) {
+  let fresh = case cache.read(store, key) {
+    Some(entry) ->
       case now - entry.fetched_at < address_ttl_seconds {
         True -> Ok(entry.value)
         False -> Error(Nil)
       }
-    })
+    None -> Error(Nil)
+  }
 
   use <- result.lazy_or(fresh)
   case salle.fetch_address(entity, code) {
     Ok(address) -> {
-      known
-      |> option.unwrap(dict.new())
-      |> dict.insert(key, cache.Entry(address, now))
-      |> cache.write(store, _, now)
+      cache.write(store, key, address, now)
       Ok(address)
     }
     Error(reason) -> {
@@ -214,31 +230,33 @@ fn feed_name(selected: List(Match), wanted: List(String)) -> String {
 fn current(
   document: String,
   store: Cache(value),
+  key: String,
   fetch: fn() -> Result(value, String),
 ) -> Result(#(value, Int, Bool), String) {
   let now = now_seconds()
-  let cached = cache.read(store)
+  let cached = cache.read(store, key)
 
   case cached {
     Some(entry) ->
       case now - entry.fetched_at < ttl_seconds(now) {
         True -> Ok(#(entry.value, entry.fetched_at, False))
-        False -> refresh(document, store, fetch, cached, now)
+        False -> refresh(document, store, key, fetch, cached, now)
       }
-    None -> refresh(document, store, fetch, None, now)
+    None -> refresh(document, store, key, fetch, None, now)
   }
 }
 
 fn refresh(
   document: String,
   store: Cache(value),
+  key: String,
   fetch: fn() -> Result(value, String),
   fallback: Option(cache.Entry(value)),
   now: Int,
 ) -> Result(#(value, Int, Bool), String) {
   case fetch() {
     Ok(fetched) -> {
-      cache.write(store, fetched, now)
+      cache.write(store, key, fetched, now)
       Ok(#(fetched, now, False))
     }
     Error(reason) -> {

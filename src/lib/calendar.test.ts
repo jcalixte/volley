@@ -15,6 +15,7 @@ function match(date: string, overrides: Partial<RawMatch> = {}): Match {
     time: "16:00",
     team: "VIE AU GRAND AIR DE ST MAUR",
     opponent: "PARIS VOLLEY CLUB",
+    opponentCode: "0751234",
     atHome: true,
     venue: "BROSSOLETTE",
     sets: "",

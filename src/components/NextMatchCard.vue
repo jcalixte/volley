@@ -4,6 +4,7 @@ import type { Match } from "@/lib/matches"
 import { directionsUrl, mapsUrl } from "@/lib/matches"
 import { absenceOn } from "@/lib/absences"
 import { countdown, monthShortLabel, weekdayLabel } from "@/lib/format"
+import ClubLink from "@/components/ClubLink.vue"
 import TablerIcon from "@/components/TablerIcon.vue"
 
 const props = defineProps<{ match: Match; now: number }>()
@@ -62,7 +63,7 @@ const when = computed(() => countdown(props.match.kickoff, new Date(props.now)))
         class="font-display text-3xl font-bold uppercase leading-none break-words sm:text-4xl"
         data-testid="next-opponent"
       >
-        {{ match.opponent }}
+        <ClubLink :code="match.opponentCode" :name="match.opponent" />
       </p>
 
       <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

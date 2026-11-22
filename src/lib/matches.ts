@@ -1,3 +1,5 @@
+import { clubQuery, isHomeClub } from "@/lib/club"
+
 export interface RawMatch {
   code: string
   poule: string
@@ -10,6 +12,8 @@ export interface RawMatch {
   time: string
   team: string
   opponent: string
+  /** FFVB club code; empty for a bye. */
+  opponentCode: string
   atHome: boolean
   venue: string
   sets: string
@@ -36,7 +40,7 @@ export interface Match extends RawMatch {
 // FFVB's CSV names the hall but not its address. The backend reads the address
 // from FFVB's match sheet and redirects to Google Maps; `q` is the fallback
 // when the sheet has none: the hall's name plus the host club's town.
-type Place = Pick<RawMatch, "entity" | "code" | "venue" | "opponent" | "atHome">
+type Place = Pick<RawMatch, "entity" | "code" | "venue" | "team" | "opponent" | "atHome">
 
 export function mapsUrl(match: Place): string {
   return `${hallPath(match)}?${new URLSearchParams({ q: venueQuery(match) })}`
@@ -52,7 +56,11 @@ function hallPath(match: Place): string {
 }
 
 function venueQuery(match: Place): string {
-  const host = match.atHome ? HOME_TOWN : hostTown(match.opponent)
+  const host = match.atHome
+    ? isHomeClub()
+      ? HOME_TOWN
+      : hostTown(match.team)
+    : hostTown(match.opponent)
   return `${match.venue} ${host}`
 }
 
@@ -101,7 +109,7 @@ export function teamColor(index: number): string {
 }
 
 export async function fetchCalendar(): Promise<Calendar> {
-  const response = await fetch("/api/matches")
+  const response = await fetch(`/api/matches${clubQuery()}`)
   if (!response.ok) throw new Error(`Le calendrier FFVB est injoignable (${response.status})`)
   return response.json()
 }

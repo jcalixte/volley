@@ -1,18 +1,23 @@
 import gleam/bit_array
 import gleam/list
 import gleam/string
-import gleeunit/should
 import gleam/time/timestamp
+import gleeunit/should
 import volley/ffvb
 import volley/ics
 
-const sample = "header
+const sample =
+  "header
 ABCCS;01;2MB004;2026-09-27;16:00;0941410;VIE AU GRAND AIR DE ST MAUR;0758425;PARIS VOLLEY CLUB;;;;BROSSOLETTE;GARRAUT LORENZO;;
 ABCCS;02;2MB009;2026-10-04;14:00;0757777;PUC VOLLEY-BALL 3;0941410;VIE AU GRAND AIR DE ST MAUR;3-1;25-20,25-18,22-25,25-19;4;PIERRE CHARPY;;;
 "
 
 fn render() -> String {
-  ics.render(ffvb.parse(sample), "St Maur", timestamp.from_unix_seconds(1_788_500_000))
+  ics.render(
+    ffvb.parse(sample, ffvb.club_code),
+    "St Maur",
+    timestamp.from_unix_seconds(1_788_500_000),
+  )
 }
 
 fn lines() -> List(String) {
@@ -54,7 +59,9 @@ pub fn names_the_home_side_first_test() {
 
 pub fn appends_the_score_once_a_match_is_played_test() {
   lines()
-  |> list.contains("SUMMARY:PUC VOLLEY-BALL 3 – VIE AU GRAND AIR DE ST MAUR (3-1)")
+  |> list.contains(
+    "SUMMARY:PUC VOLLEY-BALL 3 – VIE AU GRAND AIR DE ST MAUR (3-1)",
+  )
   |> should.be_true
 }
 

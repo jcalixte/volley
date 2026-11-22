@@ -17,6 +17,7 @@ function match(overrides: Partial<RawMatch> = {}): RawMatch {
     time: "16:00",
     team: "VIE AU GRAND AIR DE ST MAUR",
     opponent: "PARIS VOLLEY CLUB",
+    opponentCode: "0751234",
     atHome: true,
     venue: "BROSSOLETTE",
     sets: "",
@@ -61,6 +62,7 @@ function standing(overrides: Partial<StandingRow> = {}): StandingRow {
   return {
     rank: 1,
     team: "PUC VOLLEY-BALL 3",
+    clubCode: "0757777",
     ours: false,
     points: 9,
     played: 3,
@@ -93,7 +95,6 @@ function ranking(overrides: Partial<Ranking> = {}): Ranking {
 }
 
 const standings: Standings = {
-  club: "VIE AU GRAND AIR DE ST MAUR",
   season: "2026/2027",
   fetchedAt: Math.floor(Date.now() / 1000),
   stale: false,
@@ -116,7 +117,7 @@ function stubFetch(body: Calendar, ok = true, tables: Standings = standings) {
       Promise.resolve({
         ok,
         status: ok ? 200 : 502,
-        json: () => Promise.resolve(url === "/api/standings" ? tables : body),
+        json: () => Promise.resolve(url.startsWith("/api/standings") ? tables : body),
       }),
     ),
   )
@@ -646,5 +647,91 @@ describe("the open tab", () => {
     history.replaceState(null, "", "/?onglet=inconnu")
     const wrapper = await render()
     expect(wrapper.findAll("section li")).toHaveLength(3)
+  })
+})
+
+describe("another club's agenda", () => {
+  it("links each opponent to its own agenda", async () => {
+    const wrapper = await render()
+    const link = wrapper.find('a[href="/?club=0751234"]')
+    expect(link.exists()).toBe(true)
+    expect(link.text()).toBe("PARIS VOLLEY CLUB")
+  })
+
+  it("gives a bye no link", async () => {
+    stubFetch({ ...calendar, matches: [match({ opponent: "EXEMPT", opponentCode: "" })] })
+    const wrapper = mount(App)
+    await flushPromises()
+    expect(wrapper.find('[data-testid="next-opponent"] a').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="next-opponent"]').text()).toBe("EXEMPT")
+  })
+
+  it("links each team of the ranking to its agenda", async () => {
+    history.replaceState(null, "", "/?onglet=standings")
+    const wrapper = await render()
+    expect(wrapper.find('a[href="/?club=0757777"]').text()).toBe("PUC VOLLEY-BALL 3")
+  })
+
+  describe("opened from a club link", () => {
+    const epinal: Calendar = {
+      ...calendar,
+      club: "EPINAL GOLBEY VOLLEY-BALL (EGVB)",
+      matches: [
+        match({
+          team: "EPINAL GOLBEY VOLLEY-BALL (EGVB)",
+          opponent: "VIE AU GRAND AIR DE ST MAUR",
+          opponentCode: "0941410",
+        }),
+      ],
+    }
+
+    async function visitEpinal() {
+      history.replaceState(null, "", "/?club=0885362")
+      stubFetch(epinal)
+      const wrapper = mount(App)
+      await flushPromises()
+      return wrapper
+    }
+
+    it("fetches that club's calendar", async () => {
+      await visitEpinal()
+      expect(fetch).toHaveBeenCalledWith("/api/matches?club=0885362")
+    })
+
+    it("fetches that club's ranking", async () => {
+      history.replaceState(null, "", "/?club=0885362&onglet=standings")
+      stubFetch(epinal)
+      mount(App)
+      await flushPromises()
+      expect(fetch).toHaveBeenCalledWith("/api/standings?club=0885362")
+    })
+
+    it("names the club and offers a way back to ours", async () => {
+      const wrapper = await visitEpinal()
+      expect(wrapper.find("h1").text()).toBe("EPINAL GOLBEY VOLLEY-BALL (EGVB)")
+      expect(wrapper.find('[data-testid="home-club-link"]').attributes("href")).toBe("/")
+    })
+
+    it("links our club back to the plain page", async () => {
+      const wrapper = await visitEpinal()
+      expect(wrapper.find('[data-testid="next-opponent"] a').attributes("href")).toBe("/")
+    })
+
+    it("offers no subscription, which only covers our club", async () => {
+      const wrapper = await visitEpinal()
+      expect(wrapper.text()).not.toContain("Ajouter à mon agenda")
+    })
+
+    it("leaves our remembered team picks alone", async () => {
+      localStorage.setItem("equipe", "2MB")
+      history.replaceState(null, "", "/?club=0885362&equipe=1MA")
+      stubFetch(epinal)
+      const wrapper = mount(App)
+      await flushPromises()
+      await wrapper.find('input[type="checkbox"]').trigger("change")
+      await flushPromises()
+      expect(location.search).toContain("equipe=2MB")
+      expect(localStorage.getItem("equipe")).toBe("2MB")
+    })
   })
 })

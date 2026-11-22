@@ -14,6 +14,7 @@ function raw(overrides: Partial<RawMatch> = {}): RawMatch {
     time: "13:30",
     team: "VIE AU GRAND AIR DE ST MAUR",
     opponent: "PLESSIS-ROBINSON VOLLEY-BALL",
+    opponentCode: "0929372",
     atHome: true,
     venue: "BROSSOLETTE",
     sets: "",
@@ -85,6 +86,17 @@ describe("mapsUrl", () => {
     expect(query(raw({ venue: "GYMNASE ELISABETH", atHome: false, opponent: "V.B. 14" }))).toBe(
       "GYMNASE ELISABETH V.B. 14",
     )
+  })
+
+  it("guesses another club's home hall with that club's name, not our town", () => {
+    history.replaceState(null, "", "/?club=0885362")
+    try {
+      expect(query(raw({ venue: "ROGER GAILLARD", atHome: true, team: "EPINAL GOLBEY 3" }))).toBe(
+        "ROGER GAILLARD EPINAL GOLBEY",
+      )
+    } finally {
+      history.replaceState(null, "", "/")
+    }
   })
 })
 

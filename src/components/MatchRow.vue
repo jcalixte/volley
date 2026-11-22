@@ -4,6 +4,7 @@ import type { Match } from "@/lib/matches"
 import { directionsUrl, mapsUrl } from "@/lib/matches"
 import { absenceOn } from "@/lib/absences"
 import { weekdayLabel } from "@/lib/format"
+import ClubLink from "@/components/ClubLink.vue"
 import HomeIcon from "@/components/HomeIcon.vue"
 import TablerIcon from "@/components/TablerIcon.vue"
 
@@ -52,7 +53,7 @@ const absence = computed(() => absenceOn(props.match.date))
       </span>
 
       <p class="mt-1 font-display text-xl font-bold uppercase leading-tight break-words">
-        {{ match.opponent }}
+        <ClubLink :code="match.opponentCode" :name="match.opponent" />
       </p>
 
       <div class="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-base-content/70">

@@ -1,10 +1,12 @@
 import gleam/list
 import gleeunit/should
+import volley/ffvb
 import volley/standings
 
 /// Trimmed slice of planning_club_class.php. Keep the hidden inputs verbatim:
 /// the parser reads the entity and our own lines from them.
-const sample = "<TABLE>
+const sample =
+  "<TABLE>
 <tr><td bgcolor='#33CCCC' class='lienblanc' align='center'>NAT</td><td class='titrepoule' align='left' colspan='7'><IMG SRC='../images/masculin.png' WIDTH=18 HEIGHT=18 align='absmiddle'>2MB - NATIONALE 2 MASCULINE - POULE B</td></tr>
 <tr bgcolor='#EEEEF8'><td class='liengris_pt' align='right'>1.</td><td class='lienquestion_pt' align='left'>EPINAL GOLBEY VOLLEY-BALL (EGVB)</td><td class='lienblanc_pt' align='center'>9</td><td class='liengris_pt' align='right'>3</td><td class='liengris_pt' align='right'>3</td><td></td><td></td><td class='liengris_pt' align='right'>2</td><td class='liengris_pt' align='right'>1</td><td></td><td></td><td></td><td></td><td class='liengris_pt' align='right'>9</td><td class='liengris_pt' align='right'>1</td><td class='liengris_pt' align='right'>9.000</td><td class='liengris_pt' align='right'>254</td><td class='liengris_pt' align='right'>206</td><td class='liengris_pt' align='right'>1.233</td><form name=divers method=get action='vbspo_calendrier.php'><td align='left' class='lienquestion'><input type=hidden name=saison value='2026/2027'><input type=hidden name=codent value='ABCCS'><input type=hidden name=poule value='2MB'><input type=image src='ico_spo_loupe.png'></td></form><form name=divers method=get action='planning_club.php'><td align='center'><input type=hidden name=cnclub value=0885362></td></form></tr>
 <tr bgcolor='#EEEEF8'><td class='liengris_pt' align='right'>5.</td><td class='liengris_pt' align='left'>VIE AU GRAND AIR DE ST MAUR</td><td class='lienblanc_pt' align='center'>4</td><td class='liengris_pt' align='right'>3</td><td class='liengris_pt' align='right'>2</td><td class='liengris_pt' align='right'>1</td><td></td><td></td><td class='liengris_pt' align='right'>2</td><td></td><td class='liengris_pt' align='right'>1</td><td></td><td></td><td class='liengris_pt' align='right'>7</td><td class='liengris_pt' align='right'>7</td><td class='liengris_pt' align='right'>1.000</td><td class='liengris_pt' align='right'>311</td><td class='liengris_pt' align='right'>306</td><td class='liengris_pt' align='right'>1.016</td><form name=divers method=get action='vbspo_calendrier.php'><td align='left' class='lienquestion'><input type=hidden name=saison value='2026/2027'><input type=hidden name=codent value='ABCCS'><input type=hidden name=poule value='2MB'><input type=image src='ico_spo_loupe.png'></td></form><form name=divers method=get action='planning_club.php'><td align='center'><input type=hidden name=cnclub value=0941410></td></form></tr>
@@ -14,13 +16,13 @@ const sample = "<TABLE>
 "
 
 pub fn parse_finds_every_table_test() {
-  standings.parse(sample)
+  standings.parse(sample, ffvb.club_code)
   |> list.map(fn(table) { table.key })
   |> should.equal(["2MB", "ARM"])
 }
 
 pub fn parse_splits_the_code_off_the_title_test() {
-  let assert [national, ..] = standings.parse(sample)
+  let assert [national, ..] = standings.parse(sample, ffvb.club_code)
 
   national.title |> should.equal("NATIONALE 2 MASCULINE - POULE B")
   national.level |> should.equal("NAT")
@@ -28,7 +30,7 @@ pub fn parse_splits_the_code_off_the_title_test() {
 }
 
 pub fn parse_reads_a_whole_line_test() {
-  let assert [national, ..] = standings.parse(sample)
+  let assert [national, ..] = standings.parse(sample, ffvb.club_code)
   let assert [leader, ..] = national.rows
 
   leader.rank |> should.equal(1)
@@ -45,7 +47,7 @@ pub fn parse_reads_a_whole_line_test() {
 }
 
 pub fn parse_reads_an_empty_cell_as_zero_test() {
-  let assert [national, ..] = standings.parse(sample)
+  let assert [national, ..] = standings.parse(sample, ffvb.club_code)
   let assert [leader, ..] = national.rows
 
   leader.lost |> should.equal(0)
@@ -53,7 +55,7 @@ pub fn parse_reads_an_empty_cell_as_zero_test() {
 }
 
 pub fn parse_marks_our_own_lines_test() {
-  let assert [national, departmental] = standings.parse(sample)
+  let assert [national, departmental] = standings.parse(sample, ffvb.club_code)
 
   national.rows
   |> list.filter(fn(row) { row.ours })
@@ -68,7 +70,7 @@ pub fn parse_marks_our_own_lines_test() {
 }
 
 pub fn parse_keeps_an_unbeaten_ratio_test() {
-  let assert [_, departmental] = standings.parse(sample)
+  let assert [_, departmental] = standings.parse(sample, ffvb.club_code)
   let assert [leader] = departmental.rows
 
   leader.set_ratio |> should.equal("MAX")
@@ -76,10 +78,28 @@ pub fn parse_keeps_an_unbeaten_ratio_test() {
 }
 
 pub fn table_url_points_at_the_poule_test() {
-  let assert [_, departmental] = standings.parse(sample)
+  let assert [_, departmental] = standings.parse(sample, ffvb.club_code)
 
   standings.table_url(departmental)
   |> should.equal(
     "https://www.ffvbbeach.org/ffvbapp/resu/vbspo_calendrier.php?saison=2026%2F2027&codent=PTIDF94&poule=ARM",
   )
+}
+
+pub fn parse_keeps_each_line_club_code_test() {
+  let assert [national, ..] = standings.parse(sample, ffvb.club_code)
+
+  national.rows
+  |> list.map(fn(row) { row.club_code })
+  |> should.equal(["0885362", ffvb.club_code])
+}
+
+pub fn parse_marks_another_club_as_ours_test() {
+  let assert [national, departmental] = standings.parse(sample, "0885362")
+  let assert [leader, st_maur] = national.rows
+
+  leader.ours |> should.be_true
+  st_maur.ours |> should.be_false
+  let assert [theirs] = departmental.rows
+  theirs.ours |> should.be_false
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import type { Ranking } from "@/lib/standings"
+import ClubLink from "@/components/ClubLink.vue"
 
 const props = defineProps<{ ranking: Ranking; label: string; color: string }>()
 
@@ -94,7 +95,9 @@ const ourRows = computed(() => props.ranking.rows.filter((row) => row.ours))
             <td class="text-right font-display text-base font-bold tabular-nums">
               {{ row.rank }}
             </td>
-            <td class="min-w-32 leading-tight">{{ row.team }}</td>
+            <td class="min-w-32 leading-tight">
+              <ClubLink :code="row.clubCode" :name="row.team" />
+            </td>
             <td class="text-right font-semibold tabular-nums">{{ row.points }}</td>
             <td class="text-right tabular-nums text-base-content/70">{{ row.played }}</td>
             <td class="hidden text-right tabular-nums text-base-content/70 sm:table-cell">

@@ -1,6 +1,10 @@
+import { clubQuery } from "@/lib/club"
+
 export interface StandingRow {
   rank: number
   team: string
+  /** FFVB club code; empty when FFVB prints none. */
+  clubCode: string
   ours: boolean
   points: number
   played: number
@@ -27,7 +31,6 @@ export interface Ranking {
 }
 
 export interface Standings {
-  club: string
   season: string
   fetchedAt: number
   stale: boolean
@@ -35,7 +38,7 @@ export interface Standings {
 }
 
 export async function fetchStandings(): Promise<Standings> {
-  const response = await fetch("/api/standings")
+  const response = await fetch(`/api/standings${clubQuery()}`)
   if (!response.ok) throw new Error(`Le classement FFVB est injoignable (${response.status})`)
   return response.json()
 }

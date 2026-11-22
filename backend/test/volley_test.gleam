@@ -18,7 +18,7 @@ LIIDF;14;PFAR069;2027-03-07;13:00;0757777;PUC VOLLEY-BALL 1;0941410;VIE AU GRAND
 "
 
 pub fn parse_reads_a_home_fixture_test() {
-  let assert [home, ..] = ffvb.parse(sample)
+  let assert [home, ..] = ffvb.parse(sample, ffvb.club_code)
 
   home.code |> should.equal("2FC004")
   home.poule |> should.equal("2FC")
@@ -33,7 +33,7 @@ pub fn parse_reads_a_home_fixture_test() {
 }
 
 pub fn parse_flips_the_sides_when_away_test() {
-  let assert [_, away, ..] = ffvb.parse(sample)
+  let assert [_, away, ..] = ffvb.parse(sample, ffvb.club_code)
 
   away.at_home |> should.be_false
   away.team |> should.equal("VIE AU GRAND AIR DE ST MAUR")
@@ -41,18 +41,18 @@ pub fn parse_flips_the_sides_when_away_test() {
 }
 
 pub fn parse_keeps_the_result_of_a_played_match_test() {
-  let assert [_, played, ..] = ffvb.parse(sample)
+  let assert [_, played, ..] = ffvb.parse(sample, ffvb.club_code)
 
   played.sets |> should.equal("3-1")
   played.score |> should.equal("25-20,25-18,22-25,25-19")
 }
 
 pub fn parse_drops_the_header_row_test() {
-  ffvb.parse(sample) |> list.length |> should.equal(3)
+  ffvb.parse(sample, ffvb.club_code) |> list.length |> should.equal(3)
 }
 
 pub fn parse_reads_a_four_letter_poule_test() {
-  let assert [_, _, regional] = ffvb.parse(sample)
+  let assert [_, _, regional] = ffvb.parse(sample, ffvb.club_code)
 
   regional.poule |> should.equal("PFAR")
   regional.entity |> should.equal("LIIDF")
@@ -63,7 +63,54 @@ pub fn parse_ignores_rows_without_our_club_test() {
   let other =
     "header\nABCCS;01;2FC004;2026-09-27;13:30;0000001;A;0000002;B;;;;X;;;\n"
 
-  ffvb.parse(other) |> should.equal([])
+  ffvb.parse(other, ffvb.club_code) |> should.equal([])
+}
+
+pub fn parse_keeps_the_opponent_club_code_test() {
+  let assert [home, away, ..] = ffvb.parse(sample, ffvb.club_code)
+
+  home.opponent_code |> should.equal("0929372")
+  away.opponent_code |> should.equal("0686625")
+}
+
+pub fn parse_reads_another_club_from_its_side_test() {
+  let assert [match] = ffvb.parse(sample, "0686625")
+
+  match.at_home |> should.be_true
+  match.team |> should.equal("AS SP ENTREMONT RIXHEIM")
+  match.opponent |> should.equal("VIE AU GRAND AIR DE ST MAUR")
+  match.opponent_code |> should.equal(ffvb.club_code)
+  match.sets |> should.equal("3-1")
+}
+
+pub fn club_label_keeps_our_own_name_test() {
+  ffvb.parse(sample, ffvb.club_code)
+  |> ffvb.club_label(ffvb.club_code, _)
+  |> should.equal(ffvb.club_name)
+}
+
+pub fn club_label_picks_the_most_used_team_name_test() {
+  let csv =
+    "header
+ABCCS;01;2MB001;2026-09-26;20:00;0885362;EPINAL GOLBEY VOLLEY-BALL (EGVB);0000001;A;;;;X;;;
+ABCCS;02;2MB012;2026-10-04;15:00;0000002;B;0885362;EPINAL GOLBEY VOLLEY-BALL (EGVB);;;;X;;;
+LILOR;01;RMA004;2026-10-03;20:00;0885362;EPINAL GOLBEY 3;0000003;C;;;;X;;;
+"
+  ffvb.parse(csv, "0885362")
+  |> ffvb.club_label("0885362", _)
+  |> should.equal("EPINAL GOLBEY VOLLEY-BALL (EGVB)")
+}
+
+pub fn club_label_falls_back_to_the_code_test() {
+  ffvb.club_label("0885362", []) |> should.equal("0885362")
+}
+
+pub fn is_club_code_test() {
+  ffvb.is_club_code("0885362") |> should.be_true
+  ffvb.is_club_code("088536") |> should.be_false
+  ffvb.is_club_code("08853620") |> should.be_false
+  ffvb.is_club_code("088536a") |> should.be_false
+  ffvb.is_club_code("") |> should.be_false
 }
 
 pub fn cp1252_decodes_accents_test() {
@@ -87,29 +134,29 @@ pub fn cp1252_leaves_ascii_alone_test() {
 }
 
 pub fn competition_key_keeps_a_national_poule_whole_test() {
-  let assert [national, ..] = ffvb.parse(sample)
+  let assert [national, ..] = ffvb.parse(sample, ffvb.club_code)
   ffvb.competition_key(national) |> should.equal("2FC")
 }
 
 pub fn competition_key_folds_the_two_regional_phases_test() {
-  let assert [_, _, regional] = ffvb.parse(sample)
+  let assert [_, _, regional] = ffvb.parse(sample, ffvb.club_code)
   ffvb.competition_key(regional) |> should.equal("PFA")
 }
 
 pub fn competition_label_reproduces_the_ffvb_title_test() {
-  let assert [national, ..] = ffvb.parse(sample)
+  let assert [national, ..] = ffvb.parse(sample, ffvb.club_code)
   ffvb.competition_label(national)
   |> should.equal("Nationale 2 Féminine · Poule C")
 }
 
 pub fn competition_label_keeps_the_code_for_a_regional_poule_test() {
-  let assert [_, _, regional] = ffvb.parse(sample)
+  let assert [_, _, regional] = ffvb.parse(sample, ffvb.club_code)
   ffvb.competition_label(regional)
   |> should.equal("Île-de-France Féminine · PFA")
 }
 
 pub fn poule_url_points_at_the_official_calendar_test() {
-  let assert [national, ..] = ffvb.parse(sample)
+  let assert [national, ..] = ffvb.parse(sample, ffvb.club_code)
   let url = ffvb.poule_url(national)
   url |> string.contains("poule=2FC") |> should.be_true
   url |> string.contains("codent=ABCCS") |> should.be_true

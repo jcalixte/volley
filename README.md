@@ -50,6 +50,7 @@ nginx.conf      serves the SPA and proxies /api to the backend
       "time": "16:00",
       "team": "VIE AU GRAND AIR DE ST MAUR",
       "opponent": "PARIS VOLLEY CLUB",
+      "opponentCode": "0758425",
       "atHome": true,
       "venue": "BROSSOLETTE",
       "sets": "",
@@ -62,13 +63,18 @@ nginx.conf      serves the SPA and proxies /api to the backend
 
 `stale: true` means FFVB could not be reached and this is the last good copy.
 
+Both endpoints take `?club=<7-digit FFVB code>` to show another club instead, e.g.
+`/api/matches?club=0885362` for Épinal Golbey. The page does the same with
+`/?club=0885362`: every opponent and every ranking line links there. Other clubs
+get no agenda feed and no player absences, which are ours. The backend keeps the
+last 100 clubs asked for and evicts the one fetched longest ago.
+
 `GET /api/standings` returns the standing of every poule the club plays in, from a
 second whole-club page FFVB publishes — `planning_club_class.php?cnclub=0941410`. One
 request again, so the ranking costs no per-poule scraping:
 
 ```json
 {
-  "club": "VIE AU GRAND AIR DE ST MAUR",
   "season": "2026/2027",
   "fetchedAt": 1788507000,
   "stale": false,
@@ -83,6 +89,7 @@ request again, so the ranking costs no per-poule scraping:
         {
           "rank": 5,
           "team": "VIE AU GRAND AIR DE ST MAUR",
+          "clubCode": "0941410",
           "ours": true,
           "points": 4,
           "played": 3,

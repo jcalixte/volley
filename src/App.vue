@@ -7,6 +7,7 @@ import PrintSummary from "@/components/PrintSummary.vue"
 import NextMatchCard from "@/components/NextMatchCard.vue"
 import ThemeToggle from "@/components/ThemeToggle.vue"
 import AgendaMenu from "@/components/AgendaMenu.vue"
+import ClubLink from "@/components/ClubLink.vue"
 import TablerIcon from "@/components/TablerIcon.vue"
 import { monthLabel, relativeTime, shortDate } from "@/lib/format"
 import {
@@ -18,12 +19,17 @@ import {
   type Match,
 } from "@/lib/matches"
 import { fetchStandings, type Standings } from "@/lib/standings"
+import { isHomeClub } from "@/lib/club"
 
 const VIEWS = ["upcoming", "results", "all", "calendar", "standings", "summary"] as const
 type View = (typeof VIEWS)[number]
 
 const FILTER_PARAM = "equipe"
 const VIEW_PARAM = "onglet"
+
+// Read once: a club link is a full page load. The team picks and the agenda
+// feed belong to our club, so another club's page neither keeps nor offers them.
+const homeClub = isHomeClub()
 
 const calendar = ref<Calendar | null>(null)
 const error = ref<string | null>(null)
@@ -37,7 +43,7 @@ const standingsError = ref<string | null>(null)
 // No pick at all means every team.
 function rememberedCompetitions(): string[] {
   const fromLink = new URLSearchParams(location.search).get(FILTER_PARAM)
-  const stored = fromLink ?? localStorage.getItem(FILTER_PARAM) ?? ""
+  const stored = fromLink ?? (homeClub ? localStorage.getItem(FILTER_PARAM) : null) ?? ""
   return stored.split(",").filter(Boolean)
 }
 
@@ -48,7 +54,7 @@ function rememberedView(): View {
 }
 
 watch(picked, (keys) => {
-  localStorage.setItem(FILTER_PARAM, keys.join(","))
+  if (homeClub) localStorage.setItem(FILTER_PARAM, keys.join(","))
   const url = new URL(location.href)
   if (keys.length) url.searchParams.set(FILTER_PARAM, keys.join(","))
   else url.searchParams.delete(FILTER_PARAM)
@@ -60,6 +66,7 @@ async function load() {
   try {
     calendar.value = await fetchCalendar()
     error.value = null
+    if (!homeClub) document.title = `${calendar.value.club} — calendrier`
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : String(cause)
   } finally {
@@ -229,11 +236,19 @@ function rankingLabel(key: string, fallback: string): string {
   <div class="min-h-dvh bg-base-200 print:bg-white">
     <header class="bg-primary text-primary-content print:hidden">
       <div class="mx-auto max-w-3xl px-4 pt-6 pb-6 sm:pt-8 sm:pb-8">
+        <a
+          v-if="!homeClub"
+          href="/"
+          class="link link-hover mb-2 inline-block text-sm text-primary-content/85"
+          data-testid="home-club-link"
+        >
+          ← Vie au Grand Air de Saint-Maur
+        </a>
         <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h1
             class="font-display text-2xl font-bold uppercase leading-tight tracking-wide sm:text-3xl"
           >
-            {{ calendar?.club ?? "Vie au Grand Air de Saint-Maur" }}
+            {{ calendar?.club ?? (homeClub ? "Vie au Grand Air de Saint-Maur" : "Agenda du club") }}
           </h1>
           <p
             v-if="calendar"
@@ -265,7 +280,10 @@ function rankingLabel(key: string, fallback: string): string {
             {{ lastResult.won ? "Victoire" : "Défaite" }}
             {{ lastResult.ourSets }}–{{ lastResult.theirSets }}
           </span>
-          <span>contre {{ lastResult.opponent }}</span>
+          <span class="flex gap-1">
+            <span>contre</span>
+            <ClubLink :code="lastResult.opponentCode" :name="lastResult.opponent" />
+          </span>
           <span>{{ shortDate(lastResult.kickoff) }}</span>
         </p>
       </div>
@@ -347,6 +365,7 @@ function rankingLabel(key: string, fallback: string): string {
           </div>
 
           <AgendaMenu
+            v-if="homeClub"
             :competitions="activeCompetitions"
             :label="agendaLabel"
             :colors="activeCompetitions.map((key) => teamColors[key])"
