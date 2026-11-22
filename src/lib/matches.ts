@@ -33,19 +33,22 @@ export interface Match extends RawMatch {
   won: boolean | null
 }
 
-// FFVB gives the hall's name but no address. The name alone is ambiguous
-// ("PALAIS DES SPORTS"); the host club's town disambiguates it.
-type Place = Pick<RawMatch, "venue" | "opponent" | "atHome">
+// FFVB's CSV names the hall but not its address. The backend reads the address
+// from FFVB's match sheet and redirects to Google Maps; `q` is the fallback
+// when the sheet has none: the hall's name plus the host club's town.
+type Place = Pick<RawMatch, "entity" | "code" | "venue" | "opponent" | "atHome">
 
 export function mapsUrl(match: Place): string {
-  const query = new URLSearchParams({ api: "1", query: venueQuery(match) })
-  return `https://www.google.com/maps/search/?${query}`
+  return `${hallPath(match)}?${new URLSearchParams({ q: venueQuery(match) })}`
 }
 
-// With no origin, Google Maps routes from the user's current position.
+// Google Maps routes from the user's current position.
 export function directionsUrl(match: Place): string {
-  const query = new URLSearchParams({ api: "1", destination: venueQuery(match) })
-  return `https://www.google.com/maps/dir/?${query}`
+  return `${hallPath(match)}/itineraire?${new URLSearchParams({ q: venueQuery(match) })}`
+}
+
+function hallPath(match: Place): string {
+  return `/api/salle/${encodeURIComponent(match.entity)}/${encodeURIComponent(match.code)}`
 }
 
 function venueQuery(match: Place): string {

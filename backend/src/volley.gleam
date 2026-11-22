@@ -1,5 +1,7 @@
 import gleam/bit_array
+import gleam/bool
 import gleam/crypto
+import gleam/dict.{type Dict}
 import gleam/erlang/process
 import gleam/int
 import gleam/json
@@ -13,6 +15,7 @@ import volley/cache.{type Cache}
 import volley/ffvb.{type Match}
 import volley/ics
 import volley/incidents
+import volley/salle
 import volley/standings.{type Table}
 import wisp
 import wisp/wisp_mist
@@ -32,7 +35,11 @@ pub fn ttl_seconds(now: Int) -> Int {
 }
 
 type Stores {
-  Stores(matches: Cache(List(Match)), standings: Cache(List(Table)))
+  Stores(
+    matches: Cache(List(Match)),
+    standings: Cache(List(Table)),
+    addresses: Cache(Dict(String, cache.Entry(String))),
+  )
 }
 
 pub fn main() {
@@ -40,7 +47,8 @@ pub fn main() {
 
   let assert Ok(matches) = cache.start()
   let assert Ok(tables) = cache.start()
-  let stores = Stores(matches:, standings: tables)
+  let assert Ok(addresses) = cache.start()
+  let stores = Stores(matches:, standings: tables, addresses:)
 
   let assert Ok(_) =
     handle_request(stores, _)
@@ -67,6 +75,10 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
     ["api", "matches"] -> matches(stores.matches)
     ["api", "standings"] -> ranking(stores.standings)
     ["api", "calendar.ics"] -> feed(stores.matches, req)
+    ["api", "salle", entity, code] ->
+      hall(stores.addresses, req, entity, code, False)
+    ["api", "salle", entity, code, "itineraire"] ->
+      hall(stores.addresses, req, entity, code, True)
     _ -> wisp.not_found()
   }
 }
@@ -121,6 +133,70 @@ fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
       ))
     }
   }
+}
+
+const address_ttl_seconds = 86_400
+
+/// Redirects to Google Maps at the hall's postal address, or at the page's own
+/// `q` guess when FFVB has no address for this match.
+fn hall(
+  store: Cache(Dict(String, cache.Entry(String))),
+  req: wisp.Request,
+  entity: String,
+  code: String,
+  directions: Bool,
+) -> wisp.Response {
+  use <- bool.guard(!is_code(entity) || !is_code(code), wisp.not_found())
+  let guess = wisp.get_query(req) |> list.key_find("q") |> result.unwrap("")
+  let destination =
+    hall_address(store, entity, code)
+    |> result.unwrap(guess)
+  wisp.redirect(salle.maps_url(destination, directions))
+}
+
+fn hall_address(
+  store: Cache(Dict(String, cache.Entry(String))),
+  entity: String,
+  code: String,
+) -> Result(String, Nil) {
+  let key = entity <> "/" <> code
+  let now = now_seconds()
+  let known = cache.read(store) |> option.map(fn(entry) { entry.value })
+  let fresh =
+    known
+    |> option.to_result(Nil)
+    |> result.try(dict.get(_, key))
+    |> result.try(fn(entry) {
+      case now - entry.fetched_at < address_ttl_seconds {
+        True -> Ok(entry.value)
+        False -> Error(Nil)
+      }
+    })
+
+  use <- result.lazy_or(fresh)
+  case salle.fetch_address(entity, code) {
+    Ok(address) -> {
+      known
+      |> option.unwrap(dict.new())
+      |> dict.insert(key, cache.Entry(address, now))
+      |> cache.write(store, _, now)
+      Ok(address)
+    }
+    Error(reason) -> {
+      wisp.log_warning("hall address for " <> key <> ": " <> reason)
+      Error(Nil)
+    }
+  }
+}
+
+/// FFVB entity and match codes are short and alphanumeric ("ABCCS", "2MB042").
+fn is_code(text: String) -> Bool {
+  let chars = string.to_graphemes(text)
+  chars != []
+  && list.length(chars) <= 12
+  && list.all(chars, fn(char) {
+    string.contains("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", char)
+  })
 }
 
 fn feed_name(selected: List(Match), wanted: List(String)) -> String {

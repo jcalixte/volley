@@ -56,16 +56,20 @@ describe("decorate", () => {
 
 describe("mapsUrl", () => {
   function query(match: Parameters<typeof mapsUrl>[0]) {
-    return new URL(mapsUrl(match)).searchParams.get("query")
+    return new URL(mapsUrl(match), location.origin).searchParams.get("q")
   }
 
-  it("searches the hall together with the club's town for a home game", () => {
+  it("asks the backend for the match's hall", () => {
+    expect(new URL(mapsUrl(raw()), location.origin).pathname).toBe("/api/salle/ABCCS/2FC004")
+  })
+
+  it("guesses the hall together with the club's town for a home game", () => {
     expect(query(raw({ venue: "BROSSOLETTE", atHome: true }))).toBe(
       "BROSSOLETTE Saint-Maur-des-Fossés",
     )
   })
 
-  it("searches the hall together with the host club when away", () => {
+  it("guesses the hall together with the host club when away", () => {
     expect(
       query(raw({ venue: "PALAIS DES SPORTS", atHome: false, opponent: "BESANCON VOLLEY-BALL" })),
     ).toBe("PALAIS DES SPORTS BESANCON VOLLEY-BALL")
@@ -85,14 +89,21 @@ describe("mapsUrl", () => {
 })
 
 describe("directionsUrl", () => {
-  it("routes to the hall and its host town from the user's position", () => {
+  it("asks the backend to route to the match's hall, with a fallback guess", () => {
     const url = new URL(
-      directionsUrl(raw({ venue: "HUNEBELLE", atHome: false, opponent: "C S M CLAMART 2" })),
+      directionsUrl(
+        raw({
+          entity: "ABCCS",
+          code: "2MB042",
+          venue: "COUCHOT",
+          atHome: false,
+          opponent: "ACBB 2",
+        }),
+      ),
+      location.origin,
     )
-    expect(url.pathname).toBe("/maps/dir/")
-    expect(url.searchParams.get("api")).toBe("1")
-    expect(url.searchParams.get("destination")).toBe("HUNEBELLE C S M CLAMART")
-    expect(url.searchParams.has("origin")).toBe(false)
+    expect(url.pathname).toBe("/api/salle/ABCCS/2MB042/itineraire")
+    expect(url.searchParams.get("q")).toBe("COUCHOT ACBB")
   })
 })
 
