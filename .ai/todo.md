@@ -1,13 +1,17 @@
-# Itinéraire: real hall address (Boulogne bug)
+# Club agenda: click opponent, see their agenda
 
-- [x] Root cause: FFVB CSV gives hall name only ("COUCHOT"), guess "COUCHOT ACBB" lands on wrong place
-- [x] backend `volley/salle.gleam`: read address from FFVB match sheet PDF (fiche_match_ffvb.php), FFI inflates Flate streams
-- [x] route `/api/salle/:entity/:code[/itineraire]?q=<guess>` 303 to Google Maps, 1-day in-memory cache, fallback to `q`
-- [x] frontend `mapsUrl` / `directionsUrl` point to route
-- [x] tests: gleam (salle_test) + vitest
+- [x] backend ffvb: parse/fetch take club code, Match keeps opponent_code, club name derived for other clubs
+- [x] backend standings: parse/fetch take club code
+- [x] backend volley.gleam: per-club keyed cache (bounded), `?club=` on /api/matches + /api/standings, ICS stays home club
+- [x] backend tests updated + new tests (opponent_code, other club parse, club name, code validation)
+- [x] frontend lib/club.ts: viewed club from `?club=`; fetchers pass it
+- [x] MatchRow / NextMatchCard / Calendar / Summary: opponent name links to `?club=<code>`
+- [x] App: other-club mode hides AgendaMenu, home link, filter storage per club; absences + HOME_TOWN only for home
+- [x] tests: lib + App
+- [x] verify: gleam test, vitest, typecheck, lint, curl
 
 ## Review
 
-- gleam test 42 passed; vitest 87 passed; vue-tsc, oxlint, oxfmt clean.
-- Local backend curl: 2MB042 -> "COUCHOT, 2 RUE COUCHOT, 92100 BOULOGNE BILLANCOURT"; no-address match falls back to `q`; bad codes 404.
-- Not tested in browser.
+Shipped in 0c14235. gleam test 53 pass, vitest 102+ pass, vue-tsc + oxlint clean.
+Live curl: /api/matches?club=0885362 returns Épinal (108 matches) with opponent codes;
+?club=abc gives 400; unknown 7-digit code gives 502; ICS feed unchanged (200).
