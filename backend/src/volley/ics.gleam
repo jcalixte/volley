@@ -12,7 +12,8 @@ const domain = "volley.apoena.dev"
 
 /// Match times are French local time: ship the Europe/Paris rules, not a fixed
 /// offset that breaks at the DST changeover.
-const paris_timezone = "BEGIN:VTIMEZONE
+const paris_timezone =
+  "BEGIN:VTIMEZONE
 TZID:Europe/Paris
 BEGIN:DAYLIGHT
 TZOFFSETFROM:+0100
