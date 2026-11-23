@@ -20,6 +20,7 @@ function match(overrides: Partial<RawMatch> = {}): RawMatch {
     opponentCode: "0751234",
     atHome: true,
     venue: "BROSSOLETTE",
+    address: null,
     sets: "",
     score: "",
     referees: [],

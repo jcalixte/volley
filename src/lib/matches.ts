@@ -16,6 +16,8 @@ export interface RawMatch {
   opponentCode: string
   atHome: boolean
   venue: string
+  /** The hall's postal address, once the backend has read it from FFVB's match sheet. */
+  address: string | null
   sets: string
   score: string
   referees: string[]
@@ -37,17 +39,27 @@ export interface Match extends RawMatch {
   won: boolean | null
 }
 
-// FFVB's CSV names the hall but not its address. The backend reads the address
-// from FFVB's match sheet and redirects to Google Maps; `q` is the fallback
-// when the sheet has none: the hall's name plus the host club's town.
-type Place = Pick<RawMatch, "entity" | "code" | "venue" | "team" | "opponent" | "atHome">
+// FFVB's CSV names the hall but not its address. The backend reads it from
+// FFVB's match sheet ahead of time for the coming fortnight, so those links go
+// straight to Google Maps: a link through our redirect leaves an orphan tab
+// behind on Android once the Maps app takes over. Other matches go through the
+// backend, with `q` as the fallback when the sheet has no address: the hall's
+// name plus the host club's town.
+type Place = Pick<
+  RawMatch,
+  "entity" | "code" | "venue" | "address" | "team" | "opponent" | "atHome"
+>
 
 export function mapsUrl(match: Place): string {
+  if (match.address)
+    return `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: match.address })}`
   return `${hallPath(match)}?${new URLSearchParams({ q: venueQuery(match) })}`
 }
 
 // Google Maps routes from the user's current position.
 export function directionsUrl(match: Place): string {
+  if (match.address)
+    return `https://www.google.com/maps/dir/?${new URLSearchParams({ api: "1", destination: match.address })}`
   return `${hallPath(match)}/itineraire?${new URLSearchParams({ q: venueQuery(match) })}`
 }
 

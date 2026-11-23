@@ -18,6 +18,7 @@ function match(date: string, overrides: Partial<RawMatch> = {}): Match {
     opponentCode: "0751234",
     atHome: true,
     venue: "BROSSOLETTE",
+    address: null,
     sets: "",
     score: "",
     referees: [],

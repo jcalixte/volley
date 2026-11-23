@@ -17,6 +17,7 @@ function raw(overrides: Partial<RawMatch> = {}): RawMatch {
     opponentCode: "0929372",
     atHome: true,
     venue: "BROSSOLETTE",
+    address: null,
     sets: "",
     score: "",
     referees: [],
@@ -116,6 +117,23 @@ describe("directionsUrl", () => {
     )
     expect(url.pathname).toBe("/api/salle/ABCCS/2MB042/itineraire")
     expect(url.searchParams.get("q")).toBe("COUCHOT ACBB")
+  })
+})
+
+describe("links to a hall whose address is known", () => {
+  const address = "COUCHOT, 2 RUE COUCHOT, 92100 BOULOGNE BILLANCOURT"
+
+  it("searches Google Maps for the address directly", () => {
+    const url = new URL(mapsUrl(raw({ address })))
+    expect(url.origin + url.pathname).toBe("https://www.google.com/maps/search/")
+    expect(url.searchParams.get("query")).toBe(address)
+  })
+
+  it("routes to the address directly, leaving no redirect tab behind", () => {
+    const url = new URL(directionsUrl(raw({ address })))
+    expect(url.origin + url.pathname).toBe("https://www.google.com/maps/dir/")
+    expect(url.searchParams.get("api")).toBe("1")
+    expect(url.searchParams.get("destination")).toBe(address)
   })
 })
 
