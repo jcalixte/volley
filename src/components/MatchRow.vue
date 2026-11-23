@@ -60,13 +60,15 @@ const absence = computed(() => absenceOn(props.match.date))
         <a class="link-hover link" :href="match.ffvbUrl" target="_blank" rel="noopener">{{
           match.competition
         }}</a>
-        <a
+        <component
+          :is="match.address ? 'a' : 'span'"
           v-if="match.venue"
-          class="link-hover link inline-flex min-w-0 items-center gap-1"
-          :href="mapsUrl(match)"
-          target="_blank"
-          rel="noopener"
-          :title="`Ouvrir ${match.venue} dans Maps`"
+          class="inline-flex min-w-0 items-center gap-1"
+          :class="{ 'link-hover link': match.address }"
+          :href="match.address ? mapsUrl(match.address) : undefined"
+          :target="match.address ? '_blank' : undefined"
+          :rel="match.address ? 'noopener' : undefined"
+          :title="match.address ? `Ouvrir ${match.venue} dans Maps` : undefined"
         >
           <svg
             class="size-3 shrink-0"
@@ -84,11 +86,11 @@ const absence = computed(() => absenceOn(props.match.date))
             />
           </svg>
           <span class="truncate">{{ match.venue }}</span>
-        </a>
+        </component>
         <a
-          v-if="match.venue && !match.played"
+          v-if="match.address && !match.played"
           class="link-hover link inline-flex items-center gap-1"
-          :href="directionsUrl(match)"
+          :href="directionsUrl(match.address)"
           target="_blank"
           rel="noopener"
           :title="`Itinéraire vers ${match.venue} dans Google Maps`"

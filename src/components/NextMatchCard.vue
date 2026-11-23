@@ -70,13 +70,15 @@ const when = computed(() => countdown(props.match.kickoff, new Date(props.now)))
         <span class="font-display text-xl font-semibold leading-none tabular-nums">
           {{ match.time }}
         </span>
-        <a
+        <component
+          :is="match.address ? 'a' : 'span'"
           v-if="match.venue"
-          class="inline-flex min-w-0 items-center gap-1 underline-offset-2 hover:underline focus-visible:underline"
-          :href="mapsUrl(match)"
-          target="_blank"
-          rel="noopener"
-          :title="`Ouvrir ${match.venue} dans Maps`"
+          class="inline-flex min-w-0 items-center gap-1"
+          :class="{ 'underline-offset-2 hover:underline focus-visible:underline': match.address }"
+          :href="match.address ? mapsUrl(match.address) : undefined"
+          :target="match.address ? '_blank' : undefined"
+          :rel="match.address ? 'noopener' : undefined"
+          :title="match.address ? `Ouvrir ${match.venue} dans Maps` : undefined"
         >
           <svg
             class="size-4 shrink-0"
@@ -94,11 +96,11 @@ const when = computed(() => countdown(props.match.kickoff, new Date(props.now)))
             />
           </svg>
           <span class="truncate">{{ match.venue }}</span>
-        </a>
+        </component>
         <a
-          v-if="match.venue"
+          v-if="match.address"
           class="inline-flex items-center gap-1 rounded-full bg-primary-content px-2.5 py-0.5 text-xs font-semibold text-primary hover:underline focus-visible:underline"
-          :href="directionsUrl(match)"
+          :href="directionsUrl(match.address)"
           target="_blank"
           rel="noopener"
           :title="`Itinéraire vers ${match.venue} dans Google Maps`"

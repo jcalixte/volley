@@ -56,81 +56,17 @@ describe("decorate", () => {
   })
 })
 
-describe("mapsUrl", () => {
-  function query(match: Parameters<typeof mapsUrl>[0]) {
-    return new URL(mapsUrl(match), location.origin).searchParams.get("q")
-  }
-
-  it("asks the backend for the match's hall", () => {
-    expect(new URL(mapsUrl(raw()), location.origin).pathname).toBe("/api/salle/ABCCS/2FC004")
-  })
-
-  it("guesses the hall together with the club's town for a home game", () => {
-    expect(query(raw({ venue: "BROSSOLETTE", atHome: true }))).toBe(
-      "BROSSOLETTE Saint-Maur-des-Fossés",
-    )
-  })
-
-  it("guesses the hall together with the host club when away", () => {
-    expect(
-      query(raw({ venue: "PALAIS DES SPORTS", atHome: false, opponent: "BESANCON VOLLEY-BALL" })),
-    ).toBe("PALAIS DES SPORTS BESANCON VOLLEY-BALL")
-  })
-
-  it("drops the host club's team number, which is not part of its name", () => {
-    expect(query(raw({ venue: "HUNEBELLE", atHome: false, opponent: "C S M CLAMART 2" }))).toBe(
-      "HUNEBELLE C S M CLAMART",
-    )
-  })
-
-  it("keeps a number that belongs to the club's name", () => {
-    expect(query(raw({ venue: "GYMNASE ELISABETH", atHome: false, opponent: "V.B. 14" }))).toBe(
-      "GYMNASE ELISABETH V.B. 14",
-    )
-  })
-
-  it("guesses another club's home hall with that club's name, not our town", () => {
-    history.replaceState(null, "", "/?club=0885362")
-    try {
-      expect(query(raw({ venue: "ROGER GAILLARD", atHome: true, team: "EPINAL GOLBEY 3" }))).toBe(
-        "ROGER GAILLARD EPINAL GOLBEY",
-      )
-    } finally {
-      history.replaceState(null, "", "/")
-    }
-  })
-})
-
-describe("directionsUrl", () => {
-  it("asks the backend to route to the match's hall, with a fallback guess", () => {
-    const url = new URL(
-      directionsUrl(
-        raw({
-          entity: "ABCCS",
-          code: "2MB042",
-          venue: "COUCHOT",
-          atHome: false,
-          opponent: "ACBB 2",
-        }),
-      ),
-      location.origin,
-    )
-    expect(url.pathname).toBe("/api/salle/ABCCS/2MB042/itineraire")
-    expect(url.searchParams.get("q")).toBe("COUCHOT ACBB")
-  })
-})
-
-describe("links to a hall whose address is known", () => {
+describe("hall links", () => {
   const address = "COUCHOT, 2 RUE COUCHOT, 92100 BOULOGNE BILLANCOURT"
 
   it("searches Google Maps for the address directly", () => {
-    const url = new URL(mapsUrl(raw({ address })))
+    const url = new URL(mapsUrl(address))
     expect(url.origin + url.pathname).toBe("https://www.google.com/maps/search/")
     expect(url.searchParams.get("query")).toBe(address)
   })
 
   it("routes to the address directly, leaving no redirect tab behind", () => {
-    const url = new URL(directionsUrl(raw({ address })))
+    const url = new URL(directionsUrl(address))
     expect(url.origin + url.pathname).toBe("https://www.google.com/maps/dir/")
     expect(url.searchParams.get("api")).toBe("1")
     expect(url.searchParams.get("destination")).toBe(address)

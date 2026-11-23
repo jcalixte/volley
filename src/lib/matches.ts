@@ -1,4 +1,4 @@
-import { clubQuery, isHomeClub } from "@/lib/club"
+import { clubQuery } from "@/lib/club"
 
 export interface RawMatch {
   code: string
@@ -40,47 +40,16 @@ export interface Match extends RawMatch {
 }
 
 // FFVB's CSV names the hall but not its address. The backend reads it from
-// FFVB's match sheet ahead of time for the coming fortnight, so those links go
-// straight to Google Maps: a link through our redirect leaves an orphan tab
-// behind on Android once the Maps app takes over. Other matches go through the
-// backend, with `q` as the fallback when the sheet has no address: the hall's
-// name plus the host club's town.
-type Place = Pick<
-  RawMatch,
-  "entity" | "code" | "venue" | "address" | "team" | "opponent" | "atHome"
->
-
-export function mapsUrl(match: Place): string {
-  if (match.address)
-    return `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: match.address })}`
-  return `${hallPath(match)}?${new URLSearchParams({ q: venueQuery(match) })}`
+// FFVB's match sheet for the coming fortnight; further out there is no link.
+// Linking straight to Google Maps matters: going through a redirect of ours
+// leaves an orphan tab behind on Android once the Maps app takes over.
+export function mapsUrl(address: string): string {
+  return `https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: address })}`
 }
 
 // Google Maps routes from the user's current position.
-export function directionsUrl(match: Place): string {
-  if (match.address)
-    return `https://www.google.com/maps/dir/?${new URLSearchParams({ api: "1", destination: match.address })}`
-  return `${hallPath(match)}/itineraire?${new URLSearchParams({ q: venueQuery(match) })}`
-}
-
-function hallPath(match: Place): string {
-  return `/api/salle/${encodeURIComponent(match.entity)}/${encodeURIComponent(match.code)}`
-}
-
-function venueQuery(match: Place): string {
-  const host = match.atHome
-    ? isHomeClub()
-      ? HOME_TOWN
-      : hostTown(match.team)
-    : hostTown(match.opponent)
-  return `${match.venue} ${host}`
-}
-
-const HOME_TOWN = "Saint-Maur-des-Fossés"
-
-// A trailing single digit is the club's team number, not part of its name.
-function hostTown(club: string): string {
-  return club.replace(/\s\d$/, "")
+export function directionsUrl(address: string): string {
+  return `https://www.google.com/maps/dir/?${new URLSearchParams({ api: "1", destination: address })}`
 }
 
 export interface CalendarLinks {
