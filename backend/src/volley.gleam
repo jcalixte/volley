@@ -83,10 +83,6 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
     ["api", "matches"] -> matches(stores, req)
     ["api", "standings"] -> ranking(stores.standings, req)
     ["api", "calendar.ics"] -> feed(stores.matches, req)
-    ["api", "salle", entity, code] ->
-      hall(stores.addresses, req, entity, code, False)
-    ["api", "salle", entity, code, "itineraire"] ->
-      hall(stores.addresses, req, entity, code, True)
     _ -> wisp.not_found()
   }
 }
@@ -169,23 +165,6 @@ fn feed(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
 
 const address_ttl_seconds = 86_400
 
-/// Redirects to Google Maps at the hall's postal address, or at the page's own
-/// `q` guess when FFVB has no address for this match.
-fn hall(
-  store: Cache(String),
-  req: wisp.Request,
-  entity: String,
-  code: String,
-  directions: Bool,
-) -> wisp.Response {
-  use <- bool.guard(!is_code(entity) || !is_code(code), wisp.not_found())
-  let guess = wisp.get_query(req) |> list.key_find("q") |> result.unwrap("")
-  let destination =
-    hall_address(store, entity, code)
-    |> result.unwrap(guess)
-  wisp.redirect(salle.maps_url(destination, directions))
-}
-
 fn hall_address(
   store: Cache(String),
   entity: String,
@@ -262,16 +241,6 @@ fn iso_date(moment: timestamp.Timestamp) -> String {
   |> string.pad_start(2, "0")
   <> "-"
   <> int.to_string(date.day) |> string.pad_start(2, "0")
-}
-
-/// FFVB entity and match codes are short and alphanumeric ("ABCCS", "2MB042").
-fn is_code(text: String) -> Bool {
-  let chars = string.to_graphemes(text)
-  chars != []
-  && list.length(chars) <= 12
-  && list.all(chars, fn(char) {
-    string.contains("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", char)
-  })
 }
 
 fn feed_name(selected: List(Match), wanted: List(String)) -> String {

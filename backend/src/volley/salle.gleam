@@ -111,14 +111,3 @@ fn is_town(line: String) -> Bool {
 fn is_digit(char: String) -> Bool {
   string.contains("0123456789", char)
 }
-
-pub fn maps_url(destination: String, directions: Bool) -> String {
-  case directions {
-    True ->
-      "https://www.google.com/maps/dir/?"
-      <> uri.query_to_string([#("api", "1"), #("destination", destination)])
-    False ->
-      "https://www.google.com/maps/search/?"
-      <> uri.query_to_string([#("api", "1"), #("query", destination)])
-  }
-}

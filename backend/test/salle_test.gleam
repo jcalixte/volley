@@ -42,13 +42,6 @@ q 0 g BT 1 1 Td (Sol : ) Tj ET Q
   |> should.equal(Error(Nil))
 }
 
-pub fn maps_url_routes_to_the_address_test() {
-  salle.maps_url("COUCHOT, 92100 BOULOGNE", True)
-  |> should.equal(
-    "https://www.google.com/maps/dir/?api=1&destination=COUCHOT%2C%2092100%20BOULOGNE",
-  )
-}
-
 pub fn due_keeps_unplayed_fixtures_in_the_window_test() {
   let fixture =
     ffvb.Match(
