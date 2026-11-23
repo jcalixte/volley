@@ -8,6 +8,8 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
+import gleam/time/calendar
+import gleam/time/duration
 import gleam/time/timestamp
 import mist
 import volley/cache.{type Cache}
@@ -54,6 +56,7 @@ pub fn main() {
   let assert Ok(tables) = cache.start(clubs_kept)
   let assert Ok(addresses) = cache.start(addresses_kept)
   let stores = Stores(matches:, standings: tables, addresses:)
+  process.spawn_unlinked(fn() { warm_addresses(stores) })
 
   let assert Ok(_) =
     handle_request(stores, _)
@@ -77,7 +80,7 @@ fn handle_request(stores: Stores, req: wisp.Request) -> wisp.Response {
 
   case wisp.path_segments(req) {
     ["api", "health"] -> wisp.ok()
-    ["api", "matches"] -> matches(stores.matches, req)
+    ["api", "matches"] -> matches(stores, req)
     ["api", "standings"] -> ranking(stores.standings, req)
     ["api", "calendar.ics"] -> feed(stores.matches, req)
     ["api", "salle", entity, code] ->
@@ -100,12 +103,19 @@ fn club(req: wisp.Request, next: fn(String) -> wisp.Response) -> wisp.Response {
   }
 }
 
-fn matches(store: Cache(List(Match)), req: wisp.Request) -> wisp.Response {
+fn matches(stores: Stores, req: wisp.Request) -> wisp.Response {
   use code <- club(req)
-  case current("calendar " <> code, store, code, fn() { ffvb.fetch(code) }) {
+  let fetch = fn() { ffvb.fetch(code) }
+  case current("calendar " <> code, stores.matches, code, fetch) {
     Error(reason) -> failure(reason)
     Ok(#(fetched, fetched_at, stale)) ->
-      ffvb.to_json(ffvb.club_label(code, fetched), fetched, fetched_at, stale)
+      ffvb.to_json(
+        ffvb.club_label(code, fetched),
+        fetched,
+        fetched_at,
+        stale,
+        known_address(stores.addresses, _),
+      )
       |> wisp.json_response(200)
       |> wisp.set_header("cache-control", "public, max-age=60")
   }
@@ -203,6 +213,55 @@ fn hall_address(
       Error(Nil)
     }
   }
+}
+
+/// Played matches need no directions, so only fixtures get their address.
+fn known_address(store: Cache(String), match: Match) -> Option(String) {
+  use <- bool.guard(match.sets != "" || match.venue == "", None)
+  cache.read(store, match.entity <> "/" <> match.code)
+  |> option.map(fn(entry) { entry.value })
+}
+
+const warm_every_ms = 3_600_000
+
+const warm_days_ahead = 14
+
+/// Looks up the hall address of our matches in the coming two weeks, so the
+/// page links straight to Google Maps. A link through our redirect route
+/// leaves an orphan "You are being redirected" tab once Android hands the
+/// Maps URL to the Maps app.
+fn warm_addresses(stores: Stores) -> Nil {
+  let fetch = fn() { ffvb.fetch(ffvb.club_code) }
+  case
+    current(
+      "calendar " <> ffvb.club_code,
+      stores.matches,
+      ffvb.club_code,
+      fetch,
+    )
+  {
+    Error(_) -> Nil
+    Ok(#(fetched, _, _)) -> {
+      let now = timestamp.system_time()
+      let until = timestamp.add(now, duration.hours(24 * warm_days_ahead))
+      salle.due(fetched, iso_date(now), iso_date(until))
+      |> list.each(fn(match) {
+        hall_address(stores.addresses, match.entity, match.code)
+      })
+    }
+  }
+  process.sleep(warm_every_ms)
+  warm_addresses(stores)
+}
+
+fn iso_date(moment: timestamp.Timestamp) -> String {
+  let #(date, _) = timestamp.to_calendar(moment, calendar.utc_offset)
+  int.to_string(date.year)
+  <> "-"
+  <> int.to_string(calendar.month_to_int(date.month))
+  |> string.pad_start(2, "0")
+  <> "-"
+  <> int.to_string(date.day) |> string.pad_start(2, "0")
 }
 
 /// FFVB entity and match codes are short and alphanumeric ("ABCCS", "2MB042").

@@ -6,15 +6,27 @@ import gleam/http
 import gleam/http/request
 import gleam/httpc
 import gleam/list
+import gleam/order
 import gleam/result
 import gleam/string
 import gleam/uri
 import volley/cp1252
-import volley/ffvb
+import volley/ffvb.{type Match}
 
 const host = "www.ffvbbeach.org"
 
 const sheet_path = "/ffvbapp/adressier/fiche_match_ffvb.php"
+
+/// Matches still to play between two ISO dates, inclusive, at a named hall:
+/// the ones whose address is worth looking up ahead of a click.
+pub fn due(matches: List(Match), from: String, until: String) -> List(Match) {
+  list.filter(matches, fn(match) {
+    match.sets == ""
+    && match.venue != ""
+    && string.compare(match.date, from) != order.Lt
+    && string.compare(match.date, until) != order.Gt
+  })
+}
 
 pub fn fetch_address(entity: String, code: String) -> Result(String, String) {
   let form =

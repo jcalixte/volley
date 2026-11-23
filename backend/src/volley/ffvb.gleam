@@ -208,23 +208,28 @@ pub fn club_label(club: String, matches: List(Match)) -> String {
   |> result.unwrap(club)
 }
 
+/// `address` is the hall's postal address, when it is already known.
 pub fn to_json(
   club: String,
   matches: List(Match),
   fetched_at: Int,
   stale: Bool,
+  address: fn(Match) -> option.Option(String),
 ) -> String {
   json.object([
     #("club", json.string(club)),
     #("season", json.string(season)),
     #("fetchedAt", json.int(fetched_at)),
     #("stale", json.bool(stale)),
-    #("matches", json.array(matches, match_json)),
+    #("matches", json.array(matches, match_json(_, address))),
   ])
   |> json.to_string
 }
 
-fn match_json(match: Match) -> Json {
+fn match_json(
+  match: Match,
+  address: fn(Match) -> option.Option(String),
+) -> Json {
   json.object([
     #("code", json.string(match.code)),
     #("poule", json.string(match.poule)),
@@ -240,6 +245,7 @@ fn match_json(match: Match) -> Json {
     #("opponentCode", json.string(match.opponent_code)),
     #("atHome", json.bool(match.at_home)),
     #("venue", json.string(match.venue)),
+    #("address", json.nullable(address(match), json.string)),
     #("sets", json.string(match.sets)),
     #("score", json.string(match.score)),
     #("referees", json.array(match.referees, json.string)),

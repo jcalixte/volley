@@ -1,4 +1,5 @@
 import gleeunit/should
+import volley/ffvb
 import volley/salle
 
 // Trimmed from the content stream of FFVB's sheet for match 2MB042.
@@ -46,4 +47,35 @@ pub fn maps_url_routes_to_the_address_test() {
   |> should.equal(
     "https://www.google.com/maps/dir/?api=1&destination=COUCHOT%2C%2092100%20BOULOGNE",
   )
+}
+
+pub fn due_keeps_unplayed_fixtures_in_the_window_test() {
+  let fixture =
+    ffvb.Match(
+      code: "2MB042",
+      poule: "2MB",
+      entity: "ABCCS",
+      round: "05",
+      date: "2026-11-28",
+      time: "20:00",
+      team: "VIE AU GRAND AIR DE ST MAUR",
+      opponent: "ACBB 2",
+      opponent_code: "0921234",
+      at_home: False,
+      venue: "COUCHOT",
+      sets: "",
+      score: "",
+      referees: [],
+    )
+  let played = ffvb.Match(..fixture, code: "2MB041", sets: "3-1")
+  let no_hall = ffvb.Match(..fixture, code: "2MB043", venue: "")
+  let later = ffvb.Match(..fixture, code: "2MB044", date: "2026-12-08")
+  let last_day = ffvb.Match(..fixture, code: "2MB045", date: "2026-12-07")
+
+  salle.due(
+    [fixture, played, no_hall, later, last_day],
+    "2026-11-23",
+    "2026-12-07",
+  )
+  |> should.equal([fixture, last_day])
 }
